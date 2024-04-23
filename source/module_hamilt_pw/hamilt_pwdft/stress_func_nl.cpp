@@ -158,7 +158,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                 int index = 0;
                 for(int ipol=0;ipol<3;ipol++)
                 {
-                    for(int jpol=ipol;jpol<3;jpol++)
+                    for(int jpol=0;jpol<ipol+1;jpol++)
                     {
                         // 2. calculate dbecp：
                         // 2.a. calculate dbecp_noevc, repeat use the memory of ppcell.vkb
@@ -208,7 +208,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
         int index = 0;
         for(int ipol=0;ipol<3;ipol++)
         {
-            for(int jpol=ipol;jpol<3;jpol++)
+            for(int jpol=0;jpol<=ipol;jpol++)
             {
                 cal_stress_nl_op()(this->ctx,
                                    nondiagonal,
