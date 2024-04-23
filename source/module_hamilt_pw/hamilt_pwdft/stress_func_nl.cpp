@@ -83,6 +83,9 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
     int nks = p_kv->nks;
     for(int ik=0;ik<nks;ik++)//loop k points
     {
+        // only for uspp: move the spin index in deeq
+        if (GlobalV::NSPIN == 2)
+            GlobalV::CURRENT_SPIN = p_kv->isk[ik];
         // prepare parameters to calculate gemm
         const std::complex<FPTYPE> *ppsi = nullptr;
         ppsi = &(psi_in[0](ik, 0, 0));
