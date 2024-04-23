@@ -49,7 +49,8 @@ void Stress_PW<FPTYPE, Device>::stress_us(ModuleBase::matrix& sigma,
     ModuleBase::matrix dylmk0(ppcell_in->lmaxq * ppcell_in->lmaxq, npw);
     for (int ipol = 0; ipol < 3; ipol++)
     {
-        this->dylmr2(ppcell_in->lmaxq * ppcell_in->lmaxq, npw, rho_basis->gcar, dylmk0, ipol);
+        double* gcar_ptr = reinterpret_cast<double*>(rho_basis->gcar);
+        this->dylmr2(ppcell_in->lmaxq * ppcell_in->lmaxq, npw, gcar_ptr, dylmk0.c, ipol);
         for (int it = 0; it < ucell.ntype; it++)
         {
             Atom* atom = &ucell.atoms[it];

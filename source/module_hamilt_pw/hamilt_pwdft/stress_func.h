@@ -148,13 +148,50 @@ class Stress_Func
                    ModulePW::PW_Basis_K* wfc_basis); // used in nonlocal part in PW basis
     void dylmr2(const int nylm,
                 const int ngy,
-                ModuleBase::Vector3<FPTYPE>* gk,
-                ModuleBase::matrix& dylm,
+                const FPTYPE* gk,
+                FPTYPE* dylm,
                 const int ipol); // used in get_dvnl1()
     void get_dvnl2(ModuleBase::ComplexMatrix& vkb,
                    const int ik,
                    Structure_Factor* p_sf,
                    ModulePW::PW_Basis_K* wfc_basis); // used in nonlocal part in PW basis
+    /// calculate the G+K vectors
+    std::vector<FPTYPE> cal_gk(int ik, ModulePW::PW_Basis_K* wfc_basis);
+    /// calculate radial part of the non-local pseudopotential
+    std::vector<FPTYPE> cal_vq(int it, const FPTYPE* gk_in, int npw);
+    /// calculate the derivate of the radial part of the non-local pseudopotential
+    std::vector<FPTYPE> cal_vq_deri(int it, const FPTYPE* gk_in, int npw);
+    /// calculate the sperical bessel function for projections
+    std::vector<FPTYPE> cal_ylm(int lmax, int npw, const FPTYPE* gk_in);
+    /// calculate the derivate of the sperical bessel function for projections
+    std::vector<FPTYPE> cal_ylm_deri(int lmax, int npw, const FPTYPE* gk_in);
+    /// calculate the (-i)^l factors
+    std::vector<complex<FPTYPE>> cal_pref(int it);
+    /// calculate the vkb matrix for this atom
+    /// vkb = sum_lm (-i)^l * ylm(g^) * vq(g^) * sk(g^)
+    void cal_vkb(int it,
+                  int ia,
+                  int npw,
+                  const FPTYPE* vq_in,
+                  const FPTYPE* ylm_in,
+                  const complex<FPTYPE>* sk_in,
+                  const complex<FPTYPE>* pref_in,
+                  complex<FPTYPE>* vkb_out); 
+    /// calculate the dvkb matrix for this atom
+    void cal_vkb_deri(int it,
+                      int ia,
+                      int npw,
+                      int ipol,
+                      int jpol,
+                      const FPTYPE* vq_in,
+                      const FPTYPE* vq_deri_in,
+                      const FPTYPE* ylm_in,
+                      const FPTYPE* ylm_deri_in,
+                      const complex<FPTYPE>* sk_in,
+                      const complex<FPTYPE>* pref_in,
+                      const FPTYPE* gk_in,
+                      complex<FPTYPE>* vkb_out);
+    /// polynomial interpolation tool for calculate derivate of vq 
     FPTYPE Polynomial_Interpolation_nl(const ModuleBase::realArray& table,
                                        const int& dim1,
                                        const int& dim2,
