@@ -156,6 +156,48 @@ void cal_stress_mgga_op<T, Device>::operator()(
     }
 }
 
+
+// cpu version first, gpu version later
+template <typename FPTYPE>
+struct cal_vkb_op<FPTYPE, psi::DEVICE_CPU>{
+    void operator()(
+        int it,
+        int npw,
+        int nbeta,
+        int nhtol_nc,
+        int nhtol_nr,
+        const double* nhtol,
+        const FPTYPE* vq_in,
+        const FPTYPE* ylm_in,
+        const std::complex<FPTYPE>* sk_in,
+        const std::complex<FPTYPE>* pref_in,
+        std::complex<FPTYPE>* vkb_out
+    ){
+        int ih=0;
+        // loop over all beta functions
+        for(int nb=0;nb<nbeta;nb++)
+        {
+            int l = nhtol[it*nhtol_nc+ih];
+            // loop over all m angular momentum
+            for(int m=0;m<2*l+1;m++)
+            {
+                int lm = l*l + m;
+                std::complex<FPTYPE>* vkb_ptr = &vkb_out[ih * npw];
+                const FPTYPE* ylm_ptr = &ylm_in[lm * npw];
+                const FPTYPE* vq_ptr = &vq_in[nb * npw];
+                // loop over all G-vectors
+                for(int ig=0;ig<npw;ig++)
+                {
+                    vkb_ptr[ig] = ylm_ptr[ig] * vq_ptr[ig] * sk_in[ig] * pref_in[ih];
+                }
+                ih++;
+            }
+        }
+    }
+};
+
+
+
 template struct cal_stress_mgga_op<std::complex<float>,  psi::DEVICE_CPU>;
 template struct cal_stress_mgga_op<std::complex<double>, psi::DEVICE_CPU>;
 
@@ -165,5 +207,7 @@ template struct cal_stress_nl_op<float, psi::DEVICE_CPU>;
 template struct cal_dbecp_noevc_nl_op<double, psi::DEVICE_CPU>;
 template struct cal_stress_nl_op<double, psi::DEVICE_CPU>;
 
+template struct cal_vkb_op<float, psi::DEVICE_GPU>;
+template struct cal_vkb_op<double, psi::DEVICE_GPU>;
 }  // namespace hamilt
 

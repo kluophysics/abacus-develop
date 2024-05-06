@@ -258,6 +258,62 @@ void cal_stress_mgga_op<T, Device>::operator()(
     cudaErrcheck(cudaGetLastError());
     cudaErrcheck(cudaDeviceSynchronize());
 }
+template <typename FPTYPE>
+__global__ void cal_vkb(
+    int it,
+    int npw,
+    int nbeta,
+    int nhtol_nc,
+    int nhtol_nr,
+    const double* nhtol,
+    const FPTYPE* vq_in,
+    const FPTYPE* ylm_in,
+    const thrust::complex<FPTYPE>* sk_in,
+    const thrust::complex<FPTYPE>* pref_in,
+    thrust::complex<FPTYPE>* vkb_out
+){
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    int ih=0;
+    for(int nb=0;nb<nbeta;nb++)
+    {
+        int l = nhtol[it*nhtol_nc+ih];
+        for(int m=0;m<2*l+1;m++)
+        {
+            int lm = l*l + m;
+            thrust::complex<FPTYPE>* vkb_ptr = &vkb_out[ih * npw];
+            const FPTYPE* ylm_ptr = &ylm_in[lm * npw];
+            const FPTYPE* vq_ptr = &vq_in[nb * npw];
+            if(idx<npw) vkb_ptr[idx] = ylm_ptr[idx] * vq_ptr[idx] * sk_in[idx] * pref_in[ih];
+            ih++;          
+        }        
+    }
+}
+
+
+template <typename FPTYPE>
+void cal_vkb_op<FPTYPE, psi::DEVICE_GPU>::operator()(
+        int it,
+        int npw,
+        int nbeta,
+        int nhtol_nc,
+        int nhtol_nr,
+        const double* nhtol,
+        const FPTYPE* vq_in,
+        const FPTYPE* ylm_in,
+        const std::complex<FPTYPE>* sk_in,
+        const std::complex<FPTYPE>* pref_in,
+        std::complex<FPTYPE>* vkb_out
+    )
+{
+    const int block = (npw + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+    cal_vkb<FPTYPE><<<block,THREADS_PER_BLOCK>>>(
+        it, npw, nbeta, nhtol_nc, nhtol_nr,nhtol, vq_in, ylm_in,
+        reinterpret_cast<const thrust::complex<FPTYPE>*>(sk_in), 
+        reinterpret_cast<const thrust::complex<FPTYPE>*>(pref_in), 
+        reinterpret_cast< thrust::complex<FPTYPE>*>(vkb_out)
+    );
+}
+
 
 template struct cal_stress_mgga_op<std::complex<float>,  psi::DEVICE_GPU>;
 template struct cal_stress_mgga_op<std::complex<double>, psi::DEVICE_GPU>;
@@ -267,5 +323,10 @@ template struct cal_dbecp_noevc_nl_op<double, psi::DEVICE_GPU>;
 
 template struct cal_stress_nl_op<float, psi::DEVICE_GPU>;
 template struct cal_stress_nl_op<double, psi::DEVICE_GPU>;
+
+
+template struct cal_vkb_op<double, psi::DEVICE_GPU>;
+template struct cal_vkb_op<float, psi::DEVICE_GPU>;
+
 
 }  // namespace hamilt
