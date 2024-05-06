@@ -114,6 +114,25 @@ struct cal_stress_mgga_op {
         Real * crosstaus);
 };
 
+// cpu version first, gpu version later
+template <typename FPTYPE, typename Device>
+struct cal_vkb_op{
+    void operator()(
+        int it,
+        int npw,
+        int nbeta,
+        int nhtol_nc,
+        int nhtol_nr,
+        const double* nhtol,
+        const FPTYPE* vq_in,
+        const FPTYPE* ylm_in,
+        const std::complex<FPTYPE>* sk_in,
+        const std::complex<FPTYPE>* pref_in,
+        std::complex<FPTYPE>* vkb_out
+    );
+};
+
+
 #if __CUDA || __UT_USE_CUDA || __ROCM || __UT_USE_ROCM
 template <typename FPTYPE>
 struct cal_dbecp_noevc_nl_op<FPTYPE, psi::DEVICE_GPU> {
@@ -162,6 +181,23 @@ struct cal_stress_nl_op<FPTYPE, psi::DEVICE_GPU> {
                     FPTYPE* stress);
 };
 
+// cpu version first, gpu version later
+template <typename FPTYPE>
+struct cal_vkb_op<FPTYPE, psi::DEVICE_GPU>{
+    void operator()(
+        int it,
+        int npw,
+        int nbeta,
+        int nhtol_nc,
+        int nhtol_nr,
+        const double* nhtol,
+        const FPTYPE* vq_in,
+        const FPTYPE* ylm_in,
+        const std::complex<FPTYPE>* sk_in,
+        const std::complex<FPTYPE>* pref_in,
+        std::complex<FPTYPE>* vkb_out
+    );
+};
 #endif // __CUDA || __UT_USE_CUDA || __ROCM || __UT_USE_ROCM
 }  // namespace hamilt
 #endif //SRC_PW_STRESS_MULTI_DEVICE_H

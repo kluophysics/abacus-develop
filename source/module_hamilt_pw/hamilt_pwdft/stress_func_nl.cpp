@@ -5,7 +5,7 @@
 #include "module_hamilt_pw/hamilt_pwdft/global.h"
 #include "module_psi/kernels/device.h"
 #include "module_base/memory.h"
-
+#include <chrono>
 //calculate the nonlocal pseudopotential stress in PW
 template <typename FPTYPE, typename Device>
 void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
@@ -114,6 +114,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
             dbecp_ptr[i] = &dbecp[i * wg_nc * nkb];
         }
         std::complex<FPTYPE>* ppcell_vkb = GlobalC::ppcell.vkb.c;
+        std::complex<FPTYPE>* ppcell_vkb_d= GlobalC::ppcell.get_vkb_data<FPTYPE>();
         int lmax = GlobalC::ppcell.lmaxkb;
         //prepare ylm，size: (lmax+1)^2 * npwx
         std::vector<double> ylm = cal_ylm(lmax, npw, g_plus_k.data());
@@ -128,6 +129,8 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
             // prepare（-i）^l, size: nh
             std::vector<complex<double>> pref = cal_pref(it);
             int nh = pref.size();
+
+            double time=0,time2=0;
             for(int ia=0;ia<h_atom_na[it];ia++)
             {
                 // prepare SK
@@ -142,7 +145,28 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                     ppcell_vkb);
                 // 2.b calculate becp = vkb * psi
                 int npm = GlobalV::NPOL * nbands_occ;
-                gemm_op()(this->ctx,
+
+                if (this->device == psi::GpuDevice)
+                {
+                    syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, ppcell_vkb_d, ppcell_vkb, nh * npw);
+                    gemm_op()(this->ctx,
+                            transa,
+                            transb,
+                            nh,
+                            npm,
+                            npw,
+                            &ModuleBase::ONE,
+                            ppcell_vkb_d,
+                            npw,
+                            ppsi,
+                            npwx,
+                            &ModuleBase::ZERO,
+                            becp_ptr,
+                            nkb);
+                    
+                }
+                else {
+                    gemm_op()(this->ctx,
                         transa,
                         transb,
                         nh,
@@ -156,6 +180,8 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                         &ModuleBase::ZERO,
                         becp_ptr,
                         nkb);
+                }
+
                 becp_ptr += nh;
                 //calculate stress（00，01，02，11，12，22）
                 int index = 0;
@@ -165,14 +191,38 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                     {
                         // 2. calculate dbecp：
                         // 2.a. calculate dbecp_noevc, repeat use the memory of ppcell.vkb
+                        auto start = std::chrono::high_resolution_clock::now();
                         cal_vkb_deri(it, ia, npw,
                                 ipol, jpol,
                                 vq.data(), vq_deri.data(), 
                                 ylm.data(), ylm_deri.data(), 
                                 sk, pref.data(), g_plus_k.data(),
                                 ppcell_vkb);
-                        
+                        auto end = std::chrono::high_resolution_clock::now();
+                        std::chrono::duration<double, std::milli> diff = end - start;
+                        time+= diff.count();
+                                                
+                        start = std::chrono::high_resolution_clock::now();                              
                         // 2.b calculate dbecp = dbecp_noevc * psi
+                    if (this->device == psi::GpuDevice)
+                    {
+                        syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, ppcell_vkb_d, ppcell_vkb, nh * npw);
+                        gemm_op()(this->ctx,
+                          transa,
+                          transb,
+                          nh,
+                          npm,
+                          npw,
+                          &ModuleBase::ONE,
+                          ppcell_vkb_d,
+                          npw,
+                          ppsi,
+                          npwx,
+                          &ModuleBase::ZERO,
+                          dbecp_ptr[index],
+                          nkb);
+
+                    } else {
                         gemm_op()(this->ctx,
                           transa,
                           transb,
@@ -186,12 +236,17 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                           npwx,
                           &ModuleBase::ZERO,
                           dbecp_ptr[index],
-                          nkb);
+                          nkb);                        
+                    }
+                        end = std::chrono::high_resolution_clock::now();
+                        diff = end - start;
+                        time2 += diff.count();
                         dbecp_ptr[index++] += nh;
                     }//jpol
                 }//ipol
                 delete [] sk;
             }//ia
+            //printf("%lf %lf\n",time,time2);
         }//it
         // becp calculate is over , now we should broadcast this data.
         if (this->device == psi::GpuDevice)
@@ -420,6 +475,7 @@ void Stress_Func<FPTYPE, Device>::cal_vkb(
 {
     int ih=0;
     // loop over all beta functions
+    //printf("%d\n",npw);
     for(int nb=0;nb<GlobalC::ucell.atoms[it].ncpp.nbeta;nb++)
     {
         int l = GlobalC::ppcell.nhtol(it, ih);
