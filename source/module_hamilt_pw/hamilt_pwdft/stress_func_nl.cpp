@@ -197,43 +197,42 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                                 sk, pref.data(), g_plus_k.data(),
                                 ppcell_vkb);                             
                         // 2.b calculate dbecp = dbecp_noevc * psi
-                    if (this->device == psi::GpuDevice)
-                    {
-                        syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, ppcell_vkb_d, ppcell_vkb, nh * npw);
-                        gemm_op()(this->ctx,
-                          transa,
-                          transb,
-                          nh,
-                          npm,
-                          npw,
-                          &ModuleBase::ONE,
-                          ppcell_vkb_d,
-                          npw,
-                          ppsi,
-                          npwx,
-                          &ModuleBase::ZERO,
-                          dbecp_ptr[index],
-                          nkb);
+                        if (this->device == psi::GpuDevice)
+                        {
+                            syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, ppcell_vkb_d, ppcell_vkb, nh * npw);
+                            gemm_op()(this->ctx,
+                            transa,
+                            transb,
+                            nh,
+                            npm,
+                            npw,
+                            &ModuleBase::ONE,
+                            ppcell_vkb_d,
+                            npw,
+                            ppsi,
+                            npwx,
+                            &ModuleBase::ZERO,
+                            dbecp_ptr[index],
+                            nkb);
 
-                    } else {
-                        gemm_op()(this->ctx,
-                          transa,
-                          transb,
-                          nh,
-                          npm,
-                          npw,
-                          &ModuleBase::ONE,
-                          ppcell_vkb,
-                          npw,
-                          ppsi,
-                          npwx,
-                          &ModuleBase::ZERO,
-                          dbecp_ptr[index],
-                          nkb);                        
-                    }
-                        end = std::chrono::high_resolution_clock::now();
-                        diff = end - start;
-                        time2 += diff.count();
+                        } 
+                        else 
+                        {
+                            gemm_op()(this->ctx,
+                            transa,
+                            transb,
+                            nh,
+                            npm,
+                            npw,
+                            &ModuleBase::ONE,
+                            ppcell_vkb,
+                            npw,
+                            ppsi,
+                            npwx,
+                            &ModuleBase::ZERO,
+                            dbecp_ptr[index],
+                            nkb);                        
+                        }
                         dbecp_ptr[index++] += nh;
                     }//jpol
                 }//ipol
