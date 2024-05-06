@@ -129,7 +129,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
             std::vector<complex<double>> pref = cal_pref(it);
             int nh = pref.size();
 
-            double time=0,time2=0;
+
             for(int ia=0;ia<h_atom_na[it];ia++)
             {
                 // prepare SK
@@ -467,7 +467,6 @@ void Stress_Func<FPTYPE, Device>::cal_vkb(
 {
     int ih=0;
     // loop over all beta functions
-    //printf("%d\n",npw);
     for(int nb=0;nb<GlobalC::ucell.atoms[it].ncpp.nbeta;nb++)
     {
         int l = GlobalC::ppcell.nhtol(it, ih);
