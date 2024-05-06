@@ -5,7 +5,6 @@
 #include "module_hamilt_pw/hamilt_pwdft/global.h"
 #include "module_psi/kernels/device.h"
 #include "module_base/memory.h"
-#include <chrono>
 //calculate the nonlocal pseudopotential stress in PW
 template <typename FPTYPE, typename Device>
 void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
@@ -191,18 +190,12 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                     {
                         // 2. calculate dbecp：
                         // 2.a. calculate dbecp_noevc, repeat use the memory of ppcell.vkb
-                        auto start = std::chrono::high_resolution_clock::now();
                         cal_vkb_deri(it, ia, npw,
                                 ipol, jpol,
                                 vq.data(), vq_deri.data(), 
                                 ylm.data(), ylm_deri.data(), 
                                 sk, pref.data(), g_plus_k.data(),
-                                ppcell_vkb);
-                        auto end = std::chrono::high_resolution_clock::now();
-                        std::chrono::duration<double, std::milli> diff = end - start;
-                        time+= diff.count();
-                                                
-                        start = std::chrono::high_resolution_clock::now();                              
+                                ppcell_vkb);                             
                         // 2.b calculate dbecp = dbecp_noevc * psi
                     if (this->device == psi::GpuDevice)
                     {
@@ -246,7 +239,6 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                 }//ipol
                 delete [] sk;
             }//ia
-            //printf("%lf %lf\n",time,time2);
         }//it
         // becp calculate is over , now we should broadcast this data.
         if (this->device == psi::GpuDevice)
