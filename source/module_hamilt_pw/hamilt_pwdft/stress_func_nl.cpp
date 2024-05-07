@@ -231,9 +231,6 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                           dbecp_ptr[index],
                           nkb);                        
                     }
-                        end = std::chrono::high_resolution_clock::now();
-                        diff = end - start;
-                        time2 += diff.count();
                         dbecp_ptr[index++] += nh;
                     }//jpol
                 }//ipol
@@ -359,13 +356,13 @@ std::vector<FPTYPE> Stress_Func<FPTYPE, Device>::cal_gk(int ik, ModulePW::PW_Bas
     }
     return gk;
 }
+
 // cal_vq
 template <typename FPTYPE, typename Device>
 std::vector<FPTYPE> Stress_Func<FPTYPE, Device>::cal_vq(int it, const FPTYPE* gk, int npw)
 {
     // calculate beta in G-space using an interpolation table
     const int nbeta = GlobalC::ucell.atoms[it].ncpp.nbeta;
-    const int nh = GlobalC::ucell.atoms[it].ncpp.nh;
 
     std::vector<FPTYPE> vq(nbeta * npw);
     ModuleBase::Memory::record("stress_nl::vq", nbeta * npw * sizeof(FPTYPE));
@@ -413,6 +410,8 @@ std::vector<FPTYPE> Stress_Func<FPTYPE, Device>::cal_vq_deri(int it, const FPTYP
     }
     return vq;
 }
+
+
 // cal_ylm
 template <typename FPTYPE, typename Device>
 std::vector<FPTYPE> Stress_Func<FPTYPE, Device>::cal_ylm(int lmax, int npw, const FPTYPE* gk_in)

@@ -1,6 +1,9 @@
 #include "module_hamilt_pw/hamilt_pwdft/kernels/stress_op.h"
 #include "module_hamilt_pw/hamilt_pwdft/global.h"
 
+#include "module_base/memory.h"
+#include "module_base/math_polyint.h"
+
 #include <iomanip>
 
 namespace hamilt{
@@ -161,40 +164,143 @@ void cal_stress_mgga_op<T, Device>::operator()(
 template <typename FPTYPE>
 struct cal_vkb_op<FPTYPE, psi::DEVICE_CPU>{
     void operator()(
-        int it,
+        int nh,
         int npw,
-        int nbeta,
-        int nhtol_nc,
-        int nhtol_nr,
-        const double* nhtol,
-        const FPTYPE* vq_in,
-        const FPTYPE* ylm_in,
+        const FPTYPE** vqs_in,
+        const FPTYPE** ylms_in,
         const std::complex<FPTYPE>* sk_in,
         const std::complex<FPTYPE>* pref_in,
-        std::complex<FPTYPE>* vkb_out
+        std::complex<FPTYPE>** vkbs_out
     ){
-        int ih=0;
         // loop over all beta functions
-        for(int nb=0;nb<nbeta;nb++)
+        for(int ih=0;ih<nh;ih++)
         {
-            int l = nhtol[it*nhtol_nc+ih];
-            // loop over all m angular momentum
-            for(int m=0;m<2*l+1;m++)
+            std::complex<FPTYPE>* vkb_ptr = vkbs_out[ih];
+            const FPTYPE* ylm_ptr = ylms_in[ih];
+            const FPTYPE* vq_ptr = vqs_in[ih];
+            // loop over all G-vectors
+            for(int ig=0;ig<npw;ig++)
             {
-                int lm = l*l + m;
-                std::complex<FPTYPE>* vkb_ptr = &vkb_out[ih * npw];
-                const FPTYPE* ylm_ptr = &ylm_in[lm * npw];
-                const FPTYPE* vq_ptr = &vq_in[nb * npw];
-                // loop over all G-vectors
-                for(int ig=0;ig<npw;ig++)
-                {
-                    vkb_ptr[ig] = ylm_ptr[ig] * vq_ptr[ig] * sk_in[ig] * pref_in[ih];
-                }
-                ih++;
+                vkb_ptr[ig] = ylm_ptr[ig] * vq_ptr[ig] * sk_in[ig] * pref_in[ih];
             }
         }
     }
 };
+
+
+// cpu version first, gpu version later
+template <typename FPTYPE>
+struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_CPU>{
+    void operator()(
+        int nh,
+        int npw,
+        int ipol,
+        int jpol,
+        const FPTYPE** vqs_in, const FPTYPE** vqs_deri_in,
+        const FPTYPE** ylms_in, const FPTYPE** ylms_deri_in1,const FPTYPE** ylms_deri_in2,
+        const std::complex<FPTYPE>* sk_in,
+        const std::complex<FPTYPE>* pref_in,
+        const FPTYPE* gk_in,
+        std::complex<FPTYPE>** vkbs_out
+    ){
+        int x1 = (GlobalC::ppcell.lmaxkb + 1) * (GlobalC::ppcell.lmaxkb + 1);
+        int ih=0;
+        // loop over all beta functions
+        for(int ih=0;ih<nh;ih++)
+        {
+            std::complex<FPTYPE>* vkb_ptr = vkbs_out[ih];
+            const FPTYPE* ylm_ptr = ylms_in[ih];
+            const FPTYPE* vq_ptr = vqs_in[ih];
+            // set vkb to zero
+            for(int ig=0;ig<npw;ig++)
+            {
+                vkb_ptr[ig] = std::complex<FPTYPE>(0.0, 0.0);
+            }
+            // first term: ylm * vq * sk * pref
+            // loop over all G-vectors
+            if(ipol == jpol)
+            {
+                for(int ig=0;ig<npw;ig++)
+                {
+                    vkb_ptr[ig] -= ylm_ptr[ig] * vq_ptr[ig] * sk_in[ig] * pref_in[ih];
+                }
+            }
+            //second term: ylm_deri * vq_deri * sk * pref
+            // loop over all G-vectors
+            const FPTYPE* ylm_deri_ptr1 = &ylms_deri_in1[ih];
+            const FPTYPE* ylm_deri_ptr2 = &ylms_deri_in2[ih];
+            const FPTYPE* vq_deri_ptr = &vqs_deri_in[ih];
+            const FPTYPE* gkn = &gk_in[4 * npw];
+            for(int ig=0;ig<npw;ig++)
+            {
+                vkb_ptr[ig] -= (gk_in[ig*3+ipol] * ylm_deri_ptr2[ig] + gk_in[ig*3+jpol] * ylm_deri_ptr1[ig]) 
+                                * vq_ptr[ig] * sk_in[ig] * pref_in[ih];
+            }
+            //third term: ylm * vq_deri * sk * pref
+            // loop over all G-vectors
+            for(int ig=0;ig<npw;ig++)
+            {
+                vkb_ptr[ig] -= 2.0 * ylm_ptr[ig] * vq_deri_ptr[ig] * sk_in[ig] * pref_in[ih]
+                            * gk_in[ig*3+ipol] * gk_in[ig*3+jpol] * gkn[ig];
+            }  
+        }
+    }
+};
+
+// cpu version first, gpu version later
+template <typename FPTYPE>
+struct cal_vq_op<FPTYPE, psi::DEVICE_CPU>{
+    void operator()(
+        const FPTYPE* tab,
+        int it, const FPTYPE* gk, int npw,
+        const int tab_2,const int tab_3, const FPTYPE &table_interval, 
+        const int nbeta, FPTYPE* vq
+    ){
+        for (int nb = 0; nb < nbeta; nb++)
+        {
+            FPTYPE* vq_ptr = &vq[nb * npw];
+            const FPTYPE* gnorm = &gk[3 * npw];
+            for (int ig = 0; ig < npw; ig++)
+            {
+                vq_ptr[ig] = ModuleBase::PolyInt::Polynomial_Interpolation(GlobalC::ppcell.tab,
+                                                                        it,
+                                                                        nb,
+                                                                        GlobalV::NQX,
+                                                                        GlobalV::DQ,
+                                                                        gnorm[ig]);
+            }
+        }
+        return ;
+    }
+};
+
+// cpu version first, gpu version later
+template <typename FPTYPE>
+struct cal_vq_deri_op<FPTYPE, psi::DEVICE_CPU>{
+    void operator()(
+        const FPTYPE* tab,
+        int it, const FPTYPE* gk, int npw,
+        const int tab_2,const int tab_3, const FPTYPE &table_interval, 
+        const int nbeta, FPTYPE* vq
+    ){
+        for (int nb = 0; nb < nbeta; nb++)
+        {
+            const FPTYPE* gnorm = &gk[3 * npw];
+            FPTYPE* vq_ptr = &vq[nb * npw];
+            for (int ig = 0; ig < npw; ig++)
+            {
+                vq_ptr[ig] = this->Polynomial_Interpolation_nl(
+                            GlobalC::ppcell.tab, 
+                            it, 
+                            nb, 
+                            GlobalV::DQ, 
+                            gnorm[ig] );
+            }
+        }
+        return ;
+    }
+};
+
 
 
 
@@ -209,5 +315,12 @@ template struct cal_stress_nl_op<double, psi::DEVICE_CPU>;
 
 template struct cal_vkb_op<float, psi::DEVICE_GPU>;
 template struct cal_vkb_op<double, psi::DEVICE_GPU>;
+
+template struct cal_vq_op<float, psi::DEVICE_GPU>;
+template struct cal_vq_op<double, psi::DEVICE_GPU>;
+
+
+template struct cal_vq_deri_op<float, psi::DEVICE_GPU>;
+template struct cal_vq_deri_op<double, psi::DEVICE_GPU>;
 }  // namespace hamilt
 
