@@ -385,7 +385,7 @@ __global__ void cal_vq(
 
     FPTYPE* vq_ptr = &vq[ib * npw];
     const FPTYPE* gnorm = &gk[3 * npw];
-    vq[idx] = _polynomial_interpolation(
+    if(idx<npw)vq_ptr[idx] = _polynomial_interpolation(
         tab, it, ib, tab_2, tab_3, table_interval, gnorm[idx]);
 }
 
@@ -401,12 +401,13 @@ __global__ void cal_vq_deri(
 
     FPTYPE* vq_ptr = &vq[ib * npw];
     const FPTYPE* gnorm = &gk[3 * npw];
-    vq[idx] = _polynomial_interpolation_nl(
+    if(idx<npw)vq_ptr[idx] = _polynomial_interpolation_nl(
         tab, it, ib, tab_2, tab_3, table_interval, gnorm[idx]);
 }
 
 template <typename FPTYPE>
 void cal_vkb_op<FPTYPE, psi::DEVICE_GPU>::operator()(
+        const psi::DEVICE_GPU *ctx,
         int nh,
         int npw,
         const FPTYPE** vqs_in,
@@ -431,6 +432,7 @@ void cal_vkb_op<FPTYPE, psi::DEVICE_GPU>::operator()(
 
 template <typename FPTYPE>
 void cal_vkb_deri_op<FPTYPE, psi::DEVICE_GPU>::operator()(
+        const psi::DEVICE_GPU *ctx,
         int nh,
         int npw,
         int ipol,
@@ -458,6 +460,7 @@ void cal_vkb_deri_op<FPTYPE, psi::DEVICE_GPU>::operator()(
 
 template <typename FPTYPE>
 void cal_vq_op<FPTYPE, psi::DEVICE_GPU>::operator()(
+        const psi::DEVICE_GPU *ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2, const int tab_3, const FPTYPE table_interval, 
@@ -471,13 +474,12 @@ void cal_vq_op<FPTYPE, psi::DEVICE_GPU>::operator()(
         tab, it, gk, npw, tab_2, tab_3,
         table_interval, nbeta, vq
     );
-
-    return ;
 }
 
 
 template <typename FPTYPE>
 void cal_vq_deri_op<FPTYPE, psi::DEVICE_GPU>::operator()(
+        const psi::DEVICE_GPU *ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2, const int tab_3, const FPTYPE table_interval, 
@@ -508,6 +510,9 @@ template struct cal_stress_nl_op<double, psi::DEVICE_GPU>;
 
 template struct cal_vkb_op<double, psi::DEVICE_GPU>;
 template struct cal_vkb_op<float, psi::DEVICE_GPU>;
+
+template struct cal_vq_op<double, psi::DEVICE_GPU>;
+template struct cal_vq_op<float, psi::DEVICE_GPU>;
 
 template struct cal_vkb_deri_op<double, psi::DEVICE_GPU>;
 template struct cal_vkb_deri_op<float, psi::DEVICE_GPU>;

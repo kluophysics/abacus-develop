@@ -118,6 +118,7 @@ struct cal_stress_mgga_op {
 template <typename FPTYPE, typename Device>
 struct cal_vkb_op{
     void operator()(
+        const Device *ctx,
         int nh,
         int npw,
         const FPTYPE** vqs_in,
@@ -133,6 +134,7 @@ struct cal_vkb_op{
 template <typename FPTYPE, typename Device>
 struct cal_vkb_deri_op{
     void operator()(
+        const Device *ctx,
         int nh,
         int npw,
         int ipol,
@@ -150,6 +152,7 @@ struct cal_vkb_deri_op{
 template <typename FPTYPE, typename Device>
 struct cal_vq_op{
     void operator()(
+        const Device *ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2,const int tab_3, const FPTYPE table_interval, 
@@ -161,6 +164,7 @@ struct cal_vq_op{
 template <typename FPTYPE, typename Device>
 struct cal_vq_deri_op{
     void operator()(
+        const Device *ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2,const int tab_3, const FPTYPE table_interval, 
@@ -221,6 +225,7 @@ struct cal_stress_nl_op<FPTYPE, psi::DEVICE_GPU> {
 template <typename FPTYPE>
 struct cal_vkb_op<FPTYPE, psi::DEVICE_GPU>{
     void operator()(
+        const psi::DEVICE_GPU* ctx,
         int nh,
         int npw,
         const FPTYPE** vqs_in,
@@ -234,6 +239,7 @@ struct cal_vkb_op<FPTYPE, psi::DEVICE_GPU>{
 template <typename FPTYPE>
 struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_GPU>{
     void operator()(
+        const psi::DEVICE_GPU* ctx,
         int nh,
         int npw,
         int ipol,
@@ -252,6 +258,7 @@ struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_GPU>{
 template <typename FPTYPE>
 struct cal_vq_op<FPTYPE, psi::DEVICE_GPU>{
     void operator()(
+        const psi::DEVICE_GPU* ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2,const int tab_3, const FPTYPE table_interval, 
@@ -264,6 +271,7 @@ struct cal_vq_op<FPTYPE, psi::DEVICE_GPU>{
 template <typename FPTYPE>
 struct cal_vq_deri_op<FPTYPE, psi::DEVICE_GPU>{
     void operator()(
+        const psi::DEVICE_GPU* ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2,const int tab_3, const FPTYPE table_interval, 

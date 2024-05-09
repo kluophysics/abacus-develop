@@ -268,6 +268,9 @@ class Stress_Func
     using resmem_int_op = psi::memory::resize_memory_op<int, Device>;
     using delmem_int_op = psi::memory::delete_memory_op<int, Device>;
     using syncmem_int_h2d_op = psi::memory::synchronize_memory_op<int, Device, psi::DEVICE_CPU>;
+
+    using cal_vq_op = hamilt::cal_vq_op<FPTYPE, Device>;
+
 };
 
 #endif

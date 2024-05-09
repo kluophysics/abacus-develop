@@ -164,6 +164,7 @@ void cal_stress_mgga_op<T, Device>::operator()(
 template <typename FPTYPE>
 struct cal_vkb_op<FPTYPE, psi::DEVICE_CPU>{
     void operator()(
+        const psi::DEVICE_CPU* ctx,
         int nh,
         int npw,
         const FPTYPE** vqs_in,
@@ -192,6 +193,7 @@ struct cal_vkb_op<FPTYPE, psi::DEVICE_CPU>{
 template <typename FPTYPE>
 struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_CPU>{
     void operator()(
+        const psi::DEVICE_CPU* ctx,
         int nh,
         int npw,
         int ipol,
@@ -251,9 +253,10 @@ struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_CPU>{
 template <typename FPTYPE>
 struct cal_vq_op<FPTYPE, psi::DEVICE_CPU>{
     void operator()(
+        const psi::DEVICE_CPU* ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
-        const int tab_2,const int tab_3, const FPTYPE &table_interval, 
+        const int tab_2,const int tab_3, const FPTYPE table_interval, 
         const int nbeta, FPTYPE* vq
     ){
         for (int nb = 0; nb < nbeta; nb++)
@@ -270,14 +273,44 @@ struct cal_vq_op<FPTYPE, psi::DEVICE_CPU>{
                                                                         gnorm[ig]);
             }
         }
-        return ;
     }
 };
+
+
+template <typename FPTYPE, typename Device>
+FPTYPE Polynomial_Interpolation_nl
+(
+    const ModuleBase::realArray &table,
+    const int &dim1,
+    const int &dim2,
+    const FPTYPE &table_interval,
+    const FPTYPE &x                             // input value
+)
+{
+
+	assert(table_interval>0.0);
+	const FPTYPE position = x  / table_interval;
+	const int iq = static_cast<int>(position);
+
+	const FPTYPE x0 = position - static_cast<FPTYPE>(iq);
+	const FPTYPE x1 = 1.0 - x0;
+	const FPTYPE x2 = 2.0 - x0;
+	const FPTYPE x3 = 3.0 - x0;
+	const FPTYPE y=
+			( table(dim1, dim2, iq)   * (-x2*x3-x1*x3-x1*x2) / 6.0 +
+			table(dim1, dim2, iq+1) * (+x2*x3-x0*x3-x0*x2) / 2.0 -
+			table(dim1, dim2, iq+2) * (+x1*x3-x0*x3-x0*x1) / 2.0 +
+			table(dim1, dim2, iq+3) * (+x1*x2-x0*x2-x0*x1) / 6.0 )/table_interval ;
+
+
+	return y;
+}
 
 // cpu version first, gpu version later
 template <typename FPTYPE>
 struct cal_vq_deri_op<FPTYPE, psi::DEVICE_CPU>{
     void operator()(
+        const psi::DEVICE_CPU* ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2,const int tab_3, const FPTYPE &table_interval, 
@@ -289,7 +322,7 @@ struct cal_vq_deri_op<FPTYPE, psi::DEVICE_CPU>{
             FPTYPE* vq_ptr = &vq[nb * npw];
             for (int ig = 0; ig < npw; ig++)
             {
-                vq_ptr[ig] = this->Polynomial_Interpolation_nl(
+                vq_ptr[ig] = Polynomial_Interpolation_nl<FPTYPE, psi::DEVICE_CPU>(
                             GlobalC::ppcell.tab, 
                             it, 
                             nb, 
@@ -313,14 +346,14 @@ template struct cal_stress_nl_op<float, psi::DEVICE_CPU>;
 template struct cal_dbecp_noevc_nl_op<double, psi::DEVICE_CPU>;
 template struct cal_stress_nl_op<double, psi::DEVICE_CPU>;
 
-template struct cal_vkb_op<float, psi::DEVICE_GPU>;
-template struct cal_vkb_op<double, psi::DEVICE_GPU>;
+template struct cal_vkb_op<float, psi::DEVICE_CPU>;
+template struct cal_vkb_op<double, psi::DEVICE_CPU>;
 
-template struct cal_vq_op<float, psi::DEVICE_GPU>;
-template struct cal_vq_op<double, psi::DEVICE_GPU>;
+template struct cal_vq_op<float, psi::DEVICE_CPU>;
+template struct cal_vq_op<double, psi::DEVICE_CPU>;
 
 
-template struct cal_vq_deri_op<float, psi::DEVICE_GPU>;
-template struct cal_vq_deri_op<double, psi::DEVICE_GPU>;
+template struct cal_vq_deri_op<float, psi::DEVICE_CPU>;
+template struct cal_vq_deri_op<double, psi::DEVICE_CPU>;
 }  // namespace hamilt
 

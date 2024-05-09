@@ -43,6 +43,30 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
     FPTYPE *stress = nullptr, *sigmanlc = nullptr, *d_wg = nullptr, *d_ekb = nullptr, *gcar = nullptr,
            *deeq = GlobalC::ppcell.get_deeq_data<FPTYPE>(), *kvec_c = wfc_basis->get_kvec_c_data<FPTYPE>(),
            *qq_nt = GlobalC::ppcell.get_qq_nt_data<FPTYPE>();
+
+    int max_nbeta=0,max_nh=0,max_npw=0 ,_lmax = GlobalC::ppcell.lmaxkb;
+    for(int it=0;it<GlobalC::ucell.ntype;it++)//loop all elements 
+    {
+        max_nbeta = std::max(GlobalC::ucell.atoms[it].ncpp.nbeta,max_nbeta);
+        max_nh = std::max(GlobalC::ucell.atoms[it].ncpp.nh,max_nh);
+    }
+    for(int ik=0;ik<p_kv->nks;ik++)//loop k points
+    {
+        max_npw = std::max(p_kv->ngk[ik],max_npw);
+    }
+    
+    // allocate the memory for ops.
+    FPTYPE *h_ylm = new FPTYPE[(_lmax+1)*(_lmax+1)*max_npw], *d_ylm = nullptr, // (lmax + 1) * (lmax + 1) * npw
+            *h_ylm_deri = new FPTYPE[3*(_lmax+1)*(_lmax+1)*max_npw], *d_ylm_deri = nullptr, //3 * (lmax + 1) * (lmax + 1) * npw
+            *vq0 = nullptr, *vq_deri = nullptr, //GlobalC::ucell.atoms[it].ncpp.nbeta * npw
+            *h_g_plus_k = new FPTYPE[max_npw * 5], *d_g_plus_k = nullptr, // npw * 5
+            *h_pref = new FPTYPE[max_nh], *d_pref = nullptr, // GlobalC::ucell.atoms[it].ncpp.nh
+            *d_gk = nullptr, *d_vq_tab = nullptr; // npw
+    
+    resmem_var_op()(this->ctx, vq0, max_nbeta*max_npw);
+    resmem_var_op()(this->ctx, vq_deri, max_nbeta*max_npw);
+
+
     resmem_var_op()(this->ctx, stress, 9);
     setmem_var_op()(this->ctx, stress, 0, 9);
     resmem_var_h_op()(this->cpu_ctx, sigmanlc, 9);
@@ -62,6 +86,12 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
         resmem_int_op()(this->ctx, atom_na, GlobalC::ucell.ntype);
         syncmem_int_h2d_op()(this->ctx, this->cpu_ctx, atom_nh, h_atom_nh, GlobalC::ucell.ntype);
         syncmem_int_h2d_op()(this->ctx, this->cpu_ctx, atom_na, h_atom_na, GlobalC::ucell.ntype);
+    
+        resmem_var_op()(this->ctx, d_ylm, (_lmax+1)*(_lmax+1)*max_npw);
+        resmem_var_op()(this->ctx, d_ylm_deri, 3*(_lmax+1)*(_lmax+1)*max_npw);
+        resmem_var_op()(this->ctx, d_g_plus_k, max_npw * 5);
+        resmem_var_op()(this->ctx, d_pref, max_nh);
+        resmem_var_op()(this->ctx, d_vq_tab, GlobalC::ppcell.tab.getSize());
     }
     else
     {
@@ -117,13 +147,52 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
         int lmax = GlobalC::ppcell.lmaxkb;
         //prepare ylm，size: (lmax+1)^2 * npwx
         std::vector<double> ylm = cal_ylm(lmax, npw, g_plus_k.data());
+
+
+
         //prepare ylm'，size: 3 * (lmax+1)^2 * npwx，contain x,y,z 3 axis
         std::vector<double> ylm_deri = cal_ylm_deri(lmax, npw, g_plus_k.data());
+
+        /////////////////////////////
+        //TODO: ylm,ylm_deri传到GPU
+        /////////////////////////////
+
         for(int it=0;it<GlobalC::ucell.ntype;it++)//loop all elements 
         {
             // prepare inputs for calculating vkb，vkb1，vkb2 
             // prepare vq and vq', size: nq * npwx 
             std::vector<double> vq = cal_vq(it, g_plus_k.data(), npw);
+            std::vector<double> vq2(vq.size());
+            int max_lem = GlobalC::ucell.atoms[it].ncpp.nbeta*npw;
+
+            if (this->device == psi::GpuDevice)
+            {
+                syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_g_plus_k, g_plus_k.data(), g_plus_k.size());
+                syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_vq_tab, GlobalC::ppcell.tab.ptr, GlobalC::ppcell.tab.getSize());
+                cal_vq_op()(
+                    this->ctx, d_vq_tab, it, d_g_plus_k,
+                    npw, GlobalC::ppcell.tab.getBound2(),GlobalC::ppcell.tab.getBound3(),
+                    GlobalV::DQ, GlobalC::ucell.atoms[it].ncpp.nbeta, vq0
+                );
+
+                syncmem_var_d2h_op()(this->cpu_ctx, this->ctx, vq2.data(), vq0, vq.size());
+
+            }else{
+                cal_vq_op()(
+                    this->ctx, GlobalC::ppcell.tab.ptr, it, g_plus_k.data(),
+                    npw, GlobalC::ppcell.tab.getBound2(),GlobalC::ppcell.tab.getBound3(),
+                    GlobalV::DQ, GlobalC::ucell.atoms[it].ncpp.nbeta, vq.data()
+                );                
+            }
+            
+            // for(int ii=0;ii<vq.size();ii++){
+            //     if(vq[ii]!=vq2[ii]){
+            //         printf("ik= %d, npw = %d, nbeta = %d, p = %d, num1 = %lf, num2 = %lf\n",ik,npw,GlobalC::ucell.atoms[it].ncpp.nbeta,ii,vq[ii],vq2[ii]);
+            //     }
+            // }
+
+
+
             std::vector<double> vq_deri = cal_vq_deri(it, g_plus_k.data(), npw);
             // prepare（-i）^l, size: nh
             std::vector<complex<double>> pref = cal_pref(it);
