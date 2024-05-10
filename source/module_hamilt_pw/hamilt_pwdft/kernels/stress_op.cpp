@@ -167,8 +167,8 @@ struct cal_vkb_op<FPTYPE, psi::DEVICE_CPU>{
         const psi::DEVICE_CPU* ctx,
         int nh,
         int npw,
-        const FPTYPE** vqs_in,
-        const FPTYPE** ylms_in,
+        FPTYPE** vqs_in,
+        FPTYPE** ylms_in,
         const std::complex<FPTYPE>* sk_in,
         const std::complex<FPTYPE>* pref_in,
         std::complex<FPTYPE>** vkbs_out
@@ -198,8 +198,8 @@ struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_CPU>{
         int npw,
         int ipol,
         int jpol,
-        const FPTYPE** vqs_in, const FPTYPE** vqs_deri_in,
-        const FPTYPE** ylms_in, const FPTYPE** ylms_deri_in1,const FPTYPE** ylms_deri_in2,
+        FPTYPE** vqs_in, FPTYPE** vqs_deri_in,
+        FPTYPE** ylms_in, FPTYPE** ylms_deri_in1,FPTYPE** ylms_deri_in2,
         const std::complex<FPTYPE>* sk_in,
         const std::complex<FPTYPE>* pref_in,
         const FPTYPE* gk_in,
@@ -229,9 +229,9 @@ struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_CPU>{
             }
             //second term: ylm_deri * vq_deri * sk * pref
             // loop over all G-vectors
-            const FPTYPE* ylm_deri_ptr1 = &ylms_deri_in1[ih];
-            const FPTYPE* ylm_deri_ptr2 = &ylms_deri_in2[ih];
-            const FPTYPE* vq_deri_ptr = &vqs_deri_in[ih];
+            const FPTYPE* ylm_deri_ptr1 = ylms_deri_in1[ih];
+            const FPTYPE* ylm_deri_ptr2 = ylms_deri_in2[ih];
+            const FPTYPE* vq_deri_ptr = vqs_deri_in[ih];
             const FPTYPE* gkn = &gk_in[4 * npw];
             for(int ig=0;ig<npw;ig++)
             {
@@ -242,7 +242,8 @@ struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_CPU>{
             // loop over all G-vectors
             for(int ig=0;ig<npw;ig++)
             {
-                vkb_ptr[ig] -= 2.0 * ylm_ptr[ig] * vq_deri_ptr[ig] * sk_in[ig] * pref_in[ih]
+                FPTYPE two = 2.0;
+                vkb_ptr[ig] -= two * ylm_ptr[ig] * vq_deri_ptr[ig] * sk_in[ig] * pref_in[ih]
                             * gk_in[ig*3+ipol] * gk_in[ig*3+jpol] * gkn[ig];
             }  
         }
@@ -313,7 +314,7 @@ struct cal_vq_deri_op<FPTYPE, psi::DEVICE_CPU>{
         const psi::DEVICE_CPU* ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
-        const int tab_2,const int tab_3, const FPTYPE &table_interval, 
+        const int tab_2,const int tab_3, const FPTYPE table_interval, 
         const int nbeta, FPTYPE* vq
     ){
         for (int nb = 0; nb < nbeta; nb++)
@@ -348,6 +349,9 @@ template struct cal_stress_nl_op<double, psi::DEVICE_CPU>;
 
 template struct cal_vkb_op<float, psi::DEVICE_CPU>;
 template struct cal_vkb_op<double, psi::DEVICE_CPU>;
+
+template struct cal_vkb_deri_op<float, psi::DEVICE_CPU>;
+template struct cal_vkb_deri_op<double, psi::DEVICE_CPU>;
 
 template struct cal_vq_op<float, psi::DEVICE_CPU>;
 template struct cal_vq_op<double, psi::DEVICE_CPU>;

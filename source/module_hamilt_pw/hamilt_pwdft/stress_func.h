@@ -191,6 +191,27 @@ class Stress_Func
                       const complex<FPTYPE>* pref_in,
                       const FPTYPE* gk_in,
                       complex<FPTYPE>* vkb_out);
+
+    /// calculate the ptr used in vkb_op
+    void prepare_vkb_ptr(
+        int nbeta, double* nhtol, int nhtol_nc, int npw, int it,
+        std::complex<FPTYPE>*vkb_out, std::complex<FPTYPE>** vkb_ptrs,
+        FPTYPE* ylm_in, FPTYPE** ylm_ptrs,
+        FPTYPE* vq_in, FPTYPE** vq_ptrs
+    );
+
+    /// calculate the ptr used in vkb_deri_op
+    void prepare_vkb_deri_ptr(
+      int nbeta, double* nhtol, int nhtol_nc, int npw, int it,
+      int ipol, int jpol,
+      std::complex<FPTYPE>*vkb_out, std::complex<FPTYPE>** vkb_ptrs,
+      FPTYPE* ylm_in, FPTYPE** ylm_ptrs,
+      FPTYPE* ylm_deri_in, FPTYPE** ylm_deri_ptr1s, FPTYPE** ylm_deri_ptr2s,
+      FPTYPE* vq_in, FPTYPE** vq_ptrs,
+      FPTYPE* vq_deri_in, FPTYPE** vq_deri_ptrs
+    );
+    
+
     /// polynomial interpolation tool for calculate derivate of vq 
     FPTYPE Polynomial_Interpolation_nl(const ModuleBase::realArray& table,
                                        const int& dim1,
@@ -270,6 +291,10 @@ class Stress_Func
     using syncmem_int_h2d_op = psi::memory::synchronize_memory_op<int, Device, psi::DEVICE_CPU>;
 
     using cal_vq_op = hamilt::cal_vq_op<FPTYPE, Device>;
+    using cal_vq_deri_op = hamilt::cal_vq_deri_op<FPTYPE, Device>;
+
+    using cal_vkb_op = hamilt::cal_vkb_op<FPTYPE, Device>;
+    using cal_vkb_deri_op = hamilt::cal_vkb_deri_op<FPTYPE, Device>;  
 
 };
 

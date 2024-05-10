@@ -303,10 +303,10 @@ __device__ FPTYPE _polynomial_interpolation_nl(
     const FPTYPE x2 = 2.0 - x0;
     const FPTYPE x3 = 3.0 - x0;
     const FPTYPE y =
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0] * (-x2 * x3 - x1 * x3 - x1 * x2)  / 6.0 +
+            (table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0] * (-x2 * x3 - x1 * x3 - x1 * x2)  / 6.0 +
             table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 1] * (+x2 * x3 - x0 * x3 - x0 * x2) / 2.0 -
             table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 2] * (+x1 * x3 - x0 * x3 - x0 * x1) / 2.0 +
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 3] *(+x1 * x2 - x0 * x2 - x0 * x1) / 6.0 ;
+            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 3] *(+x1 * x2 - x0 * x2 - x0 * x1) / 6.0 ) / table_interval;
 
     return y;
 }
@@ -317,8 +317,8 @@ __device__ FPTYPE _polynomial_interpolation_nl(
 template <typename FPTYPE>
 __global__ void cal_vkb(
     int npw,
-    const FPTYPE** vqs_in,
-    const FPTYPE** ylms_in,
+    FPTYPE** vqs_in,
+    FPTYPE** ylms_in,
     const thrust::complex<FPTYPE>* sk_in,
     const thrust::complex<FPTYPE>* pref_in,
     thrust::complex<FPTYPE>** vkbs_out
@@ -338,8 +338,8 @@ __global__ void cal_vkb_deri(
         int npw,
         int ipol,
         int jpol,
-        const FPTYPE** vqs_in, const FPTYPE** vqs_deri_in,
-        const FPTYPE** ylms_in, const FPTYPE** ylms_deri_in1,const FPTYPE** ylms_deri_in2,
+        FPTYPE** vqs_in, FPTYPE** vqs_deri_in,
+        FPTYPE** ylms_in, FPTYPE** ylms_deri_in1, FPTYPE** ylms_deri_in2,
         const thrust::complex<FPTYPE>* sk_in,
         const thrust::complex<FPTYPE>* pref_in,
         const FPTYPE* gk_in,
@@ -385,7 +385,7 @@ __global__ void cal_vq(
 
     FPTYPE* vq_ptr = &vq[ib * npw];
     const FPTYPE* gnorm = &gk[3 * npw];
-    if(idx<npw)vq_ptr[idx] = _polynomial_interpolation(
+    if(idx<npw) vq_ptr[idx] = _polynomial_interpolation(
         tab, it, ib, tab_2, tab_3, table_interval, gnorm[idx]);
 }
 
@@ -401,7 +401,7 @@ __global__ void cal_vq_deri(
 
     FPTYPE* vq_ptr = &vq[ib * npw];
     const FPTYPE* gnorm = &gk[3 * npw];
-    if(idx<npw)vq_ptr[idx] = _polynomial_interpolation_nl(
+    if(idx<npw) vq_ptr[idx] = _polynomial_interpolation_nl(
         tab, it, ib, tab_2, tab_3, table_interval, gnorm[idx]);
 }
 
@@ -410,8 +410,8 @@ void cal_vkb_op<FPTYPE, psi::DEVICE_GPU>::operator()(
         const psi::DEVICE_GPU *ctx,
         int nh,
         int npw,
-        const FPTYPE** vqs_in,
-        const FPTYPE** ylms_in,
+        FPTYPE** vqs_in,
+        FPTYPE** ylms_in,
         const std::complex<FPTYPE>* sk_in,
         const std::complex<FPTYPE>* pref_in,
         std::complex<FPTYPE>** vkbs_out
@@ -437,8 +437,8 @@ void cal_vkb_deri_op<FPTYPE, psi::DEVICE_GPU>::operator()(
         int npw,
         int ipol,
         int jpol,
-        const FPTYPE** vqs_in, const FPTYPE** vqs_deri_in,
-        const FPTYPE** ylms_in, const FPTYPE** ylms_deri_in1,const FPTYPE** ylms_deri_in2,
+        FPTYPE** vqs_in, FPTYPE** vqs_deri_in,
+        FPTYPE** ylms_in, FPTYPE** ylms_deri_in1, FPTYPE** ylms_deri_in2,
         const std::complex<FPTYPE>* sk_in,
         const std::complex<FPTYPE>* pref_in,
         const FPTYPE* gk_in,
@@ -508,11 +508,14 @@ template struct cal_stress_nl_op<float, psi::DEVICE_GPU>;
 template struct cal_stress_nl_op<double, psi::DEVICE_GPU>;
 
 
-template struct cal_vkb_op<double, psi::DEVICE_GPU>;
-template struct cal_vkb_op<float, psi::DEVICE_GPU>;
-
 template struct cal_vq_op<double, psi::DEVICE_GPU>;
 template struct cal_vq_op<float, psi::DEVICE_GPU>;
+
+template struct cal_vq_deri_op<double, psi::DEVICE_GPU>;
+template struct cal_vq_deri_op<float, psi::DEVICE_GPU>;
+
+template struct cal_vkb_op<double, psi::DEVICE_GPU>;
+template struct cal_vkb_op<float, psi::DEVICE_GPU>;
 
 template struct cal_vkb_deri_op<double, psi::DEVICE_GPU>;
 template struct cal_vkb_deri_op<float, psi::DEVICE_GPU>;
