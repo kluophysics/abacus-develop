@@ -497,6 +497,27 @@ void cal_vq_deri_op<FPTYPE, psi::DEVICE_GPU>::operator()(
     return ;
 }
 
+template <>
+void pointer_array_malloc<psi::DEVICE_GPU>::operator()(
+    void **ptr,
+    const int n
+)
+{
+    cudaErrcheck(cudaMalloc(ptr, n * sizeof(void*)));
+}
+
+template struct pointer_array_malloc<psi::DEVICE_GPU>;
+
+template <>
+void synchronize_ptrs<psi::DEVICE_GPU>::operator()(
+    void **ptr_out,
+    const void **ptr_in,
+    const int size)
+{
+    cudaErrcheck(cudaMemcpy(ptr_out, ptr_in, sizeof(void*) * size, cudaMemcpyHostToDevice));
+}
+
+template struct synchronize_ptrs<psi::DEVICE_GPU>;
 
 template struct cal_stress_mgga_op<std::complex<float>,  psi::DEVICE_GPU>;
 template struct cal_stress_mgga_op<std::complex<double>, psi::DEVICE_GPU>;

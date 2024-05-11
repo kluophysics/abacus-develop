@@ -335,8 +335,25 @@ struct cal_vq_deri_op<FPTYPE, psi::DEVICE_CPU>{
     }
 };
 
+template <>
+void pointer_array_malloc<psi::DEVICE_CPU>::operator()(
+    void **ptr,
+    const int n
+){
+    return;
+}
 
+template <>
+void synchronize_ptrs<psi::DEVICE_CPU>::operator()(
+        void **ptr_out,
+        const void **ptr_in,
+        const int size)
+{
+    return;
+}
 
+template struct pointer_array_malloc<psi::DEVICE_CPU>;
+template struct synchronize_ptrs<psi::DEVICE_CPU>;
 
 template struct cal_stress_mgga_op<std::complex<float>,  psi::DEVICE_CPU>;
 template struct cal_stress_mgga_op<std::complex<double>, psi::DEVICE_CPU>;

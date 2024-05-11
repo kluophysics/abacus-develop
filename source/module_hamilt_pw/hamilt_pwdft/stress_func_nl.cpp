@@ -104,13 +104,13 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
         resmem_var_op()(this->ctx, d_pref, max_nh);
         resmem_var_op()(this->ctx, d_vq_tab, GlobalC::ppcell.tab.getSize());
     
-        cudaMalloc((void **)&d_ylm_ptrs, max_nh * sizeof(FPTYPE*));
-        cudaMalloc((void **)&d_vq_ptrs, max_nh * sizeof(FPTYPE*));
-        cudaMalloc((void **)&d_vkb_ptrs, max_nh * sizeof(std::complex<FPTYPE>*));
+        hamilt::pointer_array_malloc<Device>()((void **)&d_ylm_ptrs, max_nh);
+        hamilt::pointer_array_malloc<Device>()((void **)&d_vq_ptrs, max_nh);
+        hamilt::pointer_array_malloc<Device>()((void **)&d_vkb_ptrs, max_nh);
 
-        cudaMalloc((void **)&d_vq_deri_ptrs, max_nh * sizeof(FPTYPE*));
-        cudaMalloc((void **)&d_ylm_deri_ptrs1, max_nh * sizeof(FPTYPE*));
-        cudaMalloc((void **)&d_ylm_deri_ptrs2, max_nh * sizeof(FPTYPE*));
+        hamilt::pointer_array_malloc<Device>()((void **)&d_vq_deri_ptrs, max_nh);
+        hamilt::pointer_array_malloc<Device>()((void **)&d_ylm_deri_ptrs1, max_nh);
+        hamilt::pointer_array_malloc<Device>()((void **)&d_ylm_deri_ptrs2, max_nh);
 
         resmem_complex_op()(this->ctx, d_sk,  max_npw, "Stress::d_sk");
         resmem_complex_op()(this->ctx, d_pref_in,  max_nh, "Stress::pref_in");
@@ -179,7 +179,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
             syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_ylm_deri, ylm_deri.data(), ylm_deri.size());
         }
         /////////////////////////////
-        //TODO: ylm,ylm_deri传到GPU
+        //TODO: ylm,ylm_deri pass to GPU
         /////////////////////////////
 
         for(int it=0;it<GlobalC::ucell.ntype;it++)//loop all elements 
@@ -263,10 +263,10 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                             hd_vq, vq_ptrs
                         );
 
-
-                    cudaMemcpy(d_vq_ptrs, vq_ptrs, sizeof(FPTYPE*) * nh, cudaMemcpyHostToDevice);  
-                    cudaMemcpy(d_ylm_ptrs, ylm_ptrs, sizeof(FPTYPE*) * nh, cudaMemcpyHostToDevice);  
-                    cudaMemcpy(d_vkb_ptrs, vkb_ptrs, sizeof(std::complex<FPTYPE>*) * nh, cudaMemcpyHostToDevice);  
+                    // transfer the pointers from CPU to GPU
+                    hamilt::synchronize_ptrs<Device>()((void**)d_vq_ptrs, (const void**)vq_ptrs, nh);
+                    hamilt::synchronize_ptrs<Device>()((void**)d_ylm_ptrs, (const void**)ylm_ptrs, nh);
+                    hamilt::synchronize_ptrs<Device>()((void**)d_vkb_ptrs, (const void**)vkb_ptrs, nh);  
 
                     syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, d_sk, sk, npw);
                     syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, d_pref_in, pref.data(), nh);
@@ -356,13 +356,13 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                                 hd_vq, vq_ptrs,
                                 hd_vq_deri, vq_deri_ptrs
                             );
-                            cudaMemcpy(d_vq_ptrs, vq_ptrs, sizeof(FPTYPE*) * nh, cudaMemcpyHostToDevice);  
-                            cudaMemcpy(d_ylm_ptrs, ylm_ptrs, sizeof(FPTYPE*) * nh, cudaMemcpyHostToDevice);  
-                            cudaMemcpy(d_vkb_ptrs, vkb_ptrs, sizeof(std::complex<FPTYPE>*) * nh, cudaMemcpyHostToDevice);  
-                            
-                            cudaMemcpy(d_ylm_deri_ptrs1, ylm_deri_ptrs1, sizeof(FPTYPE*) * nh, cudaMemcpyHostToDevice);  
-                            cudaMemcpy(d_ylm_deri_ptrs2, ylm_deri_ptrs2, sizeof(FPTYPE*) * nh, cudaMemcpyHostToDevice);  
-                            cudaMemcpy(d_vq_deri_ptrs, vq_deri_ptrs, sizeof(FPTYPE*) * nh, cudaMemcpyHostToDevice);  
+                            // transfer the pointers from CPU to GPU
+                            hamilt::synchronize_ptrs<Device>()((void**)d_vq_ptrs, (const void**)vq_ptrs, nh);
+                            hamilt::synchronize_ptrs<Device>()((void**)d_ylm_ptrs, (const void**)ylm_ptrs, nh);
+                            hamilt::synchronize_ptrs<Device>()((void**)d_vkb_ptrs, (const void**)vkb_ptrs, nh);
+                            hamilt::synchronize_ptrs<Device>()((void**)d_vq_deri_ptrs, (const void**)vq_deri_ptrs, nh);
+                            hamilt::synchronize_ptrs<Device>()((void**)d_ylm_deri_ptrs1, (const void**)ylm_deri_ptrs1, nh);
+                            hamilt::synchronize_ptrs<Device>()((void**)d_ylm_deri_ptrs2, (const void**)ylm_deri_ptrs2, nh);
 
 
                             cal_vkb_deri_op()(

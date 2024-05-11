@@ -282,5 +282,24 @@ struct cal_vq_deri_op<FPTYPE, psi::DEVICE_GPU>{
 
 
 #endif // __CUDA || __UT_USE_CUDA || __ROCM || __UT_USE_ROCM
+
+template <typename Device>
+struct pointer_array_malloc
+{
+    void operator()(
+        void **ptr,
+        const int n
+    );
+};
+
+template <typename Device>
+struct synchronize_ptrs 
+{
+    void operator()(
+        void **ptr_out,
+        const void **ptr_in,
+        const int size);
+};
+
 }  // namespace hamilt
 #endif //SRC_PW_STRESS_MULTI_DEVICE_H
