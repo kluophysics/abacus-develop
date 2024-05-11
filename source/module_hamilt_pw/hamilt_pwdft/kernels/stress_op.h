@@ -118,17 +118,57 @@ struct cal_stress_mgga_op {
 template <typename FPTYPE, typename Device>
 struct cal_vkb_op{
     void operator()(
-        int it,
+        const Device *ctx,
+        int nh,
         int npw,
-        int nbeta,
-        int nhtol_nc,
-        int nhtol_nr,
-        const double* nhtol,
-        const FPTYPE* vq_in,
-        const FPTYPE* ylm_in,
+        FPTYPE** vqs_in,
+        FPTYPE** ylms_in,
         const std::complex<FPTYPE>* sk_in,
         const std::complex<FPTYPE>* pref_in,
-        std::complex<FPTYPE>* vkb_out
+        std::complex<FPTYPE>** vkbs_out
+    );
+};
+
+
+// cpu version first, gpu version later
+template <typename FPTYPE, typename Device>
+struct cal_vkb_deri_op{
+    void operator()(
+        const Device *ctx,
+        int nh,
+        int npw,
+        int ipol,
+        int jpol,
+        FPTYPE** vqs_in, FPTYPE** vqs_deri_in,
+        FPTYPE** ylms_in, FPTYPE** ylms_deri_in1, FPTYPE** ylms_deri_in2,
+        const std::complex<FPTYPE>* sk_in,
+        const std::complex<FPTYPE>* pref_in,
+        const FPTYPE* gk_in,
+        std::complex<FPTYPE>** vkbs_out
+    );
+};
+
+// cpu version first, gpu version later
+template <typename FPTYPE, typename Device>
+struct cal_vq_op{
+    void operator()(
+        const Device *ctx,
+        const FPTYPE* tab,
+        int it, const FPTYPE* gk, int npw,
+        const int tab_2,const int tab_3, const FPTYPE table_interval, 
+        const int nbeta, FPTYPE* vq
+    );
+};
+
+// cpu version first, gpu version later
+template <typename FPTYPE, typename Device>
+struct cal_vq_deri_op{
+    void operator()(
+        const Device *ctx,
+        const FPTYPE* tab,
+        int it, const FPTYPE* gk, int npw,
+        const int tab_2,const int tab_3, const FPTYPE table_interval, 
+        const int nbeta, FPTYPE* vq
     );
 };
 
@@ -185,19 +225,62 @@ struct cal_stress_nl_op<FPTYPE, psi::DEVICE_GPU> {
 template <typename FPTYPE>
 struct cal_vkb_op<FPTYPE, psi::DEVICE_GPU>{
     void operator()(
-        int it,
+        const psi::DEVICE_GPU* ctx,
+        int nh,
         int npw,
-        int nbeta,
-        int nhtol_nc,
-        int nhtol_nr,
-        const double* nhtol,
-        const FPTYPE* vq_in,
-        const FPTYPE* ylm_in,
+        FPTYPE** vqs_in,
+        FPTYPE** ylms_in,
         const std::complex<FPTYPE>* sk_in,
         const std::complex<FPTYPE>* pref_in,
-        std::complex<FPTYPE>* vkb_out
+        std::complex<FPTYPE>** vkbs_out
     );
 };
+
+template <typename FPTYPE>
+struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_GPU>{
+    void operator()(
+        const psi::DEVICE_GPU* ctx,
+        int nh,
+        int npw,
+        int ipol,
+        int jpol,
+        FPTYPE** vqs_in, FPTYPE** vqs_deri_in,
+        FPTYPE** ylms_in, FPTYPE** ylms_deri_in1, FPTYPE** ylms_deri_in2,
+        const std::complex<FPTYPE>* sk_in,
+        const std::complex<FPTYPE>* pref_in,
+        const FPTYPE* gk_in,
+        std::complex<FPTYPE>** vkbs_out
+    );
+};
+
+
+// cpu version first, gpu version later
+template <typename FPTYPE>
+struct cal_vq_op<FPTYPE, psi::DEVICE_GPU>{
+    void operator()(
+        const psi::DEVICE_GPU* ctx,
+        const FPTYPE* tab,
+        int it, const FPTYPE* gk, int npw,
+        const int tab_2,const int tab_3, const FPTYPE table_interval, 
+        const int nbeta, FPTYPE* vq
+    );
+};
+
+
+// cpu version first, gpu version later
+template <typename FPTYPE>
+struct cal_vq_deri_op<FPTYPE, psi::DEVICE_GPU>{
+    void operator()(
+        const psi::DEVICE_GPU* ctx,
+        const FPTYPE* tab,
+        int it, const FPTYPE* gk, int npw,
+        const int tab_2,const int tab_3, const FPTYPE table_interval, 
+        const int nbeta, FPTYPE* vq
+    );
+};
+
+
+
 #endif // __CUDA || __UT_USE_CUDA || __ROCM || __UT_USE_ROCM
 }  // namespace hamilt
 #endif //SRC_PW_STRESS_MULTI_DEVICE_H
