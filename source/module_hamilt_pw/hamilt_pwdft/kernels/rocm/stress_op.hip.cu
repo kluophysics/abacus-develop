@@ -475,7 +475,7 @@ void synchronize_ptrs<psi::DEVICE_GPU>::operator()(
     const void **ptr_in,
     const int size)
 {
-    hipErrcheck(hipMemcpy(ptr_out, ptr_in, sizeof(void*) * size, hipMemcpyDeviceToDevice));
+    hipErrcheck(hipMemcpy(ptr_out, ptr_in, sizeof(void*) * size, hipMemcpyHostToDevice));
 }
 
 template struct synchronize_ptrs<psi::DEVICE_GPU>;
