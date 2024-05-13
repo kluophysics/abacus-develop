@@ -299,6 +299,7 @@ class Stress_Func
     using cal_vkb_op = hamilt::cal_vkb_op<FPTYPE, Device>;
     using cal_vkb_deri_op = hamilt::cal_vkb_deri_op<FPTYPE, Device>;  
 
+  protected:
     pseudopot_cell_vnl* nlpp = nullptr;
     const UnitCell* ucell = nullptr;
 
