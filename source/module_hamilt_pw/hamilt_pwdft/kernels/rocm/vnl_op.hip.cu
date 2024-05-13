@@ -17,7 +17,6 @@ __global__ void cal_vnl(
     const int npw,
     const int npwx,
     const int nhm,
-    const int NQX,
     const int tab_2,
     const int tab_3,
     const int * atom_na,
@@ -49,7 +48,7 @@ __global__ void cal_vnl(
                                       gk[ig * 3 + 2] * gk[ig * 3 + 2]) * tpiba;
 
             vq = _polynomial_interpolation(
-                    tab, it, nb, tab_2, tab_3, NQX, DQ, gnorm);
+                    tab, it, nb, tab_2, tab_3, DQ, gnorm);
 
             // add spherical harmonic part
             for (int ih = 0; ih < nh; ih++) {

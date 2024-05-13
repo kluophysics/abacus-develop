@@ -1,5 +1,10 @@
 #include <thrust/complex.h>
+#ifdef __CUDA
 #include <cuda_runtime.h>
+#endif
+#ifdef __ROCM
+#include <hip/hip_runtime.h>
+#endif
 
 namespace hamilt
 {
