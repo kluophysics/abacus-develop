@@ -14,12 +14,16 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                                             K_Vectors* p_kv,
                                             ModuleSymmetry::Symmetry* p_symm,
                                             ModulePW::PW_Basis_K* wfc_basis,
-                                            const psi::Psi<complex<FPTYPE>, Device>* psi_in)
+                                            const psi::Psi<complex<FPTYPE>, Device>* psi_in,
+                                            pseudopot_cell_vnl* nlpp_in,
+                                            const UnitCell& ucell_in)
 {
     ModuleBase::TITLE("Stress_Func", "stress_nl");
     ModuleBase::timer::tick("Stress_Func", "stress_nl");
     const int npwx = wfc_basis->npwk_max;
-    const int nkb = GlobalC::ppcell.nkb;
+    this->nlpp = nlpp_in;
+    this->ucell = &ucell_in;
+    const int nkb = nlpp->nkb;
     int wg_nc = wg.nc;
     if (nkb == 0)
     {
@@ -31,24 +35,24 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
 
     // There is a contribution for jh<>ih in US case or multi projectors case
     // Actually, the judge of nondiagonal should be done on every atom type
-    const bool nondiagonal = (GlobalV::use_uspp || GlobalC::ppcell.multi_proj) ? true : false;
+    const bool nondiagonal = (GlobalV::use_uspp || nlpp->multi_proj) ? true : false;
     // prepare the memory of stress and init some variables:
-    int *atom_nh = nullptr, *atom_na = nullptr, *h_atom_nh = new int[GlobalC::ucell.ntype],
-        *h_atom_na = new int[GlobalC::ucell.ntype];
-    for (int ii = 0; ii < GlobalC::ucell.ntype; ii++)
+    int *atom_nh = nullptr, *atom_na = nullptr, *h_atom_nh = new int[this->ucell->ntype],
+        *h_atom_na = new int[this->ucell->ntype];
+    for (int ii = 0; ii < this->ucell->ntype; ii++)
     {
-        h_atom_nh[ii] = GlobalC::ucell.atoms[ii].ncpp.nh;
-        h_atom_na[ii] = GlobalC::ucell.atoms[ii].na;
+        h_atom_nh[ii] = this->ucell->atoms[ii].ncpp.nh;
+        h_atom_na[ii] = this->ucell->atoms[ii].na;
     }
     FPTYPE *stress = nullptr, *sigmanlc = nullptr, *d_wg = nullptr, *d_ekb = nullptr, *gcar = nullptr,
-           *deeq = GlobalC::ppcell.get_deeq_data<FPTYPE>(), *kvec_c = wfc_basis->get_kvec_c_data<FPTYPE>(),
-           *qq_nt = GlobalC::ppcell.get_qq_nt_data<FPTYPE>();
+           *deeq = nlpp->get_deeq_data<FPTYPE>(), *kvec_c = wfc_basis->get_kvec_c_data<FPTYPE>(),
+           *qq_nt = nlpp->get_qq_nt_data<FPTYPE>();
 
-    int max_nbeta=0,max_nh=0,max_npw=0 ,_lmax = GlobalC::ppcell.lmaxkb;
-    for(int it=0;it<GlobalC::ucell.ntype;it++)//loop all elements 
+    int max_nbeta=0,max_nh=0,max_npw=0 ,_lmax = nlpp->lmaxkb;
+    for(int it=0;it<this->ucell->ntype;it++)//loop all elements 
     {
-        max_nbeta = std::max(GlobalC::ucell.atoms[it].ncpp.nbeta,max_nbeta);
-        max_nh = std::max(GlobalC::ucell.atoms[it].ncpp.nh,max_nh);
+        max_nbeta = std::max(this->ucell->atoms[it].ncpp.nbeta,max_nbeta);
+        max_nh = std::max(this->ucell->atoms[it].ncpp.nh,max_nh);
     }
     for(int ik=0;ik<p_kv->nks;ik++)//loop k points
     {
@@ -58,9 +62,9 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
     // allocate the memory for ops.
     FPTYPE *h_ylm = new FPTYPE[(_lmax+1)*(_lmax+1)*max_npw], *d_ylm = nullptr, // (lmax + 1) * (lmax + 1) * npw
             *h_ylm_deri = new FPTYPE[3*(_lmax+1)*(_lmax+1)*max_npw], *d_ylm_deri = nullptr, //3 * (lmax + 1) * (lmax + 1) * npw
-            *hd_vq = nullptr, *hd_vq_deri = nullptr, //GlobalC::ucell.atoms[it].ncpp.nbeta * npw
+            *hd_vq = nullptr, *hd_vq_deri = nullptr, //this->ucell->atoms[it].ncpp.nbeta * npw
             *h_g_plus_k = new FPTYPE[max_npw * 5], *d_g_plus_k = nullptr, // npw * 5
-            *h_pref = new FPTYPE[max_nh], *d_pref = nullptr, // GlobalC::ucell.atoms[it].ncpp.nh
+            *h_pref = new FPTYPE[max_nh], *d_pref = nullptr, // this->ucell->atoms[it].ncpp.nh
             *d_gk = nullptr, *d_vq_tab = nullptr; // npw
 
     // allocate the memory for vkb and vkb_deri.
@@ -93,16 +97,16 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                              gcar,
                              &wfc_basis->gcar[0][0],
                              3 * p_kv->nks * wfc_basis->npwk_max);
-        resmem_int_op()(this->ctx, atom_nh, GlobalC::ucell.ntype);
-        resmem_int_op()(this->ctx, atom_na, GlobalC::ucell.ntype);
-        syncmem_int_h2d_op()(this->ctx, this->cpu_ctx, atom_nh, h_atom_nh, GlobalC::ucell.ntype);
-        syncmem_int_h2d_op()(this->ctx, this->cpu_ctx, atom_na, h_atom_na, GlobalC::ucell.ntype);
+        resmem_int_op()(this->ctx, atom_nh, this->ucell->ntype);
+        resmem_int_op()(this->ctx, atom_na, this->ucell->ntype);
+        syncmem_int_h2d_op()(this->ctx, this->cpu_ctx, atom_nh, h_atom_nh, this->ucell->ntype);
+        syncmem_int_h2d_op()(this->ctx, this->cpu_ctx, atom_na, h_atom_na, this->ucell->ntype);
     
         resmem_var_op()(this->ctx, d_ylm, (_lmax+1)*(_lmax+1)*max_npw);
         resmem_var_op()(this->ctx, d_ylm_deri, 3*(_lmax+1)*(_lmax+1)*max_npw);
         resmem_var_op()(this->ctx, d_g_plus_k, max_npw * 5);
         resmem_var_op()(this->ctx, d_pref, max_nh);
-        resmem_var_op()(this->ctx, d_vq_tab, GlobalC::ppcell.tab.getSize());
+        resmem_var_op()(this->ctx, d_vq_tab, nlpp->tab.getSize());
     
         hamilt::pointer_array_malloc<Device>()((void **)&d_ylm_ptrs, max_nh);
         hamilt::pointer_array_malloc<Device>()((void **)&d_vq_ptrs, max_nh);
@@ -164,9 +168,9 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
         {
             dbecp_ptr[i] = &dbecp[i * wg_nc * nkb];
         }
-        std::complex<FPTYPE>* ppcell_vkb = GlobalC::ppcell.vkb.c;
-        std::complex<FPTYPE>* ppcell_vkb_d= GlobalC::ppcell.get_vkb_data<FPTYPE>();
-        int lmax = GlobalC::ppcell.lmaxkb;
+        std::complex<FPTYPE>* ppcell_vkb = nlpp->vkb.c;
+        std::complex<FPTYPE>* ppcell_vkb_d= nlpp->get_vkb_data<FPTYPE>();
+        int lmax = nlpp->lmaxkb;
         //prepare ylm，size: (lmax+1)^2 * npwx
         std::vector<double> ylm = cal_ylm(lmax, npw, g_plus_k.data());
 
@@ -182,9 +186,9 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
         //TODO: ylm,ylm_deri pass to GPU
         /////////////////////////////
 
-        for(int it=0;it<GlobalC::ucell.ntype;it++)//loop all elements 
+        for(int it=0;it<this->ucell->ntype;it++)//loop all elements 
         {
-            int lenth_vq = GlobalC::ucell.atoms[it].ncpp.nbeta*npw;
+            int lenth_vq = this->ucell->atoms[it].ncpp.nbeta*npw;
             // prepare inputs for calculating vkb，vkb1，vkb2 
             // prepare vq and vq', size: nq * npwx 
             std::vector<double> vq(lenth_vq);//cal_vq(it, g_plus_k.data(), npw);
@@ -194,46 +198,38 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
             if (this->device == psi::GpuDevice)
             {
                 syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_g_plus_k, g_plus_k.data(), g_plus_k.size());
-                syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_vq_tab, GlobalC::ppcell.tab.ptr, GlobalC::ppcell.tab.getSize());
+                syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_vq_tab, nlpp->tab.ptr, nlpp->tab.getSize());
                 cal_vq_op()(
                     this->ctx, d_vq_tab, it, d_g_plus_k,
-                    npw, GlobalC::ppcell.tab.getBound2(),GlobalC::ppcell.tab.getBound3(),
-                    GlobalV::DQ, GlobalC::ucell.atoms[it].ncpp.nbeta, hd_vq
+                    npw, nlpp->tab.getBound2(),nlpp->tab.getBound3(),
+                    GlobalV::DQ, this->ucell->atoms[it].ncpp.nbeta, hd_vq
                 );
 
                 syncmem_var_d2h_op()(this->cpu_ctx, this->ctx, vq.data(), hd_vq, vq.size());
 
             }else{
                 cal_vq_op()(
-                    this->ctx, GlobalC::ppcell.tab.ptr, it, g_plus_k.data(),
-                    npw, GlobalC::ppcell.tab.getBound2(),GlobalC::ppcell.tab.getBound3(),
-                    GlobalV::DQ, GlobalC::ucell.atoms[it].ncpp.nbeta, vq.data()
+                    this->ctx, nlpp->tab.ptr, it, g_plus_k.data(),
+                    npw, nlpp->tab.getBound2(),nlpp->tab.getBound3(),
+                    GlobalV::DQ, this->ucell->atoms[it].ncpp.nbeta, vq.data()
                 );                
             }
-            
-            // for(int ii=0;ii<vq.size();ii++){
-            //     if(vq[ii]!=vq2[ii]){
-            //         printf("ik= %d, npw = %d, nbeta = %d, p = %d, num1 = %lf, num2 = %lf\n",ik,npw,GlobalC::ucell.atoms[it].ncpp.nbeta,ii,vq[ii],vq2[ii]);
-            //     }
-            // }
-
-
 
             std::vector<double> vq_deri(lenth_vq);// = cal_vq_deri(it, g_plus_k.data(), npw);
             if (this->device == psi::GpuDevice)
             {
                 cal_vq_deri_op()(
                     this->ctx, d_vq_tab, it, d_g_plus_k,
-                    npw, GlobalC::ppcell.tab.getBound2(),GlobalC::ppcell.tab.getBound3(),
-                    GlobalV::DQ, GlobalC::ucell.atoms[it].ncpp.nbeta, hd_vq_deri
+                    npw, nlpp->tab.getBound2(),nlpp->tab.getBound3(),
+                    GlobalV::DQ, this->ucell->atoms[it].ncpp.nbeta, hd_vq_deri
                 );
                 syncmem_var_d2h_op()(this->cpu_ctx, this->ctx, vq_deri.data(), hd_vq_deri, vq_deri.size());
                 
             }else{
                 cal_vq_deri_op()(
-                    this->ctx, GlobalC::ppcell.tab.ptr, it, g_plus_k.data(),
-                    npw, GlobalC::ppcell.tab.getBound2(),GlobalC::ppcell.tab.getBound3(),
-                    GlobalV::DQ, GlobalC::ucell.atoms[it].ncpp.nbeta, vq_deri.data()
+                    this->ctx, nlpp->tab.ptr, it, g_plus_k.data(),
+                    npw, nlpp->tab.getBound2(),nlpp->tab.getBound3(),
+                    GlobalV::DQ, this->ucell->atoms[it].ncpp.nbeta, vq_deri.data()
                 );                        
             }
 
@@ -256,8 +252,8 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                 {
 
                     prepare_vkb_ptr(
-                            GlobalC::ucell.atoms[it].ncpp.nbeta, GlobalC::ppcell.nhtol.c, 
-                            GlobalC::ppcell.nhtol.nc, npw, it,
+                            this->ucell->atoms[it].ncpp.nbeta, nlpp->nhtol.c, 
+                            nlpp->nhtol.nc, npw, it,
                             ppcell_vkb_d, vkb_ptrs,
                             d_ylm, ylm_ptrs,
                             hd_vq, vq_ptrs
@@ -282,8 +278,8 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                         
                 } else {
                     prepare_vkb_ptr(
-                            GlobalC::ucell.atoms[it].ncpp.nbeta, GlobalC::ppcell.nhtol.c, 
-                            GlobalC::ppcell.nhtol.nc, npw, it,
+                            this->ucell->atoms[it].ncpp.nbeta, nlpp->nhtol.c, 
+                            nlpp->nhtol.nc, npw, it,
                             ppcell_vkb, vkb_ptrs,
                             ylm.data(), ylm_ptrs,
                             vq.data(), vq_ptrs
@@ -348,8 +344,8 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                         if (this->device == psi::GpuDevice)
                         {
                             prepare_vkb_deri_ptr(
-                                GlobalC::ucell.atoms[it].ncpp.nbeta, GlobalC::ppcell.nhtol.c, 
-                                GlobalC::ppcell.nhtol.nc, npw, it, ipol, jpol,
+                                this->ucell->atoms[it].ncpp.nbeta, nlpp->nhtol.c, 
+                                nlpp->nhtol.nc, npw, it, ipol, jpol,
                                 ppcell_vkb_d, vkb_ptrs,
                                 d_ylm, ylm_ptrs,
                                 d_ylm_deri, ylm_deri_ptrs1, ylm_deri_ptrs2,
@@ -366,7 +362,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
 
 
                             cal_vkb_deri_op()(
-                                this->ctx, nh, npw, ipol, jpol, 
+                                this->ctx, nh, npw, ipol, jpol,
                                 d_vq_ptrs, d_vq_deri_ptrs,
                                 d_ylm_ptrs, d_ylm_deri_ptrs1, d_ylm_deri_ptrs2,
                                 d_sk, d_pref_in, d_g_plus_k, d_vkb_ptrs
@@ -382,8 +378,8 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                         else 
                         {
                             prepare_vkb_deri_ptr(
-                                GlobalC::ucell.atoms[it].ncpp.nbeta, GlobalC::ppcell.nhtol.c, 
-                                GlobalC::ppcell.nhtol.nc, npw, it, ipol, jpol,
+                                this->ucell->atoms[it].ncpp.nbeta, nlpp->nhtol.c, 
+                                nlpp->nhtol.nc, npw, it, ipol, jpol,
                                 ppcell_vkb, vkb_ptrs,
                                 ylm.data(), ylm_ptrs,
                                 ylm_deri.data(), ylm_deri_ptrs1, ylm_deri_ptrs2,
@@ -392,7 +388,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                             );
 
                             cal_vkb_deri_op()(
-                                this->ctx, nh, npw, ipol, jpol, 
+                                this->ctx, nh, npw, ipol, jpol,
                                 vq_ptrs, vq_deri_ptrs,
                                 ylm_ptrs, ylm_deri_ptrs1, ylm_deri_ptrs2,
                                 sk, pref.data(), g_plus_k.data(), vkb_ptrs
@@ -474,13 +470,13 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                                    jpol,
                                    nkb,
                                    nbands_occ,
-                                   GlobalC::ucell.ntype,
+                                   this->ucell->ntype,
                                    GlobalV::CURRENT_SPIN,//uspp only
                                    wg_nc,
                                    ik,
-                                   GlobalC::ppcell.deeq.getBound2(),
-                                   GlobalC::ppcell.deeq.getBound3(),
-                                   GlobalC::ppcell.deeq.getBound4(),
+                                   nlpp->deeq.getBound2(),
+                                   nlpp->deeq.getBound3(),
+                                   nlpp->deeq.getBound4(),
                                    atom_nh,
                                    atom_na,
                                    d_wg,
@@ -515,7 +511,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
 	{
 		for(int jpol = 0; jpol < 3; jpol++)
 		{
-			sigmanlc[ipol * 3 + jpol] *= 1.0 / GlobalC::ucell.omega;
+			sigmanlc[ipol * 3 + jpol] *= 1.0 / this->ucell->omega;
 		}
 	}
 	
@@ -529,7 +525,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
 	//do symmetry
     if (ModuleSymmetry::Symmetry::symm_flag == 1)
     {
-        p_symm->symmetrize_mat3(sigma, GlobalC::ucell.lat);
+        p_symm->symmetrize_mat3(sigma, this->ucell->lat);
     } // end symmetry
 
     delete [] h_atom_nh;
@@ -562,8 +558,8 @@ std::vector<FPTYPE> Stress_Func<FPTYPE, Device>::cal_gk(int ik, ModulePW::PW_Bas
         gk[ig*3+1] = tmp.y;
         gk[ig*3+2] = tmp.z;
         FPTYPE norm = sqrt(tmp.norm2());
-        gk[3 * npw + ig] = norm * GlobalC::ucell.tpiba;
-        gk[4 * npw + ig] = norm<1e-8?0.0:1.0/norm*GlobalC::ucell.tpiba;
+        gk[3 * npw + ig] = norm * this->ucell->tpiba;
+        gk[4 * npw + ig] = norm<1e-8?0.0:1.0/norm*this->ucell->tpiba;
     }
     return gk;
 }
@@ -573,7 +569,7 @@ template <typename FPTYPE, typename Device>
 std::vector<FPTYPE> Stress_Func<FPTYPE, Device>::cal_vq(int it, const FPTYPE* gk, int npw)
 {
     // calculate beta in G-space using an interpolation table
-    const int nbeta = GlobalC::ucell.atoms[it].ncpp.nbeta;
+    const int nbeta = this->ucell->atoms[it].ncpp.nbeta;
 
     std::vector<FPTYPE> vq(nbeta * npw);
     ModuleBase::Memory::record("stress_nl::vq", nbeta * npw * sizeof(FPTYPE));
@@ -584,7 +580,7 @@ std::vector<FPTYPE> Stress_Func<FPTYPE, Device>::cal_vq(int it, const FPTYPE* gk
         const FPTYPE* gnorm = &gk[3 * npw];
         for (int ig = 0; ig < npw; ig++)
         {
-            vq_ptr[ig] = ModuleBase::PolyInt::Polynomial_Interpolation(GlobalC::ppcell.tab,
+            vq_ptr[ig] = ModuleBase::PolyInt::Polynomial_Interpolation(nlpp->tab,
                                                                     it,
                                                                     nb,
                                                                     GlobalV::NQX,
@@ -600,7 +596,7 @@ template <typename FPTYPE, typename Device>
 std::vector<FPTYPE> Stress_Func<FPTYPE, Device>::cal_vq_deri(int it, const FPTYPE* gk, int npw)
 {
     // calculate beta in G-space using an interpolation table
-    const int nbeta = GlobalC::ucell.atoms[it].ncpp.nbeta;
+    const int nbeta = this->ucell->atoms[it].ncpp.nbeta;
 
     std::vector<FPTYPE> vq(nbeta * npw);
     ModuleBase::Memory::record("stress_nl::vq_deri", nbeta * npw * sizeof(FPTYPE));
@@ -612,7 +608,7 @@ std::vector<FPTYPE> Stress_Func<FPTYPE, Device>::cal_vq_deri(int it, const FPTYP
         for (int ig = 0; ig < npw; ig++)
         {
             vq_ptr[ig] = this->Polynomial_Interpolation_nl(
-						GlobalC::ppcell.tab, 
+						nlpp->tab, 
                         it, 
                         nb, 
                         GlobalV::DQ, 
@@ -654,11 +650,11 @@ std::vector<FPTYPE> Stress_Func<FPTYPE, Device>::cal_ylm_deri(int lmax, int npw,
 template <typename FPTYPE, typename Device>
 std::vector<std::complex<FPTYPE>> Stress_Func<FPTYPE, Device>::cal_pref(int it)
 {
-    const int nh = GlobalC::ucell.atoms[it].ncpp.nh;
+    const int nh = this->ucell->atoms[it].ncpp.nh;
     std::vector<std::complex<FPTYPE>> pref(nh);
     for(int ih=0;ih<nh;ih++)
     {
-        pref[ih] = std::pow(std::complex<FPTYPE>(0.0, -1.0), GlobalC::ppcell.nhtol(it, ih));
+        pref[ih] = std::pow(std::complex<FPTYPE>(0.0, -1.0), nlpp->nhtol(it, ih));
     }
     return pref;
 }
@@ -677,9 +673,9 @@ void Stress_Func<FPTYPE, Device>::cal_vkb(
 {
     int ih=0;
     // loop over all beta functions
-    for(int nb=0;nb<GlobalC::ucell.atoms[it].ncpp.nbeta;nb++)
+    for(int nb=0;nb<this->ucell->atoms[it].ncpp.nbeta;nb++)
     {
-        int l = GlobalC::ppcell.nhtol(it, ih);
+        int l = nlpp->nhtol(it, ih);
         // loop over all m angular momentum
         for(int m=0;m<2*l+1;m++)
         {
@@ -713,12 +709,12 @@ void Stress_Func<FPTYPE, Device>::cal_vkb_deri(
     const FPTYPE* gk_in,
     std::complex<FPTYPE>* vkb_out)
 {
-    int x1 = (GlobalC::ppcell.lmaxkb + 1) * (GlobalC::ppcell.lmaxkb + 1);
+    int x1 = (nlpp->lmaxkb + 1) * (nlpp->lmaxkb + 1);
     int ih=0;
     // loop over all beta functions
-    for(int nb=0;nb<GlobalC::ucell.atoms[it].ncpp.nbeta;nb++)
+    for(int nb=0;nb<this->ucell->atoms[it].ncpp.nbeta;nb++)
     {
-        int l = GlobalC::ppcell.nhtol(it, ih);
+        int l = nlpp->nhtol(it, ih);
         // loop over all m angular momentum
         for(int m=0;m<2*l+1;m++)
         {
@@ -801,7 +797,7 @@ void Stress_Func<FPTYPE, Device>::prepare_vkb_deri_ptr(
 
 ) {   
     int ih=0;
-    int x1 = (GlobalC::ppcell.lmaxkb + 1) * (GlobalC::ppcell.lmaxkb + 1);
+    int x1 = (nlpp->lmaxkb + 1) * (nlpp->lmaxkb + 1);
     for(int nb=0;nb<nbeta;nb++)
     {
         int l = nhtol[it*nhtol_nc+ih];
@@ -836,13 +832,13 @@ void Stress_Func<FPTYPE, Device>::get_dvnl1(ModuleBase::ComplexMatrix &vkb,
         ModuleBase::TITLE("Stress_Func", "get_dvnl1");
 
     const int npw = wfc_basis->npwk[ik];
-    const int lmaxkb = GlobalC::ppcell.lmaxkb;
+    const int lmaxkb = nlpp->lmaxkb;
     if (lmaxkb < 0)
     {
 		return;
 	}
 
-	const int nhm = GlobalC::ppcell.nhm;
+	const int nhm = nlpp->nhm;
 	ModuleBase::matrix vkb1(nhm, npw);
 	vkb1.zero_out();
 	FPTYPE *vq = new FPTYPE[npw];
@@ -864,12 +860,12 @@ void Stress_Func<FPTYPE, Device>::get_dvnl1(ModuleBase::ComplexMatrix &vkb,
     // result table of pow(0-1i, int)
     static const std::complex<FPTYPE> pref_tab[imag_pow_period] = {{1, 0}, {0, -1}, {-1, 0}, {0, 1}};
 	int jkb = 0;
-	for(int it = 0;it < GlobalC::ucell.ntype;it++)
+	for(int it = 0;it < this->ucell->ntype;it++)
 	{
 		if(GlobalV::test_pp>1) ModuleBase::GlobalFunc::OUT("it",it);
 		// calculate beta in G-space using an interpolation table
-		const int nbeta = GlobalC::ucell.atoms[it].ncpp.nbeta;
-		const int nh = GlobalC::ucell.atoms[it].ncpp.nh;
+		const int nbeta = this->ucell->atoms[it].ncpp.nbeta;
+		const int nh = this->ucell->atoms[it].ncpp.nh;
 
 		if(GlobalV::test_pp>1) ModuleBase::GlobalFunc::OUT("nbeta",nbeta);
 
@@ -881,22 +877,22 @@ void Stress_Func<FPTYPE, Device>::get_dvnl1(ModuleBase::ComplexMatrix &vkb,
 #endif
 			for (int ig = 0;ig < npw;ig++)
 			{
-				const FPTYPE gnorm = gk[ig].norm() * GlobalC::ucell.tpiba;
+				const FPTYPE gnorm = gk[ig].norm() * this->ucell->tpiba;
 
 				//cout << "\n gk[ig] = " << gk[ig].x << " " << gk[ig].y << " " << gk[ig].z;
 				//cout << "\n gk.norm = " << gnorm;
 
 				vq [ig] = ModuleBase::PolyInt::Polynomial_Interpolation(
-						GlobalC::ppcell.tab, it, nb, GlobalV::NQX, GlobalV::DQ, gnorm );
+						nlpp->tab, it, nb, GlobalV::NQX, GlobalV::DQ, gnorm );
 
 			} // enddo
 
 			// add spherical harmonic part
 			for (int ih = 0;ih < nh;ih++)
 			{
-				if (nb == GlobalC::ppcell.indv(it, ih))
+				if (nb == nlpp->indv(it, ih))
 				{
-					const int lm = static_cast<int>( GlobalC::ppcell.nhtolm(it, ih) );
+					const int lm = static_cast<int>( nlpp->nhtolm(it, ih) );
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
@@ -913,7 +909,7 @@ void Stress_Func<FPTYPE, Device>::get_dvnl1(ModuleBase::ComplexMatrix &vkb,
 
 		// vkb1 contains all betas including angular part for type nt
 		// now add the structure factor and factor (-i)^l
-		for (int ia=0; ia<GlobalC::ucell.atoms[it].na; ia++)
+		for (int ia=0; ia<this->ucell->atoms[it].na; ia++)
 		{
             std::complex<FPTYPE> *sk = p_sf->get_sk(ik, it, ia, wfc_basis);
 #ifdef _OPENMP
@@ -923,7 +919,7 @@ void Stress_Func<FPTYPE, Device>::get_dvnl1(ModuleBase::ComplexMatrix &vkb,
 			{
 				for (int ig = 0;ig < npw;ig++)
 				{	
-					std::complex<FPTYPE> pref = pref_tab[int(GlobalC::ppcell.nhtol(it, ih)) % imag_pow_period];      //?
+					std::complex<FPTYPE> pref = pref_tab[int(nlpp->nhtol(it, ih)) % imag_pow_period];      //?
 					vkb(jkb + ih, ig) = vkb1(ih, ig) * sk [ig] * pref;
 				}
 				
@@ -947,13 +943,13 @@ void Stress_Func<FPTYPE, Device>::get_dvnl2(ModuleBase::ComplexMatrix &vkb,
         ModuleBase::TITLE("Stress", "get_dvnl2");
     //	ModuleBase::timer::tick("Stress","get_dvnl2");
     const int npw = wfc_basis->npwk[ik];
-    const int lmaxkb = GlobalC::ppcell.lmaxkb;
+    const int lmaxkb = nlpp->lmaxkb;
 	if(lmaxkb < 0)
 	{
 		return;
 	}
 
-	const int nhm = GlobalC::ppcell.nhm;
+	const int nhm = nlpp->nhm;
 	ModuleBase::matrix vkb1(nhm, npw);
 	FPTYPE *vq = new FPTYPE[npw];
 	const int x1= (lmaxkb + 1)*(lmaxkb + 1);
@@ -973,12 +969,12 @@ void Stress_Func<FPTYPE, Device>::get_dvnl2(ModuleBase::ComplexMatrix &vkb,
     // result table of pow(0-1i, int)
     static const std::complex<FPTYPE> pref_tab[imag_pow_period] = {{1, 0}, {0, -1}, {-1, 0}, {0, 1}};
 	int jkb = 0;
-	for(int it = 0;it < GlobalC::ucell.ntype;it++)
+	for(int it = 0;it < this->ucell->ntype;it++)
 	{
 		if(GlobalV::test_pp>1) ModuleBase::GlobalFunc::OUT("it",it);
 		// calculate beta in G-space using an interpolation table
-		const int nbeta = GlobalC::ucell.atoms[it].ncpp.nbeta;
-		const int nh = GlobalC::ucell.atoms[it].ncpp.nh;
+		const int nbeta = this->ucell->atoms[it].ncpp.nbeta;
+		const int nh = this->ucell->atoms[it].ncpp.nh;
 
 		if(GlobalV::test_pp>1) ModuleBase::GlobalFunc::OUT("nbeta",nbeta);
 
@@ -990,20 +986,20 @@ void Stress_Func<FPTYPE, Device>::get_dvnl2(ModuleBase::ComplexMatrix &vkb,
 #endif
 			for (int ig = 0;ig < npw;ig++)
 			{
-				const FPTYPE gnorm = gk[ig].norm() * GlobalC::ucell.tpiba;
+				const FPTYPE gnorm = gk[ig].norm() * this->ucell->tpiba;
 	//cout << "\n gk[ig] = " << gk[ig].x << " " << gk[ig].y << " " << gk[ig].z;
 	//cout << "\n gk.norm = " << gnorm;
 				vq [ig] = Polynomial_Interpolation_nl(
-						GlobalC::ppcell.tab, it, nb, GlobalV::DQ, gnorm );
+						nlpp->tab, it, nb, GlobalV::DQ, gnorm );
 
 			} // enddo
 
 							// add spherical harmonic part
 			for (int ih = 0;ih < nh;ih++)
 			{
-				if (nb == GlobalC::ppcell.indv(it, ih))
+				if (nb == nlpp->indv(it, ih))
 				{
-					const int lm = static_cast<int>( GlobalC::ppcell.nhtolm(it, ih) );
+					const int lm = static_cast<int>( nlpp->nhtolm(it, ih) );
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
@@ -1017,7 +1013,7 @@ void Stress_Func<FPTYPE, Device>::get_dvnl2(ModuleBase::ComplexMatrix &vkb,
 
 		// vkb1 contains all betas including angular part for type nt
 		// now add the structure factor and factor (-i)^l
-		for (int ia=0; ia<GlobalC::ucell.atoms[it].na; ia++)
+		for (int ia=0; ia<this->ucell->atoms[it].na; ia++)
 		{
             std::complex<FPTYPE> *sk = p_sf->get_sk(ik, it, ia, wfc_basis);
 #ifdef _OPENMP
@@ -1027,7 +1023,7 @@ void Stress_Func<FPTYPE, Device>::get_dvnl2(ModuleBase::ComplexMatrix &vkb,
 			{
 				for (int ig = 0;ig < npw;ig++)
 				{
-					std::complex<FPTYPE> pref = pref_tab[int(GlobalC::ppcell.nhtol(it, ih)) % imag_pow_period];      //?
+					std::complex<FPTYPE> pref = pref_tab[int(nlpp->nhtol(it, ih)) % imag_pow_period];      //?
 					vkb(jkb + ih, ig) = vkb1(ih, ig) * sk [ig] * pref;
 				}
 			

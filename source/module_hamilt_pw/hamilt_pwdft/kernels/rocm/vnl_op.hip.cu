@@ -1,4 +1,5 @@
 #include "module_hamilt_pw/hamilt_pwdft/kernels/vnl_op.h"
+#include "module_hamilt_pw/hamilt_pwdft/kernels/cuda/vnl_tools_cu.hpp"
 
 #include <complex>
 
@@ -9,33 +10,6 @@
 #define THREADS_PER_BLOCK 256
 
 namespace hamilt {
-
-template <typename FPTYPE>
-__device__ FPTYPE _polynomial_interpolation(
-        const FPTYPE *table,
-        const int &dim1,
-        const int &dim2,
-        const int &tab_2,
-        const int &tab_3,
-        const int &table_length,
-        const FPTYPE &table_interval,
-        const FPTYPE &x)
-{
-    const FPTYPE position = x / table_interval;
-    const int iq = static_cast<int>(position);
-
-    const FPTYPE x0 = position - static_cast<FPTYPE>(iq);
-    const FPTYPE x1 = 1.0 - x0;
-    const FPTYPE x2 = 2.0 - x0;
-    const FPTYPE x3 = 3.0 - x0;
-    const FPTYPE y =
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0] * x1 * x2 * x3 / 6.0 +
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 1] * x0 * x2 * x3 / 2.0 -
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 2] * x1 * x0 * x3 / 2.0 +
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 3] * x1 * x2 * x0 / 6.0 ;
-
-    return y;
-}
 
 template<typename FPTYPE>
 __global__ void cal_vnl(
@@ -107,7 +81,6 @@ void cal_vnl_op<FPTYPE, psi::DEVICE_GPU>::operator() (
     const int &npw,
     const int &npwx,
     const int &nhm,
-    const int &NQX,
     const int &tab_2,
     const int &tab_3,
     const int * atom_na,
@@ -128,7 +101,7 @@ void cal_vnl_op<FPTYPE, psi::DEVICE_GPU>::operator() (
 {
     int block = (npw + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
     hipLaunchKernelGGL(HIP_KERNEL_NAME(cal_vnl<FPTYPE>), dim3(block), dim3(THREADS_PER_BLOCK), 0, 0, 
-            ntype, npw, npwx, nhm, NQX, tab_2, tab_3,
+            ntype, npw, npwx, nhm, tab_2, tab_3,
             atom_na, atom_nb, atom_nh,
             DQ, tpiba,
             static_cast<thrust::complex<FPTYPE>>(NEG_IMAG_UNIT),

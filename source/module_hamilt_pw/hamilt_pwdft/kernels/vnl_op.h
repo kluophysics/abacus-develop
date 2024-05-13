@@ -15,7 +15,6 @@ struct cal_vnl_op {
     /// @param ntype - number of atomic type
     /// @param npw - number of planewaves of current k point
     /// @param npwx - number of planewaves of all k points
-    /// @param NQX - GlobalV::NQX
     /// @param tab_2 - the second dimension of the input table
     /// @param tab_3 - the third dimension of the input table
     /// @param atom_nh - GlobalC::ucell.atoms[ii].ncpp.nh
@@ -41,7 +40,6 @@ struct cal_vnl_op {
         const int &npw,
         const int &npwx,
         const int &nhm,
-        const int &NQX,
         const int &tab_2,
         const int &tab_3,
         const int * atom_na,
@@ -70,7 +68,6 @@ struct cal_vnl_op<FPTYPE, psi::DEVICE_GPU> {
         const int &npw,
         const int &npwx,
         const int &nhm,
-        const int &NQX,
         const int &tab_2,
         const int &tab_3,
         const int * atom_na,

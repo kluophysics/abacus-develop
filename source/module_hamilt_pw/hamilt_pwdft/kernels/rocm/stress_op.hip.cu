@@ -1,4 +1,5 @@
 #include "module_hamilt_pw/hamilt_pwdft/kernels/stress_op.h"
+#include "module_hamilt_pw/hamilt_pwdft/kernels/cuda/vnl_tools_cu.hpp"
 
 #include <complex>
 
@@ -258,58 +259,6 @@ void cal_stress_mgga_op<T, Device>::operator()(
     hipErrcheck(hipDeviceSynchronize());
 }
 
-template <typename FPTYPE>
-__device__ FPTYPE _polynomial_interpolation(
-        const FPTYPE *table,
-        const int &dim1,
-        const int &dim2,
-        const int &tab_2,
-        const int &tab_3,
-        const FPTYPE &table_interval,
-        const FPTYPE &x)
-{
-    const FPTYPE position = x / table_interval;
-    const int iq = static_cast<int>(position);
-
-    const FPTYPE x0 = position - static_cast<FPTYPE>(iq);
-    const FPTYPE x1 = 1.0 - x0;
-    const FPTYPE x2 = 2.0 - x0;
-    const FPTYPE x3 = 3.0 - x0;
-    const FPTYPE y =
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0] * x1 * x2 * x3 / 6.0 +
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 1] * x0 * x2 * x3 / 2.0 -
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 2] * x1 * x0 * x3 / 2.0 +
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 3] * x1 * x2 * x0 / 6.0 ;
-
-    return y;
-}
-
-template <typename FPTYPE>
-__device__ FPTYPE _polynomial_interpolation_nl(
-        const FPTYPE *table,
-        const int &dim1,
-        const int &dim2,
-        const int &tab_2,
-        const int &tab_3,
-        const FPTYPE &table_interval,
-        const FPTYPE &x)
-{
-    const FPTYPE position = x / table_interval;
-    const int iq = static_cast<int>(position);
-
-    const FPTYPE x0 = position - static_cast<FPTYPE>(iq);
-    const FPTYPE x1 = 1.0 - x0;
-    const FPTYPE x2 = 2.0 - x0;
-    const FPTYPE x3 = 3.0 - x0;
-    const FPTYPE y =
-            (table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0] * (-x2 * x3 - x1 * x3 - x1 * x2)  / 6.0 +
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 1] * (+x2 * x3 - x0 * x3 - x0 * x2) / 2.0 -
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 2] * (+x1 * x3 - x0 * x3 - x0 * x1) / 2.0 +
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 3] *(+x1 * x2 - x0 * x2 - x0 * x1) / 6.0 ) / table_interval;
-
-    return y;
-}
-
 
 
 
@@ -522,7 +471,7 @@ template struct pointer_array_malloc<psi::DEVICE_GPU>;
 
 template <>
 void synchronize_ptrs<psi::DEVICE_GPU>::operator()(
-    void ***ptr_out,
+    void **ptr_out,
     const void **ptr_in,
     const int size)
 {

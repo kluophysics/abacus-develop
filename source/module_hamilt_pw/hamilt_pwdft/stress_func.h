@@ -16,6 +16,7 @@
 #include "module_hamilt_pw/hamilt_pwdft/structure_factor.h"
 #include "module_hsolver/kernels/math_kernel_op.h"
 #include "module_psi/psi.h"
+#include "module_hamilt_pw/hamilt_pwdft/VNL_in_pw.h"
 
 //-------------------------------------------------------------------
 // mohan reconstruction note: 2021-02-07
@@ -139,7 +140,9 @@ class Stress_Func
                    K_Vectors* p_kv,
                    ModuleSymmetry::Symmetry* p_symm,
                    ModulePW::PW_Basis_K* wfc_basis,
-                   const psi::Psi<complex<FPTYPE>, Device>* psi_in); // nonlocal part in PW basis
+                   const psi::Psi<complex<FPTYPE>, Device>* psi_in,
+                   pseudopot_cell_vnl* nlpp_in,
+                   const UnitCell& ucell_in); // nonlocal part in PW basis
 
     void get_dvnl1(ModuleBase::ComplexMatrix& vkb,
                    const int ik,
@@ -295,6 +298,9 @@ class Stress_Func
 
     using cal_vkb_op = hamilt::cal_vkb_op<FPTYPE, Device>;
     using cal_vkb_deri_op = hamilt::cal_vkb_deri_op<FPTYPE, Device>;  
+
+    pseudopot_cell_vnl* nlpp = nullptr;
+    const UnitCell* ucell = nullptr;
 
 };
 

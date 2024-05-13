@@ -1,5 +1,6 @@
 #include "module_hamilt_pw/hamilt_pwdft/kernels/stress_op.h"
-#include "module_hamilt_pw/hamilt_pwdft/global.h"
+#include "module_hamilt_pw/hamilt_pwdft/kernels/vnl_op.h"
+#include "vnl_tools.hpp"
 
 #include "module_base/memory.h"
 #include "module_base/math_polyint.h"
@@ -205,7 +206,6 @@ struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_CPU>{
         const FPTYPE* gk_in,
         std::complex<FPTYPE>** vkbs_out
     ){
-        int x1 = (GlobalC::ppcell.lmaxkb + 1) * (GlobalC::ppcell.lmaxkb + 1);
         int ih=0;
         // loop over all beta functions
         for(int ih=0;ih<nh;ih++)
@@ -266,46 +266,12 @@ struct cal_vq_op<FPTYPE, psi::DEVICE_CPU>{
             const FPTYPE* gnorm = &gk[3 * npw];
             for (int ig = 0; ig < npw; ig++)
             {
-                vq_ptr[ig] = ModuleBase::PolyInt::Polynomial_Interpolation(GlobalC::ppcell.tab,
-                                                                        it,
-                                                                        nb,
-                                                                        GlobalV::NQX,
-                                                                        GlobalV::DQ,
-                                                                        gnorm[ig]);
+                vq_ptr[ig] = _polynomial_interpolation<FPTYPE>(
+                    tab, it, nb, tab_2, tab_3, table_interval, gnorm[ig]);
             }
         }
     }
 };
-
-
-template <typename FPTYPE, typename Device>
-FPTYPE Polynomial_Interpolation_nl
-(
-    const ModuleBase::realArray &table,
-    const int &dim1,
-    const int &dim2,
-    const FPTYPE &table_interval,
-    const FPTYPE &x                             // input value
-)
-{
-
-	assert(table_interval>0.0);
-	const FPTYPE position = x  / table_interval;
-	const int iq = static_cast<int>(position);
-
-	const FPTYPE x0 = position - static_cast<FPTYPE>(iq);
-	const FPTYPE x1 = 1.0 - x0;
-	const FPTYPE x2 = 2.0 - x0;
-	const FPTYPE x3 = 3.0 - x0;
-	const FPTYPE y=
-			( table(dim1, dim2, iq)   * (-x2*x3-x1*x3-x1*x2) / 6.0 +
-			table(dim1, dim2, iq+1) * (+x2*x3-x0*x3-x0*x2) / 2.0 -
-			table(dim1, dim2, iq+2) * (+x1*x3-x0*x3-x0*x1) / 2.0 +
-			table(dim1, dim2, iq+3) * (+x1*x2-x0*x2-x0*x1) / 6.0 )/table_interval ;
-
-
-	return y;
-}
 
 // cpu version first, gpu version later
 template <typename FPTYPE>
@@ -323,12 +289,8 @@ struct cal_vq_deri_op<FPTYPE, psi::DEVICE_CPU>{
             FPTYPE* vq_ptr = &vq[nb * npw];
             for (int ig = 0; ig < npw; ig++)
             {
-                vq_ptr[ig] = Polynomial_Interpolation_nl<FPTYPE, psi::DEVICE_CPU>(
-                            GlobalC::ppcell.tab, 
-                            it, 
-                            nb, 
-                            GlobalV::DQ, 
-                            gnorm[ig] );
+                vq_ptr[ig] = _polynomial_interpolation_nl<FPTYPE>(
+                    tab, it, nb, tab_2, tab_3, table_interval, gnorm[ig]);
             }
         }
         return ;

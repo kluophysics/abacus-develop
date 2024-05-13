@@ -1,34 +1,7 @@
 #include "module_hamilt_pw/hamilt_pwdft/kernels/vnl_op.h"
+#include "vnl_tools.hpp"
 
 namespace hamilt {
-
-template <typename FPTYPE>
-static inline FPTYPE _polynomial_interpolation(
-        const FPTYPE *table,
-        const int &dim1,
-        const int &dim2,
-        const int &tab_2,
-        const int &tab_3,
-        const int &table_length,
-        const FPTYPE &table_interval,
-        const FPTYPE &x)
-{
-    const FPTYPE position = x / table_interval;
-    const int iq = static_cast<int>(position);
-
-    const FPTYPE x0 = position - static_cast<FPTYPE>(iq);
-    const FPTYPE x1 = 1.0 - x0;
-    const FPTYPE x2 = 2.0 - x0;
-    const FPTYPE x3 = 3.0 - x0;
-    const FPTYPE y =
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0] * x1 * x2 * x3 / 6.0 +
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 1] * x0 * x2 * x3 / 2.0 -
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 2] * x1 * x0 * x3 / 2.0 +
-            table[(dim1 * tab_2 + dim2) * tab_3 + iq + 0 + 3] * x1 * x2 * x0 / 6.0 ;
-
-//	ModuleBase::timer::tick("PolyInt","Poly_Interpo_2");
-    return y;
-}
 
 template <typename FPTYPE>
 struct cal_vnl_op<FPTYPE, psi::DEVICE_CPU> {
@@ -38,7 +11,6 @@ struct cal_vnl_op<FPTYPE, psi::DEVICE_CPU> {
         const int &npw,
         const int &npwx,
         const int &nhm,
-        const int &NQX,
         const int &tab_2,
         const int &tab_3,
         const int * atom_na,
@@ -80,7 +52,7 @@ struct cal_vnl_op<FPTYPE, psi::DEVICE_CPU> {
                                               gk[ig * 3 + 2] * gk[ig * 3 + 2]) * tpiba;
 
                     vq = _polynomial_interpolation(
-                            tab, it, nb, tab_2, tab_3, NQX, DQ, gnorm);
+                            tab, it, nb, tab_2, tab_3, DQ, gnorm);
 
                     // add spherical harmonic part
                     for (int ih = 0; ih < nh; ih++) {

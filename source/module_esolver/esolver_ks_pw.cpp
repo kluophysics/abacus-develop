@@ -1175,6 +1175,7 @@ void ESolver_KS_PW<T, Device>::cal_stress(ModuleBase::matrix& stress)
 	}
 	ss.cal_stress(stress,
 			GlobalC::ucell,
+            &GlobalC::ppcell,
 			this->pw_rhod,
 			&GlobalC::ucell.symm,
 			&this->sf,

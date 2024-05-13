@@ -59,7 +59,7 @@ TEST_F(TestSrcPWVnlMultiDevice, cal_vnl_op_cpu)
 
     hamilt::cal_vnl_op<double, psi::DEVICE_CPU>()(
         cpu_ctx,
-        ntype, npw, npwx, nhm, NQX,
+        ntype, npw, npwx, nhm,
         tab_2, tab_3,
         atom_na.data(), atom_nb.data(), atom_nh.data(),
         DQ, tpiba, NEG_IMAG_UNIT,
@@ -111,7 +111,7 @@ TEST_F(TestSrcPWVnlMultiDevice, cal_vnl_op_gpu)
 
     hamilt::cal_vnl_op<double, psi::DEVICE_GPU>()(
             gpu_ctx,
-            ntype, npw, npwx, nhm, NQX,
+            ntype, npw, npwx, nhm,
             tab_2, tab_3,
             d_atom_na, d_atom_nb, d_atom_nh,
             DQ, tpiba, NEG_IMAG_UNIT,

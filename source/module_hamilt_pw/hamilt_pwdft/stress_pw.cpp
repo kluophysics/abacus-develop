@@ -8,6 +8,7 @@
 template <typename FPTYPE, typename Device>
 void Stress_PW<FPTYPE, Device>::cal_stress(ModuleBase::matrix& sigmatot,
                                            UnitCell& ucell,
+                                           pseudopot_cell_vnl* nlpp,
                                            ModulePW::PW_Basis* rho_basis,
                                            ModuleSymmetry::Symmetry* p_symm,
                                            Structure_Factor* p_sf,
@@ -95,7 +96,7 @@ void Stress_PW<FPTYPE, Device>::cal_stress(ModuleBase::matrix& sigmatot,
     this->stress_cc(sigmaxcc, rho_basis, p_sf, 1, pelec->charge);
 
     // nonlocal
-    this->stress_nl(sigmanl, this->pelec->wg, this->pelec->ekb, p_sf, p_kv, p_symm, wfc_basis, d_psi_in);
+    this->stress_nl(sigmanl, this->pelec->wg, this->pelec->ekb, p_sf, p_kv, p_symm, wfc_basis, d_psi_in, nlpp, ucell);
 
     // add US term from augmentation charge derivatives
     if (GlobalV::use_uspp)
