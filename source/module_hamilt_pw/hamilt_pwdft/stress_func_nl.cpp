@@ -56,7 +56,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
         max_nbeta = std::max(this->ucell->atoms[it].ncpp.nbeta,max_nbeta);
         max_nh = std::max(this->ucell->atoms[it].ncpp.nh,max_nh);
     }
-    for(int ik=0;ik<p_kv->nks;ik++)//loop k points
+    for(int ik=0;ik<p_kv->get_nks();ik++)//loop k points
     {
         max_npw = std::max(p_kv->ngk[ik],max_npw);
     }
@@ -98,7 +98,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                              this->cpu_ctx,
                              gcar,
                              &wfc_basis->gcar[0][0],
-                             3 * p_kv->nks * wfc_basis->npwk_max);
+                             3 * p_kv->get_nks() * wfc_basis->npwk_max);
         resmem_int_op()(this->ctx, atom_nh, this->ucell->ntype);
         resmem_int_op()(this->ctx, atom_na, this->ucell->ntype);
         syncmem_int_h2d_op()(this->ctx, this->cpu_ctx, atom_nh, h_atom_nh, this->ucell->ntype);

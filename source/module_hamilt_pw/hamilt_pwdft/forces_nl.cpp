@@ -254,7 +254,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
     // There is a contribution for jh<>ih in US case or multi projectors case
     // Actually, the judge of nondiagonal should be done on every atom type
     const bool nondiagonal = (GlobalV::use_uspp || GlobalC::ppcell.multi_proj) ? true : false;
-    this->device = psi::device::get_device_type<Device>(this->ctx);
+    this->device = base_device::get_device_type<Device>(this->ctx);
 
     int max_nbeta=0, max_npw=0 ,_lmax = GlobalC::ppcell.lmaxkb,max_nh=0;
     for(int it=0;it<GlobalC::ucell.ntype;it++)//loop all elements 
@@ -262,7 +262,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
         max_nh = std::max(GlobalC::ucell.atoms[it].ncpp.nh,max_nh);
         max_nbeta = std::max(GlobalC::ucell.atoms[it].ncpp.nbeta,max_nbeta);
     }
-    for(int ik=0;ik<p_kv->nks;ik++)//loop k points
+    for(int ik=0;ik<p_kv->get_nks();ik++)//loop k points
     {
         max_npw = std::max(p_kv->ngk[ik],max_npw);
     }
@@ -306,7 +306,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
     std::complex<FPTYPE>*d_sk = nullptr, *d_pref_in = nullptr ;
 
     resmem_var_op()(this->ctx, hd_vq, max_nbeta*max_npw);
-    if (this->device == psi::GpuDevice)
+    if (this->device == base_device::GpuDevice)
     {
         resmem_var_op()(this->ctx, d_wg, wg.nr * wg.nc);
         resmem_var_op()(this->ctx, d_ekb, ekb.nr * ekb.nc);
@@ -393,7 +393,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
         int lmax = GlobalC::ppcell.lmaxkb;
         //prepare ylm，size: (lmax+1)^2 * npwx
         std::vector<double> ylm =  cal_ylm(lmax, npw, g_plus_k.data());
-        if (this->device == psi::GpuDevice)
+        if (this->device == base_device::GpuDevice)
         {
             syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_ylm, ylm.data(), ylm.size());
         }
@@ -407,7 +407,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
             int lenth_vq = GlobalC::ucell.atoms[it].ncpp.nbeta*npw;
             std::vector<double> vq(lenth_vq);
             
-            if (this->device == psi::GpuDevice)
+            if (this->device == base_device::GpuDevice)
             {
                 syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_g_plus_k, g_plus_k.data(), g_plus_k.size());
                 syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_vq_tab, GlobalC::ppcell.tab.ptr, GlobalC::ppcell.tab.getSize());
@@ -440,7 +440,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
                 // 1. calculate becp
                 // 1.a calculate vkb
                 // 2.b calculate becp = vkb * psi
-                if (this->device == psi::GpuDevice)
+                if (this->device == base_device::GpuDevice)
                 {
 
                     prepare_vkb_ptr<FPTYPE, Device>(
@@ -479,7 +479,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
                     );
                 }
 
-                if (this->device == psi::GpuDevice)
+                if (this->device == base_device::GpuDevice)
                 {
                     //syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, ppcell_vkb_d, ppcell_vkb, nh * npw);
                     gemm_op()(this->ctx,
@@ -519,7 +519,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
 
                 for (int ipol = 0; ipol < 3; ipol++)
                 {
-                    if (this->device == psi::GpuDevice)
+                    if (this->device == base_device::GpuDevice)
                     {
                         cal_vkb1_nl_op()(this->ctx,
                                         nh,
@@ -569,7 +569,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
 
         }//end it
         // becp calculate is over , now we should broadcast this data.
-        if (this->device == psi::GpuDevice)
+        if (this->device == base_device::GpuDevice)
         {
             std::complex<FPTYPE> *h_becp = nullptr;
             resmem_complex_h_op()(this->cpu_ctx, h_becp, GlobalV::NBANDS * nkb);
@@ -615,7 +615,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
                           force);
     } // end ik
 
-    if (this->device == psi::GpuDevice)
+    if (this->device == base_device::GpuDevice)
     {
         syncmem_var_d2h_op()(this->cpu_ctx, this->ctx, forcenl.c, force, forcenl.nr * forcenl.nc);
     }
@@ -628,7 +628,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
     delmem_complex_op()(this->ctx, becp);
     delmem_complex_op()(this->ctx, dbecp);
     delmem_complex_op()(this->ctx, vkb1);
-    if (this->device == psi::GpuDevice) {
+    if (this->device == base_device::GpuDevice) {
         delmem_var_op()(this->ctx, d_wg);
         delmem_var_op()(this->ctx, d_ekb);
         delmem_var_op()(this->ctx, gcar);
@@ -642,12 +642,12 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
 
 
 // template <typename FPTYPE>
-// void Forces<FPTYPE, psi::DEVICE_GPU>::cal_force_nl(ModuleBase::matrix& forcenl,
+// void Forces<FPTYPE, base_device::DEVICE_GPU>::cal_force_nl(ModuleBase::matrix& forcenl,
 //                                           const ModuleBase::matrix& wg,
 //                                           const ModuleBase::matrix& ekb,
 //                                           K_Vectors* p_kv,
 //                                           ModulePW::PW_Basis_K* wfc_basis,
-//                                           const psi::Psi<complex<FPTYPE>, psi::DEVICE_GPU>* psi_in)
+//                                           const psi::Psi<complex<FPTYPE>, base_device::DEVICE_GPU>* psi_in)
 // {
 //     ModuleBase::TITLE("Forces", "cal_force_nl");
 //     ModuleBase::timer::tick("Forces", "cal_force_nl");
@@ -661,7 +661,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
 //     // There is a contribution for jh<>ih in US case or multi projectors case
 //     // Actually, the judge of nondiagonal should be done on every atom type
 //     const bool nondiagonal = (GlobalV::use_uspp || GlobalC::ppcell.multi_proj) ? true : false;
-//     this->device = psi::device::get_device_type<Device>(this->ctx);
+//     this->device = base_device::device::get_device_type<Device>(this->ctx);
 
 //     int max_nh=0;
 //     for(int it=0;it<GlobalC::ucell.ntype;it++)//loop all elements 
@@ -693,7 +693,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
 
     
 
-//     if (this->device == psi::GpuDevice)
+//     if (this->device == base_device::GpuDevice)
 //     {
 //         resmem_var_op()(this->ctx, d_wg, wg.nr * wg.nc);
 //         resmem_var_op()(this->ctx, d_ekb, ekb.nr * ekb.nc);
@@ -801,7 +801,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
 //                     ppcell_vkb);
 //                 // 2.b calculate becp = vkb * psi
 
-//                 if (this->device == psi::GpuDevice)
+//                 if (this->device == base_device::GpuDevice)
 //                 {
 //                     syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, ppcell_vkb_d, ppcell_vkb, nh * npw);
 //                     gemm_op()(this->ctx,
@@ -840,7 +840,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
 //                 becp_ptr += nh;
 //                 for (int ipol = 0; ipol < 3; ipol++)
 //                 {
-//                     if (this->device == psi::GpuDevice)
+//                     if (this->device == base_device::GpuDevice)
 //                     {
 //                         cal_vkb1_nl_op()(this->ctx,
 //                                         nh,
@@ -888,7 +888,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
 //             }//end ia
 //         }//end it
 //         // becp calculate is over , now we should broadcast this data.
-//         if (this->device == psi::GpuDevice)
+//         if (this->device == base_device::GpuDevice)
 //         {
 //             std::complex<FPTYPE> *h_becp = nullptr;
 //             resmem_complex_h_op()(this->cpu_ctx, h_becp, GlobalV::NBANDS * nkb);
@@ -933,7 +933,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
 
 //     } // end ik
 
-//     if (this->device == psi::GpuDevice)
+//     if (this->device == base_device::GpuDevice)
 //     {
 //         syncmem_var_d2h_op()(this->cpu_ctx, this->ctx, forcenl.c, force, forcenl.nr * forcenl.nc);
 //     }
@@ -946,7 +946,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
 //     delmem_complex_op()(this->ctx, becp);
 //     delmem_complex_op()(this->ctx, dbecp);
 //     delmem_complex_op()(this->ctx, vkb1);
-//     if (this->device == psi::GpuDevice) {
+//     if (this->device == base_device::GpuDevice) {
 //         delmem_var_op()(this->ctx, d_wg);
 //         delmem_var_op()(this->ctx, d_ekb);
 //         delmem_var_op()(this->ctx, gcar);
@@ -957,7 +957,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
 
 // 	ModuleBase::timer::tick("Forces","cal_force_nl");
 // }
-template class Forces<double, psi::DEVICE_CPU>;
+template class Forces<double, base_device::DEVICE_CPU>;
 #if ((defined __CUDA) || (defined __ROCM))
-template class Forces<double, psi::DEVICE_GPU>;
+template class Forces<double, base_device::DEVICE_GPU>;
 #endif
