@@ -174,7 +174,7 @@ struct cal_vq_deri_op{
 
 // // cpu version first, gpu version later
 // template <typename FPTYPE, typename Device>
-// struct prepare_vkb_deri_ptr_op<FPTYPE, psi::DEVICE_GPU>{
+// struct prepare_vkb_deri_ptr_op<FPTYPE, base_device::DEVICE_GPU>{
 //     void operator()(
 //         const Device *ctx,
 //         int nbeta, double* nhtol, int nhtol_nc, int npw, int it,
@@ -240,9 +240,9 @@ struct cal_stress_nl_op<FPTYPE, base_device::DEVICE_GPU>
 
 // cpu version first, gpu version later
 template <typename FPTYPE>
-struct cal_vkb_op<FPTYPE, psi::DEVICE_GPU>{
+struct cal_vkb_op<FPTYPE, base_device::DEVICE_GPU>{
     void operator()(
-        const psi::DEVICE_GPU* ctx,
+        const base_device::DEVICE_GPU* ctx,
         int nh,
         int npw,
         FPTYPE** vqs_in,
@@ -254,9 +254,9 @@ struct cal_vkb_op<FPTYPE, psi::DEVICE_GPU>{
 };
 
 template <typename FPTYPE>
-struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_GPU>{
+struct cal_vkb_deri_op<FPTYPE, base_device::DEVICE_GPU>{
     void operator()(
-        const psi::DEVICE_GPU* ctx,
+        const base_device::DEVICE_GPU* ctx,
         int nh,
         int npw,
         int ipol,
@@ -273,9 +273,9 @@ struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_GPU>{
 
 // cpu version first, gpu version later
 template <typename FPTYPE>
-struct cal_vq_op<FPTYPE, psi::DEVICE_GPU>{
+struct cal_vq_op<FPTYPE, base_device::DEVICE_GPU>{
     void operator()(
-        const psi::DEVICE_GPU* ctx,
+        const base_device::DEVICE_GPU* ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2,const int tab_3, const FPTYPE table_interval, 
@@ -286,9 +286,9 @@ struct cal_vq_op<FPTYPE, psi::DEVICE_GPU>{
 
 // cpu version first, gpu version later
 template <typename FPTYPE>
-struct cal_vq_deri_op<FPTYPE, psi::DEVICE_GPU>{
+struct cal_vq_deri_op<FPTYPE, base_device::DEVICE_GPU>{
     void operator()(
-        const psi::DEVICE_GPU* ctx,
+        const base_device::DEVICE_GPU* ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2,const int tab_3, const FPTYPE table_interval, 
@@ -298,9 +298,9 @@ struct cal_vq_deri_op<FPTYPE, psi::DEVICE_GPU>{
 
 // // cpu version first, gpu version later
 // template <typename FPTYPE>
-// struct prepare_vkb_deri_ptr_op<FPTYPE, psi::DEVICE_GPU>{
+// struct prepare_vkb_deri_ptr_op<FPTYPE, base_device::DEVICE_GPU>{
 //     void operator()(
-//         const psi::DEVICE_GPU* ctx,
+//         const base_device::DEVICE_GPU* ctx,
 //         int nbeta, double* nhtol, int nhtol_nc, int npw, int it,
 //         int ipol, int jpol,
 //         std::complex<FPTYPE>*vkb_out, std::complex<FPTYPE>** vkb_ptrs,
