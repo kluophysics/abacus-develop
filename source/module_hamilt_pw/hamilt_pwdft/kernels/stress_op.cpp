@@ -10,24 +10,24 @@
 namespace hamilt{
 
 template <typename FPTYPE>
-struct cal_dbecp_noevc_nl_op<FPTYPE, psi::DEVICE_CPU> {
-    void operator()(
-            const psi::DEVICE_CPU *ctx,
-            const int &ipol,
-            const int &jpol,
-            const int &nkb,
-            const int &npw,
-            const int &npwx,
-            const int &ik,
-            const FPTYPE &tpiba,
-            const FPTYPE *gcar,
-            const FPTYPE *kvec_c,
-            std::complex<FPTYPE> *vkbi,
-            std::complex<FPTYPE> *vkbj,
-            std::complex<FPTYPE> *vkb,
-            std::complex<FPTYPE> *vkb1,
-            std::complex<FPTYPE> *vkb2,
-            std::complex<FPTYPE> *dbecp_noevc)
+struct cal_dbecp_noevc_nl_op<FPTYPE, base_device::DEVICE_CPU>
+{
+    void operator()(const base_device::DEVICE_CPU* ctx,
+                    const int& ipol,
+                    const int& jpol,
+                    const int& nkb,
+                    const int& npw,
+                    const int& npwx,
+                    const int& ik,
+                    const FPTYPE& tpiba,
+                    const FPTYPE* gcar,
+                    const FPTYPE* kvec_c,
+                    std::complex<FPTYPE>* vkbi,
+                    std::complex<FPTYPE>* vkbj,
+                    std::complex<FPTYPE>* vkb,
+                    std::complex<FPTYPE>* vkb1,
+                    std::complex<FPTYPE>* vkb2,
+                    std::complex<FPTYPE>* dbecp_noevc)
     {
         // npwx >= npw
 #ifdef _OPENMP
@@ -65,8 +65,9 @@ struct cal_dbecp_noevc_nl_op<FPTYPE, psi::DEVICE_CPU> {
 };
 
 template <typename FPTYPE>
-struct cal_stress_nl_op<FPTYPE, psi::DEVICE_CPU> {
-    void operator()(const psi::DEVICE_CPU* ctx,
+struct cal_stress_nl_op<FPTYPE, base_device::DEVICE_CPU>
+{
+    void operator()(const base_device::DEVICE_CPU* ctx,
                     const bool& nondiagonal,
                     const int& ipol,
                     const int& jpol,
@@ -163,9 +164,9 @@ void cal_stress_mgga_op<T, Device>::operator()(
 
 // cpu version first, gpu version later
 template <typename FPTYPE>
-struct cal_vkb_op<FPTYPE, psi::DEVICE_CPU>{
+struct cal_vkb_op<FPTYPE, base_device::DEVICE_CPU>{
     void operator()(
-        const psi::DEVICE_CPU* ctx,
+        const base_device::DEVICE_CPU* ctx,
         int nh,
         int npw,
         FPTYPE** vqs_in,
@@ -192,9 +193,9 @@ struct cal_vkb_op<FPTYPE, psi::DEVICE_CPU>{
 
 // cpu version first, gpu version later
 template <typename FPTYPE>
-struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_CPU>{
+struct cal_vkb_deri_op<FPTYPE, base_device::DEVICE_CPU>{
     void operator()(
-        const psi::DEVICE_CPU* ctx,
+        const base_device::DEVICE_CPU* ctx,
         int nh,
         int npw,
         int ipol,
@@ -252,9 +253,9 @@ struct cal_vkb_deri_op<FPTYPE, psi::DEVICE_CPU>{
 
 // cpu version first, gpu version later
 template <typename FPTYPE>
-struct cal_vq_op<FPTYPE, psi::DEVICE_CPU>{
+struct cal_vq_op<FPTYPE, base_device::DEVICE_CPU>{
     void operator()(
-        const psi::DEVICE_CPU* ctx,
+        const base_device::DEVICE_CPU* ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2,const int tab_3, const FPTYPE table_interval, 
@@ -275,9 +276,9 @@ struct cal_vq_op<FPTYPE, psi::DEVICE_CPU>{
 
 // cpu version first, gpu version later
 template <typename FPTYPE>
-struct cal_vq_deri_op<FPTYPE, psi::DEVICE_CPU>{
+struct cal_vq_deri_op<FPTYPE, base_device::DEVICE_CPU>{
     void operator()(
-        const psi::DEVICE_CPU* ctx,
+        const base_device::DEVICE_CPU* ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2,const int tab_3, const FPTYPE table_interval, 
@@ -299,9 +300,9 @@ struct cal_vq_deri_op<FPTYPE, psi::DEVICE_CPU>{
 
 // // cpu version first, gpu version later
 // template <typename FPTYPE>
-// struct prepare_vkb_deri_ptr_op<FPTYPE, psi::DEVICE_CPU>{
+// struct prepare_vkb_deri_ptr_op<FPTYPE, base_device::DEVICE_CPU>{
 //     void operator()(
-//         const psi::DEVICE_CPU* ctx,
+//         const base_device::DEVICE_CPU* ctx,
 //         int nbeta, double* nhtol, int nhtol_nc, int npw, int it,
 //         int ipol, int jpol,
 //         std::complex<FPTYPE>*vkb_out, std::complex<FPTYPE>** vkb_ptrs,
@@ -338,7 +339,7 @@ struct cal_vq_deri_op<FPTYPE, psi::DEVICE_CPU>{
 
 
 template <>
-void pointer_array_malloc<psi::DEVICE_CPU>::operator()(
+void pointer_array_malloc<base_device::DEVICE_CPU>::operator()(
     void **ptr,
     const int n
 ){
@@ -346,7 +347,7 @@ void pointer_array_malloc<psi::DEVICE_CPU>::operator()(
 }
 
 template <>
-void synchronize_ptrs<psi::DEVICE_CPU>::operator()(
+void synchronize_ptrs<base_device::DEVICE_CPU>::operator()(
         void **ptr_out,
         const void **ptr_in,
         const int size)
@@ -354,33 +355,33 @@ void synchronize_ptrs<psi::DEVICE_CPU>::operator()(
     return;
 }
 
-template struct pointer_array_malloc<psi::DEVICE_CPU>;
-template struct synchronize_ptrs<psi::DEVICE_CPU>;
+template struct pointer_array_malloc<base_device::DEVICE_CPU>;
+template struct synchronize_ptrs<base_device::DEVICE_CPU>;
 
-template struct cal_stress_mgga_op<std::complex<float>,  psi::DEVICE_CPU>;
-template struct cal_stress_mgga_op<std::complex<double>, psi::DEVICE_CPU>;
+template struct cal_stress_mgga_op<std::complex<float>,  base_device::DEVICE_CPU>;
+template struct cal_stress_mgga_op<std::complex<double>, base_device::DEVICE_CPU>;
 
-template struct cal_dbecp_noevc_nl_op<float, psi::DEVICE_CPU>;
-template struct cal_stress_nl_op<float, psi::DEVICE_CPU>;
+template struct cal_dbecp_noevc_nl_op<float, base_device::DEVICE_CPU>;
+template struct cal_stress_nl_op<float, base_device::DEVICE_CPU>;
 
-template struct cal_dbecp_noevc_nl_op<double, psi::DEVICE_CPU>;
-template struct cal_stress_nl_op<double, psi::DEVICE_CPU>;
+template struct cal_dbecp_noevc_nl_op<double, base_device::DEVICE_CPU>;
+template struct cal_stress_nl_op<double, base_device::DEVICE_CPU>;
 
-template struct cal_vkb_op<float, psi::DEVICE_CPU>;
-template struct cal_vkb_op<double, psi::DEVICE_CPU>;
+template struct cal_vkb_op<float, base_device::DEVICE_CPU>;
+template struct cal_vkb_op<double, base_device::DEVICE_CPU>;
 
-template struct cal_vkb_deri_op<float, psi::DEVICE_CPU>;
-template struct cal_vkb_deri_op<double, psi::DEVICE_CPU>;
+template struct cal_vkb_deri_op<float, base_device::DEVICE_CPU>;
+template struct cal_vkb_deri_op<double, base_device::DEVICE_CPU>;
 
-template struct cal_vq_op<float, psi::DEVICE_CPU>;
-template struct cal_vq_op<double, psi::DEVICE_CPU>;
-
-
-template struct cal_vq_deri_op<float, psi::DEVICE_CPU>;
-template struct cal_vq_deri_op<double, psi::DEVICE_CPU>;
+template struct cal_vq_op<float, base_device::DEVICE_CPU>;
+template struct cal_vq_op<double, base_device::DEVICE_CPU>;
 
 
-// template struct prepare_vkb_deri_ptr_op<float, psi::DEVICE_CPU>;
-// template struct prepare_vkb_deri_ptr_op<double, psi::DEVICE_CPU>;
+template struct cal_vq_deri_op<float, base_device::DEVICE_CPU>;
+template struct cal_vq_deri_op<double, base_device::DEVICE_CPU>;
+
+
+// template struct prepare_vkb_deri_ptr_op<float, base_device::DEVICE_CPU>;
+// template struct prepare_vkb_deri_ptr_op<double, base_device::DEVICE_CPU>;
 }  // namespace hamilt
 

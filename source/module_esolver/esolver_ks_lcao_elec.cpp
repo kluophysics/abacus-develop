@@ -64,7 +64,10 @@ void ESolver_KS_LCAO<TK, TR>::set_matrix_grid(Record_adj& ra)
                              this->pw_big->nbzp,
                              this->pw_rho->ny,
                              this->pw_rho->nplane,
-                             this->pw_rho->startz_current);
+                             this->pw_rho->startz_current,
+                             GlobalC::ucell,
+                             GlobalC::ORB,
+                             GlobalV::NUM_STREAM);
 
     // (2)For each atom, calculate the adjacent atoms in different cells
     // and allocate the space for H(R) and S(R).
@@ -106,23 +109,23 @@ void ESolver_KS_LCAO<TK, TR>::beforesolver(const int istep)
         if (GlobalV::GAMMA_ONLY_LOCAL)
         {
             nsk = GlobalV::NSPIN;
-            ncol = this->LOWF.ParaV->ncol_bands;
-            if (GlobalV::KS_SOLVER == "genelpa" || GlobalV::KS_SOLVER == "lapack_gvx"
+            ncol = this->orb_con.ParaV.ncol_bands;
+            if (GlobalV::KS_SOLVER == "genelpa" || GlobalV::KS_SOLVER == "lapack_gvx" || GlobalV::KS_SOLVER == "pexsi"
                 || GlobalV::KS_SOLVER == "cusolver")
             {
-                ncol = this->LOWF.ParaV->ncol;
+                ncol = this->orb_con.ParaV.ncol;
             }
         }
         else
         {
-            nsk = this->kv.nks;
+            nsk = this->kv.get_nks();
 #ifdef __MPI
-            ncol = this->LOWF.ParaV->ncol_bands;
+            ncol = this->orb_con.ParaV.ncol_bands;
 #else
             ncol = GlobalV::NBANDS;
 #endif
         }
-        this->psi = new psi::Psi<TK>(nsk, ncol, this->LOWF.ParaV->nrow, nullptr);
+        this->psi = new psi::Psi<TK>(nsk, ncol, this->orb_con.ParaV.nrow, nullptr);
     }
 
     // prepare grid in Gint
@@ -155,76 +158,6 @@ void ESolver_KS_LCAO<TK, TR>::beforesolver(const int istep)
     // init density kernel and wave functions.
     this->LOC.allocate_dm_wfc(this->GridT, this->pelec, this->LOWF, this->psi, this->kv, istep);
 
-    //======================================
-    // do the charge extrapolation before the density matrix is regenerated.
-    // mohan add 2011-04-08
-    // because once atoms are moving out of this processor,
-    // the density matrix will not std::map the new atomic configuration,
-    //======================================
-    // THIS IS A BUG, BECAUSE THE INDEX GlobalC::GridT.trace_lo
-    // HAS BEEN REGENERATED, SO WE NEED TO
-    // REALLOCATE DENSITY MATRIX FIRST, THEN READ IN DENSITY MATRIX,
-    // AND USE DENSITY MATRIX TO DO RHO GlobalV::CALCULATION.-- mohan 2013-03-31
-    //======================================
-    if (GlobalV::chg_extrap == "dm" && istep > 1) // xiaohui modify 2015-02-01
-    {
-        for (int is = 0; is < GlobalV::NSPIN; is++)
-        {
-            ModuleBase::GlobalFunc::ZEROS(this->pelec->charge->rho[is], this->pw_rho->nrxx);
-            std::stringstream ssd;
-            ssd << GlobalV::global_out_dir << "SPIN" << is + 1 << "_DM";
-            // reading density matrix,
-            double& ef_tmp = this->pelec->eferm.get_ef(is);
-            ModuleIO::read_dm(
-#ifdef __MPI
-                this->GridT.nnrg,
-                this->GridT.trace_lo,
-#endif
-                GlobalV::GAMMA_ONLY_LOCAL,
-                GlobalV::NLOCAL,
-                GlobalV::NSPIN,
-                is,
-                ssd.str(),
-                this->LOC.DM,
-                this->LOC.DM_R,
-                ef_tmp,
-                &(GlobalC::ucell));
-        }
-
-        // calculate the charge density
-        if (GlobalV::GAMMA_ONLY_LOCAL)
-        {
-            Gint_inout inout(this->LOC.DM, this->pelec->charge->rho, Gint_Tools::job_type::rho);
-            this->GG.cal_gint(&inout);
-            if (XC_Functional::get_func_type() == 3 || XC_Functional::get_func_type() == 5)
-            {
-                for (int is = 0; is < GlobalV::NSPIN; is++)
-                {
-                    ModuleBase::GlobalFunc::ZEROS(this->pelec->charge->kin_r[0], this->pw_rho->nrxx);
-                }
-                Gint_inout inout1(this->LOC.DM, this->pelec->charge->kin_r, Gint_Tools::job_type::tau);
-                this->GG.cal_gint(&inout1);
-            }
-        }
-        else
-        {
-            Gint_inout inout(this->LOC.DM_R, this->pelec->charge->rho, Gint_Tools::job_type::rho);
-            this->GK.cal_gint(&inout);
-            if (XC_Functional::get_func_type() == 3 || XC_Functional::get_func_type() == 5)
-            {
-                for (int is = 0; is < GlobalV::NSPIN; is++)
-                {
-                    ModuleBase::GlobalFunc::ZEROS(this->pelec->charge->kin_r[0], this->pw_rho->nrxx);
-                }
-                Gint_inout inout1(this->LOC.DM_R, this->pelec->charge->kin_r, Gint_Tools::job_type::tau);
-                this->GK.cal_gint(&inout1);
-            }
-        }
-
-        // renormalize the charge density
-        this->pelec->charge->renormalize_rho();
-    }
-
 #ifdef __DEEPKS
     // for each ionic step, the overlap <psi|alpha> must be rebuilt
     // since it depends on ionic positions
@@ -242,7 +175,7 @@ void ESolver_KS_LCAO<TK, TR>::beforesolver(const int istep)
 #endif
     if (GlobalV::sc_mag_switch)
     {
-        SpinConstrain<TK, psi::DEVICE_CPU>& sc = SpinConstrain<TK, psi::DEVICE_CPU>::getScInstance();
+        SpinConstrain<TK, base_device::DEVICE_CPU>& sc = SpinConstrain<TK, base_device::DEVICE_CPU>::getScInstance();
         sc.init_sc(GlobalV::sc_thr,
                    GlobalV::nsc,
                    GlobalV::nsc_min,
@@ -571,7 +504,6 @@ void ESolver_KS_LCAO<TK, TR>::nscf(void)
     // Peize Lin add 2018-08-14
     if (GlobalC::exx_info.info_global.cal_exx)
     {
-        // GlobalC::exx_lcao.cal_exx_elec_nscf(this->LOWF.ParaV[0]);
         const std::string file_name_exx = GlobalV::global_out_dir + "HexxR" + std::to_string(GlobalV::MY_RANK);
         if (GlobalC::exx_info.info_ri.real_number)
         {
@@ -581,13 +513,6 @@ void ESolver_KS_LCAO<TK, TR>::nscf(void)
         {
             this->exc->read_Hexxs_csr(file_name_exx, GlobalC::ucell);
         }
-
-        hamilt::HamiltLCAO<TK, TR>* hamilt_lcao = dynamic_cast<hamilt::HamiltLCAO<TK, TR>*>(this->p_hamilt);
-        auto exx = new hamilt::OperatorEXX<hamilt::OperatorLCAO<TK, TR>>(&this->LM,
-                                                                         hamilt_lcao->getHR(),
-                                                                         &(hamilt_lcao->getHk(&this->LM)),
-                                                                         this->kv);
-        hamilt_lcao->getOperator()->add(exx);
     }
 #endif // __MPI
 #endif // __EXX
@@ -612,7 +537,7 @@ void ESolver_KS_LCAO<TK, TR>::nscf(void)
     GlobalV::ofs_running << " end of band structure calculation " << std::endl;
     GlobalV::ofs_running << " band eigenvalue in this processor (eV) :" << std::endl;
 
-    for (int ik = 0; ik < this->kv.nks; ik++)
+    for (int ik = 0; ik < this->kv.get_nks(); ik++)
     {
         if (GlobalV::NSPIN == 2)
         {
@@ -620,20 +545,20 @@ void ESolver_KS_LCAO<TK, TR>::nscf(void)
             {
                 GlobalV::ofs_running << " spin up :" << std::endl;
             }
-            if (ik == (this->kv.nks / 2))
+            if (ik == (this->kv.get_nks() / 2))
             {
                 GlobalV::ofs_running << " spin down :" << std::endl;
             }
         }
 
-        GlobalV::ofs_running << " k-points" << ik + 1 << "(" << this->kv.nkstot << "): " << this->kv.kvec_c[ik].x << " "
+        GlobalV::ofs_running << " k-points" << ik + 1 << "(" << this->kv.get_nkstot() << "): " << this->kv.kvec_c[ik].x << " "
                              << this->kv.kvec_c[ik].y << " " << this->kv.kvec_c[ik].z << std::endl;
 
         for (int ib = 0; ib < GlobalV::NBANDS; ib++)
         {
             GlobalV::ofs_running << " spin" << this->kv.isk[ik] + 1 << "final_state " << ib + 1 << " "
                                  << this->pelec->ekb(ik, ib) * ModuleBase::Ry_to_eV << " "
-                                 << this->pelec->wg(ik, ib) * this->kv.nks << std::endl;
+                                 << this->pelec->wg(ik, ib) * this->kv.get_nks() << std::endl;
         }
         GlobalV::ofs_running << std::endl;
     }
@@ -674,7 +599,7 @@ void ESolver_KS_LCAO<TK, TR>::nscf(void)
                                 this->sf,
                                 this->kv,
                                 this->psi,
-                                this->LOWF.ParaV);
+                                &(this->orb_con.ParaV));
         }
         else if (INPUT.wannier_method == 2)
         {
@@ -686,7 +611,7 @@ void ESolver_KS_LCAO<TK, TR>::nscf(void)
                                        INPUT.nnkpfile,
                                        INPUT.wannier_spin);
 
-            myWannier.calculate(this->pelec->ekb, this->kv, *(this->psi), this->LOWF.ParaV);
+            myWannier.calculate(this->pelec->ekb, this->kv, *(this->psi), &(this->orb_con.ParaV));
         }
 #endif
     }
@@ -700,7 +625,6 @@ void ESolver_KS_LCAO<TK, TR>::nscf(void)
 
     // below is for DeePKS NSCF calculation
 #ifdef __DEEPKS
-    const Parallel_Orbitals* pv = this->LOWF.ParaV;
     if (GlobalV::deepks_out_labels || GlobalV::deepks_scf)
     {
         const elecstate::DensityMatrix<TK, double>* dm
@@ -710,6 +634,9 @@ void ESolver_KS_LCAO<TK, TR>::nscf(void)
         GlobalC::ld.cal_gedm(GlobalC::ucell.nat);
     }
 #endif
+
+    this->create_Output_Mat_Sparse(0).write();
+
     return;
 }
 

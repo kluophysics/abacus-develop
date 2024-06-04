@@ -3,9 +3,8 @@
 #include "module_base/math_ylmreal.h"
 #include "module_base/timer.h"
 #include "module_hamilt_pw/hamilt_pwdft/global.h"
-#include "module_psi/kernels/device.h"
+#include "module_base/module_device/device.h"
 #include "module_base/memory.h"
-#include <chrono>
 //calculate the nonlocal pseudopotential stress in PW
 template <typename FPTYPE, typename Device>
 void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
@@ -34,7 +33,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
         return;
     }
 
-    this->device = psi::device::get_device_type<Device>(this->ctx);
+    this->device = base_device::get_device_type<Device>(this->ctx);
 
     // There is a contribution for jh<>ih in US case or multi projectors case
     // Actually, the judge of nondiagonal should be done on every atom type
@@ -88,11 +87,11 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
     resmem_var_op()(this->ctx, stress, 9);
     setmem_var_op()(this->ctx, stress, 0, 9);
     resmem_var_h_op()(this->cpu_ctx, sigmanlc, 9);
-    if (this->device == psi::GpuDevice)
+    if (this->device == base_device::GpuDevice)
     {
         resmem_var_op()(this->ctx, d_wg, wg.nr * wg.nc);
         resmem_var_op()(this->ctx, d_ekb, ekb.nr * ekb.nc);
-        resmem_var_op()(this->ctx, gcar, 3 * p_kv->nks * wfc_basis->npwk_max);
+        resmem_var_op()(this->ctx, gcar, 3 * p_kv->get_nks() * wfc_basis->npwk_max);
         syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_wg, wg.c, wg.nr * wg.nc);
         syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_ekb, ekb.c, ekb.nr * ekb.nc);
         syncmem_var_h2d_op()(this->ctx,
@@ -140,7 +139,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
 
 
 
-    int nks = p_kv->nks;
+    int nks = p_kv->get_nks();
     for(int ik=0;ik<nks;ik++)//loop k points
     {
         // only for uspp: move the spin index in deeq
@@ -182,7 +181,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
         //prepare ylm'，size: 3 * (lmax+1)^2 * npwx，contain x,y,z 3 axis
         std::vector<double> ylm_deri = cal_ylm_deri(lmax, npw, g_plus_k.data());
 
-        if (this->device == psi::GpuDevice)
+        if (this->device == base_device::GpuDevice)
         {
             syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_ylm, ylm.data(), ylm.size());
             syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_ylm_deri, ylm_deri.data(), ylm_deri.size());
@@ -200,7 +199,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
             //std::vector<double> vq2(vq.size());
 
 
-            if (this->device == psi::GpuDevice)
+            if (this->device == base_device::GpuDevice)
             {
                 syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_g_plus_k, g_plus_k.data(), g_plus_k.size());
                 syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_vq_tab, nlpp->tab.ptr, nlpp->tab.getSize());
@@ -221,7 +220,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
             }
 
             std::vector<double> vq_deri(lenth_vq);// = cal_vq_deri(it, g_plus_k.data(), npw);
-            if (this->device == psi::GpuDevice)
+            if (this->device == base_device::GpuDevice)
             {
                 cal_vq_deri_op()(
                     this->ctx, d_vq_tab, it, d_g_plus_k,
@@ -252,7 +251,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                 // 1.a calculate vkb
 
 
-                if (this->device == psi::GpuDevice)
+                if (this->device == base_device::GpuDevice)
                 {
                     syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, d_sk, sk, npw);
                     syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, d_pref_in, pref.data(), nh);
@@ -298,7 +297,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                 // 2.b calculate becp = vkb * psi
                 int npm = GlobalV::NPOL * nbands_occ;
 
-                if (this->device == psi::GpuDevice)
+                if (this->device == base_device::GpuDevice)
                 {
                     //syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, ppcell_vkb_d, ppcell_vkb, nh * npw);
                     gemm_op()(this->ctx,
@@ -345,7 +344,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                         // 2. calculate dbecp：
                         // 2.a. calculate dbecp_noevc, repeat use the memory of ppcell.vkb
                         
-                        if (this->device == psi::GpuDevice)
+                        if (this->device == base_device::GpuDevice)
                         {
 
                             prepare_vkb_deri_ptr(
@@ -391,7 +390,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                  
                         // 2.b calculate dbecp = dbecp_noevc * psi
 
-                        if (this->device == psi::GpuDevice)
+                        if (this->device == base_device::GpuDevice)
                         {
                             gemm_op()(this->ctx,
                             transa,
@@ -433,7 +432,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
             }//ia
         }//it
         // becp calculate is over , now we should broadcast this data.
-        if (this->device == psi::GpuDevice)
+        if (this->device == base_device::GpuDevice)
         {
             std::complex<FPTYPE> *h_becp = nullptr;
             resmem_complex_h_op()(this->cpu_ctx, h_becp, GlobalV::NBANDS * nkb);
@@ -526,13 +525,13 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
     delmem_complex_op()(this->ctx, becp);
     delmem_complex_op()(this->ctx, dbecp);
 	delmem_var_h_op()(this->cpu_ctx, sigmanlc);
-    if (this->device == psi::GpuDevice) {
+    if (this->device == base_device::GpuDevice)
+    {
         delmem_var_op()(this->ctx, d_wg);
         delmem_var_op()(this->ctx, d_ekb);
         delmem_int_op()(this->ctx, atom_nh);
         delmem_int_op()(this->ctx, atom_na);
     }
-
 	ModuleBase::timer::tick("Stress_Func","stress_nl");
 }
 // cal_gk
@@ -1200,7 +1199,7 @@ void Stress_Func<FPTYPE, Device>::dylmr2 (
 	return;
 }
 
-template class Stress_Func<double, psi::DEVICE_CPU>;
+template class Stress_Func<double, base_device::DEVICE_CPU>;
 #if ((defined __CUDA) || (defined __ROCM))
-template class Stress_Func<double, psi::DEVICE_GPU>;
+template class Stress_Func<double, base_device::DEVICE_GPU>;
 #endif

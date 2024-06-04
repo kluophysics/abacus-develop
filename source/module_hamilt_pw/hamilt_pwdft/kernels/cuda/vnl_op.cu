@@ -74,8 +74,8 @@ __global__ void cal_vnl(
 }
 
 template <typename FPTYPE>
-void cal_vnl_op<FPTYPE, psi::DEVICE_GPU>::operator() (
-    const psi::DEVICE_GPU *ctx,
+void cal_vnl_op<FPTYPE, base_device::DEVICE_GPU>::operator() (
+    const base_device::DEVICE_GPU *ctx,
     const int &ntype,
     const int &npw,
     const int &npwx,
@@ -112,7 +112,7 @@ void cal_vnl_op<FPTYPE, psi::DEVICE_GPU>::operator() (
     cudaErrcheck(cudaDeviceSynchronize());
 }
 
-template struct cal_vnl_op<float, psi::DEVICE_GPU>;
-template struct cal_vnl_op<double, psi::DEVICE_GPU>;
+template struct cal_vnl_op<float, base_device::DEVICE_GPU>;
+template struct cal_vnl_op<double, base_device::DEVICE_GPU>;
 
 }  // namespace hamilt

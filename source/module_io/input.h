@@ -416,6 +416,8 @@ class Input
     bool out_dipole; // output the dipole or not
     bool out_efield; // output the efield or not
     bool out_current; //output the current or not
+    bool out_vecpot; // output the vector potential or not
+    bool init_vecpot_file; // initialize the vector potential, though file or integral
 
     double td_print_eij; // threshold to output Eij elements
     int td_edm; //0: new edm method   1: old edm method
@@ -517,7 +519,7 @@ class Input
                             // 2022-1-12
     bool deepks_scf; //(need libnpy and libtorch) if set 1, a trained model would be needed to cal V_delta and F_delta
     bool deepks_bandgap; // for bandgap label. QO added 2021-12-15
-
+    bool deepks_equiv;
     bool deepks_out_unittest; // if set 1, prints intermediate quantities that shall be used for making unit test
 
     std::string deepks_model; // needed when deepks_scf=1
@@ -612,6 +614,34 @@ class Input
     double qo_thr = 1e-6;
     std::vector<std::string> qo_strategy = {};
     std::vector<double> qo_screening_coeff = {};
+    //==========================================================
+    // variables for PEXSI
+    //==========================================================
+    int pexsi_npole = 40;
+    bool pexsi_inertia = true;
+    int pexsi_nmax = 80;
+    // int pexsi_symbolic = 1;
+    bool pexsi_comm = true;
+    bool pexsi_storage = true;
+    int pexsi_ordering = 0;
+    int pexsi_row_ordering = 1;
+    int pexsi_nproc = 1;
+    bool pexsi_symm = true;
+    bool pexsi_trans = false;
+    int pexsi_method = 1;
+    int pexsi_nproc_pole = 1;
+    // double pexsi_spin = 2;
+    double pexsi_temp = 0.015;
+    double pexsi_gap = 0;
+    double pexsi_delta_e = 20.0;
+    double pexsi_mu_lower = -10;
+    double pexsi_mu_upper = 10;
+    double pexsi_mu = 0.0;
+    double pexsi_mu_thr = 0.05;
+    double pexsi_mu_expand = 0.3;
+    double pexsi_mu_guard = 0.2;
+    double pexsi_elec_thr = 0.001;
+    double pexsi_zero_thr = 1e-10;
     
     std::time_t get_start_time(void) const
     {

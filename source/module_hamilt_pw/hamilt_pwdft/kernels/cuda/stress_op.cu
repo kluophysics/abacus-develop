@@ -1,10 +1,11 @@
 #include "module_hamilt_pw/hamilt_pwdft/kernels/stress_op.h"
 #include "vnl_tools_cu.hpp"
-#include "module_psi/kernels/device.h"
+#include "module_base/module_device/types.h"
 
 #include <complex>
 #include <thrust/complex.h>
 #include <base/macros/macros.h>
+#include <module_base/module_device/device.h>
 
 #include <cuda_runtime.h>
 
@@ -154,23 +155,22 @@ __global__ void cal_stress_nl(
 }
 
 template <typename FPTYPE>
-void cal_dbecp_noevc_nl_op<FPTYPE, psi::DEVICE_GPU>::operator() (
-        const psi::DEVICE_GPU *ctx,
-        const int &ipol,
-        const int &jpol,
-        const int &nkb,
-        const int &npw,
-        const int &npwx,
-        const int &ik,
-        const FPTYPE &tpiba,
-        const FPTYPE *gcar,
-        const FPTYPE *kvec_c,
-        std::complex<FPTYPE> *vkbi,
-        std::complex<FPTYPE> *vkbj,
-        std::complex<FPTYPE> *vkb,
-        std::complex<FPTYPE> *vkb1,
-        std::complex<FPTYPE> *vkb2,
-        std::complex<FPTYPE> *dbecp_noevc)
+void cal_dbecp_noevc_nl_op<FPTYPE, base_device::DEVICE_GPU>::operator()(const base_device::DEVICE_GPU* ctx,
+                                                                        const int& ipol,
+                                                                        const int& jpol,
+                                                                        const int& nkb,
+                                                                        const int& npw,
+                                                                        const int& npwx,
+                                                                        const int& ik,
+                                                                        const FPTYPE& tpiba,
+                                                                        const FPTYPE* gcar,
+                                                                        const FPTYPE* kvec_c,
+                                                                        std::complex<FPTYPE>* vkbi,
+                                                                        std::complex<FPTYPE>* vkbj,
+                                                                        std::complex<FPTYPE>* vkb,
+                                                                        std::complex<FPTYPE>* vkb1,
+                                                                        std::complex<FPTYPE>* vkb2,
+                                                                        std::complex<FPTYPE>* dbecp_noevc)
 {
     cal_dbecp_noevc_nl<FPTYPE><<<nkb, THREADS_PER_BLOCK>>>(
             ipol,
@@ -193,29 +193,28 @@ void cal_dbecp_noevc_nl_op<FPTYPE, psi::DEVICE_GPU>::operator() (
 }
 
 template <typename FPTYPE>
-void cal_stress_nl_op<FPTYPE, psi::DEVICE_GPU>::operator() (
-        const psi::DEVICE_GPU *ctx,
-        const bool& nondiagonal,
-        const int &ipol,
-        const int &jpol,
-        const int &nkb,
-        const int &nbands_occ,
-        const int &ntype,
-        const int &spin,
-        const int &wg_nc,
-        const int &ik,
-        const int &deeq_2,
-        const int &deeq_3,
-        const int &deeq_4,
-        const int *atom_nh,
-        const int *atom_na,
-        const FPTYPE *d_wg,
-        const FPTYPE* d_ekb,
-        const FPTYPE* qq_nt,
-        const FPTYPE *deeq,
-        const std::complex<FPTYPE> *becp,
-        const std::complex<FPTYPE> *dbecp,
-        FPTYPE *stress)
+void cal_stress_nl_op<FPTYPE, base_device::DEVICE_GPU>::operator()(const base_device::DEVICE_GPU* ctx,
+                                                                   const bool& nondiagonal,
+                                                                   const int& ipol,
+                                                                   const int& jpol,
+                                                                   const int& nkb,
+                                                                   const int& nbands_occ,
+                                                                   const int& ntype,
+                                                                   const int& spin,
+                                                                   const int& wg_nc,
+                                                                   const int& ik,
+                                                                   const int& deeq_2,
+                                                                   const int& deeq_3,
+                                                                   const int& deeq_4,
+                                                                   const int* atom_nh,
+                                                                   const int* atom_na,
+                                                                   const FPTYPE* d_wg,
+                                                                   const FPTYPE* d_ekb,
+                                                                   const FPTYPE* qq_nt,
+                                                                   const FPTYPE* deeq,
+                                                                   const std::complex<FPTYPE>* becp,
+                                                                   const std::complex<FPTYPE>* dbecp,
+                                                                   FPTYPE* stress)
 {
      cal_stress_nl<FPTYPE><<<nbands_occ * ntype, THREADS_PER_BLOCK>>>(
              nondiagonal,
@@ -390,8 +389,8 @@ __global__ void cal_vq_deri(
 
 
 template <typename FPTYPE>
-void cal_vkb_op<FPTYPE, psi::DEVICE_GPU>::operator()(
-        const psi::DEVICE_GPU *ctx,
+void cal_vkb_op<FPTYPE, base_device::DEVICE_GPU>::operator()(
+        const base_device::DEVICE_GPU *ctx,
         int nh,
         int npw,
         FPTYPE** vqs_in,
@@ -415,8 +414,8 @@ void cal_vkb_op<FPTYPE, psi::DEVICE_GPU>::operator()(
 }
 
 template <typename FPTYPE>
-void cal_vkb_deri_op<FPTYPE, psi::DEVICE_GPU>::operator()(
-        const psi::DEVICE_GPU *ctx,
+void cal_vkb_deri_op<FPTYPE, base_device::DEVICE_GPU>::operator()(
+        const base_device::DEVICE_GPU *ctx,
         int nh,
         int npw,
         int ipol,
@@ -443,8 +442,8 @@ void cal_vkb_deri_op<FPTYPE, psi::DEVICE_GPU>::operator()(
 }
 
 template <typename FPTYPE>
-void cal_vq_op<FPTYPE, psi::DEVICE_GPU>::operator()(
-        const psi::DEVICE_GPU *ctx,
+void cal_vq_op<FPTYPE, base_device::DEVICE_GPU>::operator()(
+        const base_device::DEVICE_GPU *ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2, const int tab_3, const FPTYPE table_interval, 
@@ -462,8 +461,8 @@ void cal_vq_op<FPTYPE, psi::DEVICE_GPU>::operator()(
 
 
 template <typename FPTYPE>
-void cal_vq_deri_op<FPTYPE, psi::DEVICE_GPU>::operator()(
-        const psi::DEVICE_GPU *ctx,
+void cal_vq_deri_op<FPTYPE, base_device::DEVICE_GPU>::operator()(
+        const base_device::DEVICE_GPU *ctx,
         const FPTYPE* tab,
         int it, const FPTYPE* gk, int npw,
         const int tab_2, const int tab_3, const FPTYPE table_interval, 
@@ -482,8 +481,8 @@ void cal_vq_deri_op<FPTYPE, psi::DEVICE_GPU>::operator()(
 }
 
 // template <typename FPTYPE>
-// void prepare_vkb_deri_ptr_op<FPTYPE, psi::DEVICE_GPU>::operator()(
-//         const psi::DEVICE_GPU* ctx,
+// void prepare_vkb_deri_ptr_op<FPTYPE, base_device::DEVICE_GPU>::operator()(
+//         const base_device::DEVICE_GPU* ctx,
 //         int nbeta, double* nhtol, int nhtol_nc, int npw, int it,
 //         int ipol, int jpol,
 //         std::complex<FPTYPE>*vkb_out, std::complex<FPTYPE>** vkb_ptrs,
@@ -510,7 +509,7 @@ void cal_vq_deri_op<FPTYPE, psi::DEVICE_GPU>::operator()(
 
 
 template <>
-void pointer_array_malloc<psi::DEVICE_GPU>::operator()(
+void pointer_array_malloc<base_device::DEVICE_GPU>::operator()(
     void **ptr,
     const int n
 )
@@ -518,10 +517,10 @@ void pointer_array_malloc<psi::DEVICE_GPU>::operator()(
     cudaErrcheck(cudaMalloc(ptr, n * sizeof(void*)));
 }
 
-template struct pointer_array_malloc<psi::DEVICE_GPU>;
+template struct pointer_array_malloc<base_device::DEVICE_GPU>;
 
 template <>
-void synchronize_ptrs<psi::DEVICE_GPU>::operator()(
+void synchronize_ptrs<base_device::DEVICE_GPU>::operator()(
     void **ptr_out,
     const void **ptr_in,
     const int size)
@@ -529,30 +528,30 @@ void synchronize_ptrs<psi::DEVICE_GPU>::operator()(
     cudaMemcpy(ptr_out, ptr_in, sizeof(void*) * size, cudaMemcpyHostToDevice);
 }
 
-template struct synchronize_ptrs<psi::DEVICE_GPU>;
+template struct synchronize_ptrs<base_device::DEVICE_GPU>;
 
-template struct cal_stress_mgga_op<std::complex<float>,  psi::DEVICE_GPU>;
-template struct cal_stress_mgga_op<std::complex<double>, psi::DEVICE_GPU>;
+template struct cal_stress_mgga_op<std::complex<float>, base_device::DEVICE_GPU>;
+template struct cal_stress_mgga_op<std::complex<double>, base_device::DEVICE_GPU>;
 
-template struct cal_dbecp_noevc_nl_op<float, psi::DEVICE_GPU>;
-template struct cal_dbecp_noevc_nl_op<double, psi::DEVICE_GPU>;
+template struct cal_dbecp_noevc_nl_op<float, base_device::DEVICE_GPU>;
+template struct cal_dbecp_noevc_nl_op<double, base_device::DEVICE_GPU>;
 
-template struct cal_stress_nl_op<float, psi::DEVICE_GPU>;
-template struct cal_stress_nl_op<double, psi::DEVICE_GPU>;
+template struct cal_stress_nl_op<float, base_device::DEVICE_GPU>;
+template struct cal_stress_nl_op<double, base_device::DEVICE_GPU>;
 
 
-template struct cal_vq_op<double, psi::DEVICE_GPU>;
-template struct cal_vq_op<float, psi::DEVICE_GPU>;
+template struct cal_vq_op<double, base_device::DEVICE_GPU>;
+template struct cal_vq_op<float, base_device::DEVICE_GPU>;
 
-template struct cal_vq_deri_op<double, psi::DEVICE_GPU>;
-template struct cal_vq_deri_op<float, psi::DEVICE_GPU>;
+template struct cal_vq_deri_op<double, base_device::DEVICE_GPU>;
+template struct cal_vq_deri_op<float, base_device::DEVICE_GPU>;
 
-template struct cal_vkb_op<double, psi::DEVICE_GPU>;
-template struct cal_vkb_op<float, psi::DEVICE_GPU>;
+template struct cal_vkb_op<double, base_device::DEVICE_GPU>;
+template struct cal_vkb_op<float, base_device::DEVICE_GPU>;
 
-template struct cal_vkb_deri_op<double, psi::DEVICE_GPU>;
-template struct cal_vkb_deri_op<float, psi::DEVICE_GPU>;
+template struct cal_vkb_deri_op<double, base_device::DEVICE_GPU>;
+template struct cal_vkb_deri_op<float, base_device::DEVICE_GPU>;
 
-// template struct prepare_vkb_deri_ptr_op<double, psi::DEVICE_GPU>;
-// template struct prepare_vkb_deri_ptr_op<float, psi::DEVICE_GPU>;
+// template struct prepare_vkb_deri_ptr_op<double, base_device::DEVICE_GPU>;
+// template struct prepare_vkb_deri_ptr_op<float, base_device::DEVICE_GPU>;
 }  // namespace hamilt

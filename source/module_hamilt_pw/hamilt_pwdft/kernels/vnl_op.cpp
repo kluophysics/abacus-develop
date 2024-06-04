@@ -4,9 +4,9 @@
 namespace hamilt {
 
 template <typename FPTYPE>
-struct cal_vnl_op<FPTYPE, psi::DEVICE_CPU> {
+struct cal_vnl_op<FPTYPE, base_device::DEVICE_CPU> {
     void operator()(
-        const psi::DEVICE_CPU *ctx,
+        const base_device::DEVICE_CPU *ctx,
         const int &ntype,
         const int &npw,
         const int &npwx,
@@ -88,8 +88,8 @@ struct cal_vnl_op<FPTYPE, psi::DEVICE_CPU> {
     }
 };
 
-template struct cal_vnl_op<float, psi::DEVICE_CPU>;
-template struct cal_vnl_op<double, psi::DEVICE_CPU>;
+template struct cal_vnl_op<float, base_device::DEVICE_CPU>;
+template struct cal_vnl_op<double, base_device::DEVICE_CPU>;
 
 }  // namespace hamilt
 
