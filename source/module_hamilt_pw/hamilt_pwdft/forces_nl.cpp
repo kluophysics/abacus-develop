@@ -245,8 +245,6 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
     ModuleBase::TITLE("Forces", "cal_force_nl");
     ModuleBase::timer::tick("Forces", "cal_force_nl");
 
-    auto start = std::chrono::high_resolution_clock::now();
-
     const int nkb = GlobalC::ppcell.nkb;
     int wg_nc = wg.nc;
     if (nkb == 0 || psi_in == nullptr || wfc_basis == nullptr)
@@ -350,17 +348,6 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
 
 
     int nks = wfc_basis->nks;
-
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> diff = end - start;
-    double time  = diff.count();
-    //printf("\nbegin:%.3lf\n\n",time);
-
-
-     start = std::chrono::high_resolution_clock::now();
-
-    double force_ylm=0,force_gemm=0, force_nl_op=0,force_vq=0,force_cal_vkb1_nl_op=0,force_vkb=0;
-
     for(int ik=0;ik<nks;ik++)//loop k points
     {
         // only for uspp: move the spin index in deeq
@@ -390,7 +377,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
         const int npm = GlobalV::NPOL * nbands_occ;
         const int npw = p_kv->ngk[ik];
 
-        start = std::chrono::high_resolution_clock::now();
+
         std::vector<FPTYPE> g_plus_k = cal_gk<FPTYPE>(ik, wfc_basis);
         std::complex<FPTYPE>* becp_ptr = becp;
 
@@ -411,13 +398,9 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
             syncmem_var_h2d_op()(this->ctx, this->cpu_ctx, d_ylm, ylm.data(), ylm.size());
         }
 
-        end = std::chrono::high_resolution_clock::now();
-        diff = end - start;
-        force_ylm  += diff.count();
 
         for(int it=0;it<GlobalC::ucell.ntype;it++)//loop all elements 
         {
-            start = std::chrono::high_resolution_clock::now();
 
             // prepare inputs for calculating vkb，vkb1，vkb2 
             // prepare vq and vq', size: nq * npwx 
@@ -449,33 +432,14 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
             std::vector<complex<double>> pref =  cal_pref<double>(it);
             int nh = pref.size();
 
-            end = std::chrono::high_resolution_clock::now();
-            diff = end - start;
-            force_vq  += diff.count();
-
-
-            
             double time=0,time2=0;
             for(int ia=0;ia<h_atom_na[it];ia++)
             {
                 // prepare SK
-
-                
                 std::complex<FPTYPE>* sk=GlobalC::ppcell.psf->get_sk( ik,it,ia, wfc_basis);;
-
-                
                 // 1. calculate becp
                 // 1.a calculate vkb
-                // cal_vkb(it, npw, 
-                //     vq.data(), 
-                //     ylm.data(), 
-                //     sk,
-                //     pref.data(), 
-                //     ppcell_vkb);
-
                 // 2.b calculate becp = vkb * psi
-
-                start = std::chrono::high_resolution_clock::now();
                 if (this->device == psi::GpuDevice)
                 {
 
@@ -495,14 +459,10 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
                     syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, d_sk, sk, npw);
                     syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, d_pref_in, pref.data(), nh);
 
-
                     hamilt::cal_vkb_op<FPTYPE, Device>()(
                         this->ctx, nh, npw, d_vq_ptrs, d_ylm_ptrs,
                         d_sk, d_pref_in, d_vkb_ptrs
                     );
-
-                    // syncmem_complex_d2h_op()(this->cpu_ctx, this->ctx, ppcell_vkb, ppcell_vkb_d, nh * npw);
-
                         
                 } else {
                     prepare_vkb_ptr<FPTYPE, Device>(
@@ -518,12 +478,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
                         sk, pref.data(), vkb_ptrs
                     );
                 }
-                end = std::chrono::high_resolution_clock::now();
-                diff = end - start;
-                force_vkb  += diff.count();
 
-
-                start = std::chrono::high_resolution_clock::now();
                 if (this->device == psi::GpuDevice)
                 {
                     //syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, ppcell_vkb_d, ppcell_vkb, nh * npw);
@@ -559,13 +514,9 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
                         becp_ptr,
                         nkb);
                 }
-                end = std::chrono::high_resolution_clock::now();
-                diff = end - start;
-                force_gemm  += diff.count();
-
 
                 becp_ptr += nh;
-                start = std::chrono::high_resolution_clock::now();
+
                 for (int ipol = 0; ipol < 3; ipol++)
                 {
                     if (this->device == psi::GpuDevice)
@@ -612,10 +563,6 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
                             nkb);
                     dbecp_ptr[ipol] += nh;
                 } // end ipol
-
-                end = std::chrono::high_resolution_clock::now();
-                diff = end - start;
-                force_cal_vkb1_nl_op  += diff.count();
                 delete [] sk;
             }//end ia
 
@@ -642,7 +589,7 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
         //		and at last sum up all the forces.
         //		Parallel_Reduce::reduce_pool( dbecp.ptr, dbecp.ndata);
         
-        start = std::chrono::high_resolution_clock::now();
+
         cal_force_nl_op()(this->ctx,
                           nondiagonal,
                           nbands_occ,
@@ -666,31 +613,8 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
                           becp,
                           dbecp,
                           force);
-        end = std::chrono::high_resolution_clock::now();
-        diff = end - start;
-        force_nl_op  += diff.count();
-
     } // end ik
 
-
-
-    end = std::chrono::high_resolution_clock::now();
-    diff = end - start;
-    time  = diff.count();
-    // printf("\nnks:%.3lf\n\n",time);
-
-
-
-    printf("\nforce_ylm:%.3lf\n\n",force_ylm);
-    printf("\nforce_vq:%.3lf\n\n",force_vq);
-    printf("\nforce_gemm:%.3lf\n\n",force_gemm);
-    printf("\nforce_nl_op:%.3lf\n\n",force_nl_op);
-
-    printf("\nforce_vkb:%.3lf\n\n",force_vkb);
-    printf("\nforce_cal_vkb1_nl_op:%.3lf\n\n",force_cal_vkb1_nl_op);
-    printf("\nforce_nl_op:%.3lf\n\n",force_nl_op);
-
-    start = std::chrono::high_resolution_clock::now();
     if (this->device == psi::GpuDevice)
     {
         syncmem_var_d2h_op()(this->cpu_ctx, this->ctx, forcenl.c, force, forcenl.nr * forcenl.nc);
@@ -711,11 +635,6 @@ void Forces<FPTYPE, Device>::cal_force_nl_new(ModuleBase::matrix& forcenl,
         delmem_int_op()(this->ctx, atom_nh);
         delmem_int_op()(this->ctx, atom_na);
     }
-
-    end = std::chrono::high_resolution_clock::now();
-    diff = end - start;
-    time  = diff.count();
-    //printf("\nend:%.3lf\n\n",time);
 	ModuleBase::timer::tick("Forces","cal_force_nl");
 }
 

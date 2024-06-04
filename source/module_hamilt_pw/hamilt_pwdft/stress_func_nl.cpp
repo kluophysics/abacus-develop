@@ -22,7 +22,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
     ModuleBase::TITLE("Stress_Func", "stress_nl");
     ModuleBase::timer::tick("Stress_Func", "stress_nl");
 
-    auto start = std::chrono::high_resolution_clock::now();
+
     const int npwx = wfc_basis->npwk_max;
     this->nlpp = nlpp_in;
     this->ucell = &ucell_in;
@@ -138,16 +138,9 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
     resmem_complex_op()(this->ctx, becp, wg_nc * nkb, "Stress::becp");
     resmem_complex_op()(this->ctx, dbecp, 6 * wg_nc * nkb, "Stress::dbecp");
 
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> diff = end - start;
-    double time  = diff.count();
-    printf("\nbegin:%.3lf\n\n",time);
 
 
     int nks = p_kv->nks;
-
-    double stress_vq_deri=0,stress_ylm_deri=0,stress_vkb_deri=0,stress_vkb=0,stress_gemm=0,
-             stress_nl_op=0,stress_vq=0,stress_vkb_ptr=0,stress_mem=0;
     for(int ik=0;ik<nks;ik++)//loop k points
     {
         // only for uspp: move the spin index in deeq
@@ -173,7 +166,6 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
         const int npm = GlobalV::NPOL * nbands_occ;
         const int npw = p_kv->ngk[ik];
 
-        start = std::chrono::high_resolution_clock::now();
         std::vector<FPTYPE> g_plus_k = cal_gk(ik, wfc_basis);
         std::complex<FPTYPE>* becp_ptr = becp;
         std::complex<FPTYPE>* dbecp_ptr[6];
@@ -199,9 +191,6 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
         //TODO: ylm,ylm_deri pass to GPU
         /////////////////////////////
 
-        end = std::chrono::high_resolution_clock::now();
-        diff = end - start;
-        stress_ylm_deri  += diff.count();
         for(int it=0;it<this->ucell->ntype;it++)//loop all elements 
         {
             int lenth_vq = this->ucell->atoms[it].ncpp.nbeta*npw;
@@ -209,8 +198,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
             // prepare vq and vq', size: nq * npwx 
             std::vector<double> vq(lenth_vq);//cal_vq(it, g_plus_k.data(), npw);
             //std::vector<double> vq2(vq.size());
-            
-            start = std::chrono::high_resolution_clock::now();
+
 
             if (this->device == psi::GpuDevice)
             {
@@ -232,11 +220,6 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                 );                
             }
 
-            end = std::chrono::high_resolution_clock::now();
-            diff = end - start;
-            stress_vq  += diff.count();
-
-            start = std::chrono::high_resolution_clock::now();
             std::vector<double> vq_deri(lenth_vq);// = cal_vq_deri(it, g_plus_k.data(), npw);
             if (this->device == psi::GpuDevice)
             {
@@ -254,9 +237,6 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                     GlobalV::DQ, this->ucell->atoms[it].ncpp.nbeta, vq_deri.data()
                 );                        
             }
-            end = std::chrono::high_resolution_clock::now();
-            diff = end - start;
-            stress_vq_deri  += diff.count();
 
             
             // prepare（-i）^l, size: nh
@@ -271,7 +251,6 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                 // 1. calculate becp
                 // 1.a calculate vkb
 
-                start = std::chrono::high_resolution_clock::now();
 
                 if (this->device == psi::GpuDevice)
                 {
@@ -316,13 +295,9 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                     );
                 }
 
-                end = std::chrono::high_resolution_clock::now();
-                diff = end - start;
-                stress_vkb  += diff.count();
                 // 2.b calculate becp = vkb * psi
                 int npm = GlobalV::NPOL * nbands_occ;
 
-                start = std::chrono::high_resolution_clock::now();
                 if (this->device == psi::GpuDevice)
                 {
                     //syncmem_complex_h2d_op()(this->ctx, this->cpu_ctx, ppcell_vkb_d, ppcell_vkb, nh * npw);
@@ -359,9 +334,6 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                         nkb);
                 }
 
-                end = std::chrono::high_resolution_clock::now();
-                diff = end - start;
-                stress_gemm  += diff.count();
 
                 becp_ptr += nh;
                 //calculate stress（00，01，02，11，12，22）
@@ -375,7 +347,7 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                         
                         if (this->device == psi::GpuDevice)
                         {
-                            start = std::chrono::high_resolution_clock::now();
+
                             prepare_vkb_deri_ptr(
                                 this->ucell->atoms[it].ncpp.nbeta, nlpp->nhtol.c, 
                                 nlpp->nhtol.nc, npw, it, ipol, jpol,
@@ -385,47 +357,21 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                                 hd_vq, vq_ptrs,
                                 hd_vq_deri, vq_deri_ptrs
                             );
-                            end = std::chrono::high_resolution_clock::now();
-                            diff = end - start;
-                            stress_vkb_ptr  += diff.count();     
 
-
-
-
-                            start = std::chrono::high_resolution_clock::now();
                             // transfer the pointers from CPU to GPU
-                            // hamilt::synchronize_ptrs<Device>()((void**)d_vq_ptrs, (const void**)vq_ptrs, nh);
-                            // hamilt::synchronize_ptrs<Device>()((void**)d_ylm_ptrs, (const void**)ylm_ptrs, nh);
-                            // hamilt::synchronize_ptrs<Device>()((void**)d_vkb_ptrs, (const void**)vkb_ptrs, nh);
                             hamilt::synchronize_ptrs<Device>()((void**)d_vq_deri_ptrs, (const void**)vq_deri_ptrs, nh);
                             hamilt::synchronize_ptrs<Device>()((void**)d_ylm_deri_ptrs1, (const void**)ylm_deri_ptrs1, nh);
                             hamilt::synchronize_ptrs<Device>()((void**)d_ylm_deri_ptrs2, (const void**)ylm_deri_ptrs2, nh);
-
-
-                            end = std::chrono::high_resolution_clock::now();
-                            diff = end - start;
-                            stress_mem  += diff.count();   
-
-                            start = std::chrono::high_resolution_clock::now();
                             cal_vkb_deri_op()(
                                 this->ctx, nh, npw, ipol, jpol,
                                 d_vq_ptrs, d_vq_deri_ptrs,
                                 d_ylm_ptrs, d_ylm_deri_ptrs1, d_ylm_deri_ptrs2,
                                 d_sk, d_pref_in, d_g_plus_k, d_vkb_ptrs
-                            );
-                            end = std::chrono::high_resolution_clock::now();
-                            diff = end - start;
-                            stress_vkb_deri  += diff.count(); 
-
-                            // start = std::chrono::high_resolution_clock::now();
-                            // syncmem_complex_d2h_op()(this->cpu_ctx, this->ctx, ppcell_vkb, ppcell_vkb_d, nh * npw);
-                            // end = std::chrono::high_resolution_clock::now();
-                            // diff = end - start;
-                            // stress_mem  += diff.count();      
+                            );   
                         } 
                         else 
                         {
-                            start = std::chrono::high_resolution_clock::now();
+
                             prepare_vkb_deri_ptr(
                                 this->ucell->atoms[it].ncpp.nbeta, nlpp->nhtol.c, 
                                 nlpp->nhtol.nc, npw, it, ipol, jpol,
@@ -435,25 +381,16 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                                 vq.data(), vq_ptrs,
                                 vq_deri.data(), vq_deri_ptrs
                             );
-                            end = std::chrono::high_resolution_clock::now();
-                            diff = end - start;
-                            stress_vkb_ptr  += diff.count();     
-
-                            start = std::chrono::high_resolution_clock::now();
                             cal_vkb_deri_op()(
                                 this->ctx, nh, npw, ipol, jpol,
                                 vq_ptrs, vq_deri_ptrs,
                                 ylm_ptrs, ylm_deri_ptrs1, ylm_deri_ptrs2,
                                 sk, pref.data(), g_plus_k.data(), vkb_ptrs
                             );
-                            end = std::chrono::high_resolution_clock::now();
-                            diff = end - start;
-                            stress_vkb_deri  += diff.count(); 
                         }
                  
                         // 2.b calculate dbecp = dbecp_noevc * psi
 
-                        start = std::chrono::high_resolution_clock::now();
                         if (this->device == psi::GpuDevice)
                         {
                             gemm_op()(this->ctx,
@@ -489,9 +426,6 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                             dbecp_ptr[index],
                             nkb);                        
                         }
-                        end = std::chrono::high_resolution_clock::now();
-                        diff = end - start;
-                        stress_gemm  += diff.count();       
                         dbecp_ptr[index++] += nh;
                     }//jpol
                 }//ipol
@@ -515,9 +449,6 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
         // 3. stress(ipol, jpol) += \sum becp * dbecp * D_pp'
         int index = 0;
 
-
-        
-        start = std::chrono::high_resolution_clock::now();
         for(int ipol=0;ipol<3;ipol++)
         {
             for(int jpol=0;jpol<=ipol;jpol++)
@@ -547,9 +478,6 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
                 index++;
             }//jpol
         }//ipol
-        end = std::chrono::high_resolution_clock::now();
-        diff = end - start;
-        stress_nl_op  += diff.count();       
     }//ik
                 
     syncmem_var_d2h_op()(this->cpu_ctx, this->ctx, sigmanlc, stress, 9);
@@ -568,15 +496,6 @@ void Stress_Func<FPTYPE, Device>::stress_nl(ModuleBase::matrix& sigma,
 
 
 
-    printf("\n stress_ylm_deri:%.3lf\n\n",stress_ylm_deri);
-    printf("\n stress_vq:%.3lf\n\n",stress_vq);
-    printf("\n stress_vq_deri:%.3lf\n\n",stress_vq_deri);
-    printf("\n stress_vkb:%.3lf\n\n",stress_vkb);
-    printf("\n stress_vkb_deri:%.3lf\n\n",stress_vkb_deri);
-    printf("\n stress_vkb_ptr:%.3lf\n\n",stress_vkb_ptr);
-    printf("\n stress_gemm:%.3lf\n\n",stress_gemm);
-    printf("\n stress_nl_op:%.3lf\n\n",stress_nl_op);
-    printf("\n stress_mem:%.3lf\n\n",stress_mem);
 
     //        Parallel_Reduce::reduce_all(sigmanl.c, sigmanl.nr * sigmanl.nc);
         
