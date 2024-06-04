@@ -297,6 +297,46 @@ struct cal_vq_deri_op<FPTYPE, psi::DEVICE_CPU>{
     }
 };
 
+// // cpu version first, gpu version later
+// template <typename FPTYPE>
+// struct prepare_vkb_deri_ptr_op<FPTYPE, psi::DEVICE_CPU>{
+//     void operator()(
+//         const psi::DEVICE_CPU* ctx,
+//         int nbeta, double* nhtol, int nhtol_nc, int npw, int it,
+//         int ipol, int jpol,
+//         std::complex<FPTYPE>*vkb_out, std::complex<FPTYPE>** vkb_ptrs,
+//         FPTYPE* ylm_in, FPTYPE** ylm_ptrs,
+//         FPTYPE* ylm_deri_in, FPTYPE** ylm_deri_ptr1s, FPTYPE** ylm_deri_ptr2s,
+//         FPTYPE* vq_in, FPTYPE** vq_ptrs,
+//         FPTYPE* vq_deri_in, FPTYPE** vq_deri_ptrs
+//     ){   
+//         // int ih=0;
+//         // int x1 = (nlpp->lmaxkb + 1) * (nlpp->lmaxkb + 1);
+//         // for(int nb=0;nb<nbeta;nb++)
+//         // {
+//         //     int l = nhtol[it*nhtol_nc+ih];
+//         //     for(int m=0;m<2*l+1;m++)
+//         //     {
+//         //         int lm = l*l + m;
+//         //         vkb_ptrs[ih] = &vkb_out[ih * npw];
+//         //         ylm_ptrs[ih] = &ylm_in[lm * npw];
+//         //         vq_ptrs[ih] = &vq_in[nb * npw];
+
+
+//         //         ylm_deri_ptr1s[ih] = &ylm_deri_in[(ipol * x1 + lm) * npw];
+//         //         ylm_deri_ptr2s[ih] = &ylm_deri_in[(jpol * x1 + lm) * npw];
+//         //         vq_deri_ptrs[ih] = &vq_deri_in[nb * npw];
+
+//         //         ih++;
+            
+            
+//         //     }
+//         // }
+//     }
+// };
+
+
+
 template <>
 void pointer_array_malloc<psi::DEVICE_CPU>::operator()(
     void **ptr,
@@ -338,5 +378,9 @@ template struct cal_vq_op<double, psi::DEVICE_CPU>;
 
 template struct cal_vq_deri_op<float, psi::DEVICE_CPU>;
 template struct cal_vq_deri_op<double, psi::DEVICE_CPU>;
+
+
+// template struct prepare_vkb_deri_ptr_op<float, psi::DEVICE_CPU>;
+// template struct prepare_vkb_deri_ptr_op<double, psi::DEVICE_CPU>;
 }  // namespace hamilt
 

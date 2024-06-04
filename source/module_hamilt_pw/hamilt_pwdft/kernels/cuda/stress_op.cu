@@ -354,6 +354,41 @@ __global__ void cal_vq_deri(
         tab, it, ib, tab_2, tab_3, table_interval, gnorm[idx]);
 }
 
+// template <typename FPTYPE>
+// __global__ void prepare_vkb_deri_ptr(
+//         int nbeta, double* nhtol, int nhtol_nc, int npw, int it,
+//         int ipol, int jpol,
+//         thrust::complex<FPTYPE>*vkb_out, thrust::complex<FPTYPE>** vkb_ptrs,
+//         FPTYPE* ylm_in, FPTYPE** ylm_ptrs,
+//         FPTYPE* ylm_deri_in, FPTYPE** ylm_deri_ptr1s, FPTYPE** ylm_deri_ptr2s,
+//         FPTYPE* vq_in, FPTYPE** vq_ptrs,
+//         FPTYPE* vq_deri_in, FPTYPE** vq_deri_ptrs
+// ){
+//     // int ih=0;
+//     // int x1 = (nlpp->lmaxkb + 1) * (nlpp->lmaxkb + 1);
+//     // for(int nb=0;nb<nbeta;nb++)
+//     // {
+//     //     int l = nhtol[it*nhtol_nc+ih];
+//     //     for(int m=0;m<2*l+1;m++)
+//     //     {
+//     //         int lm = l*l + m;
+//     //         vkb_ptrs[ih] = &vkb_out[ih * npw];
+//     //         ylm_ptrs[ih] = &ylm_in[lm * npw];
+//     //         vq_ptrs[ih] = &vq_in[nb * npw];
+
+
+//     //         ylm_deri_ptr1s[ih] = &ylm_deri_in[(ipol * x1 + lm) * npw];
+//     //         ylm_deri_ptr2s[ih] = &ylm_deri_in[(jpol * x1 + lm) * npw];
+//     //         vq_deri_ptrs[ih] = &vq_deri_in[nb * npw];
+
+//     //         ih++;
+        
+        
+//     //     }
+//     // }
+// }
+
+
 template <typename FPTYPE>
 void cal_vkb_op<FPTYPE, psi::DEVICE_GPU>::operator()(
         const psi::DEVICE_GPU *ctx,
@@ -446,6 +481,34 @@ void cal_vq_deri_op<FPTYPE, psi::DEVICE_GPU>::operator()(
     return ;
 }
 
+// template <typename FPTYPE>
+// void prepare_vkb_deri_ptr_op<FPTYPE, psi::DEVICE_GPU>::operator()(
+//         const psi::DEVICE_GPU* ctx,
+//         int nbeta, double* nhtol, int nhtol_nc, int npw, int it,
+//         int ipol, int jpol,
+//         std::complex<FPTYPE>*vkb_out, std::complex<FPTYPE>** vkb_ptrs,
+//         FPTYPE* ylm_in, FPTYPE** ylm_ptrs,
+//         FPTYPE* ylm_deri_in, FPTYPE** ylm_deri_ptr1s, FPTYPE** ylm_deri_ptr2s,
+//         FPTYPE* vq_in, FPTYPE** vq_ptrs,
+//         FPTYPE* vq_deri_in, FPTYPE** vq_deri_ptrs
+//     )
+// {
+//     const int block = (npw + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+//     dim3 gridsize(block,nbeta);
+
+
+//     prepare_vkb_deri_ptr<FPTYPE><<<1,1>>>(
+//         nbeta, nhtol, nhtol_nc, npw, it, ipol, jpol,
+//         reinterpret_cast<const thrust::complex<FPTYPE>*>(vkb_out), 
+//         reinterpret_cast<const thrust::complex<FPTYPE>*>(vkb_ptrs), 
+//         ylm_in, ylm_ptrs, ylm_deri_in, ylm_deri_ptr1s, ylm_deri_ptr2s,
+//         vq_in, vq_ptrs, vq_deri_in, vq_deri_ptrs
+//     );
+
+//     return ;
+// }
+
+
 template <>
 void pointer_array_malloc<psi::DEVICE_GPU>::operator()(
     void **ptr,
@@ -463,7 +526,7 @@ void synchronize_ptrs<psi::DEVICE_GPU>::operator()(
     const void **ptr_in,
     const int size)
 {
-    cudaErrcheck(cudaMemcpy(ptr_out, ptr_in, sizeof(void*) * size, cudaMemcpyHostToDevice));
+    cudaMemcpy(ptr_out, ptr_in, sizeof(void*) * size, cudaMemcpyHostToDevice);
 }
 
 template struct synchronize_ptrs<psi::DEVICE_GPU>;
@@ -489,4 +552,7 @@ template struct cal_vkb_op<float, psi::DEVICE_GPU>;
 
 template struct cal_vkb_deri_op<double, psi::DEVICE_GPU>;
 template struct cal_vkb_deri_op<float, psi::DEVICE_GPU>;
+
+// template struct prepare_vkb_deri_ptr_op<double, psi::DEVICE_GPU>;
+// template struct prepare_vkb_deri_ptr_op<float, psi::DEVICE_GPU>;
 }  // namespace hamilt

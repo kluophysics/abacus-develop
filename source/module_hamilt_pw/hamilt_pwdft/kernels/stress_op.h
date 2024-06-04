@@ -172,6 +172,22 @@ struct cal_vq_deri_op{
     );
 };
 
+// // cpu version first, gpu version later
+// template <typename FPTYPE, typename Device>
+// struct prepare_vkb_deri_ptr_op<FPTYPE, psi::DEVICE_GPU>{
+//     void operator()(
+//         const Device *ctx,
+//         int nbeta, double* nhtol, int nhtol_nc, int npw, int it,
+//         int ipol, int jpol,
+//         std::complex<FPTYPE>*vkb_out, std::complex<FPTYPE>** vkb_ptrs,
+//         FPTYPE* ylm_in, FPTYPE** ylm_ptrs,
+//         FPTYPE* ylm_deri_in, FPTYPE** ylm_deri_ptr1s, FPTYPE** ylm_deri_ptr2s,
+//         FPTYPE* vq_in, FPTYPE** vq_ptrs,
+//         FPTYPE* vq_deri_in, FPTYPE** vq_deri_ptrs
+//     );
+// };
+
+
 
 #if __CUDA || __UT_USE_CUDA || __ROCM || __UT_USE_ROCM
 template <typename FPTYPE>
@@ -279,6 +295,20 @@ struct cal_vq_deri_op<FPTYPE, psi::DEVICE_GPU>{
     );
 };
 
+// // cpu version first, gpu version later
+// template <typename FPTYPE>
+// struct prepare_vkb_deri_ptr_op<FPTYPE, psi::DEVICE_GPU>{
+//     void operator()(
+//         const psi::DEVICE_GPU* ctx,
+//         int nbeta, double* nhtol, int nhtol_nc, int npw, int it,
+//         int ipol, int jpol,
+//         std::complex<FPTYPE>*vkb_out, std::complex<FPTYPE>** vkb_ptrs,
+//         FPTYPE* ylm_in, FPTYPE** ylm_ptrs,
+//         FPTYPE* ylm_deri_in, FPTYPE** ylm_deri_ptr1s, FPTYPE** ylm_deri_ptr2s,
+//         FPTYPE* vq_in, FPTYPE** vq_ptrs,
+//         FPTYPE* vq_deri_in, FPTYPE** vq_deri_ptrs
+//     );
+// };
 
 
 #endif // __CUDA || __UT_USE_CUDA || __ROCM || __UT_USE_ROCM
