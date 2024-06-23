@@ -341,5 +341,34 @@ extern std::vector<double> qo_screening_coeff;
 
 // radius of on-site orbitals
 extern double onsite_radius;
+
+
+// directmin kluo add on 2023-11-22
+
+extern std::string directmin_obj_type;
+extern std::string directmin_choice;
+extern std::string directmin_retraction_type;
+extern std::string directmin_vectransport_type;
+extern  int directmin_maxiter;
+
+extern std::string directmin_ls_method;
+extern std::string directmin_ls_algo ; 
+extern std::string directmin_ls_cg_algo;
+extern std::string directmin_ls_initstep_type;
+extern double directmin_ls_gtol;
+extern double directmin_ls_ftol;
+
+
+extern double directmin_ls_alpha;
+extern double directmin_ls_beta;
+extern double directmin_ls_c1;
+extern double directmin_ls_c2;
+
+extern double directmin_ls_minstepsize;
+extern double directmin_ls_maxstepsize;
+extern double directmin_ls_initstepsize;
+extern double directmin_ls_finalstepsize;
+
+
 } // namespace GlobalV
 #endif

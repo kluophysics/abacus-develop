@@ -306,4 +306,34 @@ std::vector<double> qo_screening_coeff = {};
 
 // on-site orbitals
 double onsite_radius = 0.0;
+
+
+//==========================================================
+// DirectMin  kluo added on 2023-11-22
+//==========================================================
+std::string    directmin_obj_type = "ks";
+std::string    directmin_choice = "ls";
+std::string    directmin_retraction_type = "qf";
+std::string    directmin_vectransport_type = "parallelization";
+
+int directmin_maxiter = 1000;
+
+std::string    directmin_ls_method = "cg";
+std::string    directmin_ls_algo = "swolfe"; 
+std::string    directmin_ls_cg_algo = "dy";
+std::string    directmin_ls_initstep_type = "quadint";
+
+
+double    directmin_ls_alpha = 0.0001;
+double    directmin_ls_beta = 0.999;
+double    directmin_ls_c1 = 1e-4;
+double    directmin_ls_c2 = 0.9;
+
+double    directmin_ls_minstepsize = 1e-10;
+double    directmin_ls_maxstepsize = 1e3;
+double    directmin_ls_initstepsize = 1.0;
+double    directmin_ls_finalstepsize = -1.0;
+double    directmin_ls_ftol = 1e-8;
+double    directmin_ls_gtol = 1e-6;
+
 } // namespace GlobalV

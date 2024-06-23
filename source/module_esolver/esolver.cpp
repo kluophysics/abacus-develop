@@ -9,6 +9,9 @@
 #include "esolver_dp.h"
 #include "esolver_lj.h"
 #include "esolver_of.h"
+#include "esolver_directmin.h"
+// #include "esolver_dm.h"
+
 #include "module_md/md_para.h"
 
 namespace ModuleESolver
@@ -62,6 +65,11 @@ std::string determine_type(void)
 		else if(GlobalV::ESOLVER_TYPE == "ksdft")
 		{
 			esolver_type = "ksdft_lcao";
+		}
+		// kluo 2023-11-22
+		else if(GlobalV::ESOLVER_TYPE == "directmin")
+		{
+			esolver_type = "directmin_lcao";
 		}
 #else
 		ModuleBase::WARNING_QUIT("ESolver", "LCAO basis type must be compiled with __LCAO");
@@ -173,6 +181,25 @@ void init_esolver(ESolver*& p_esolver)
 	else if (esolver_type == "dp_pot")
 	{
 		p_esolver = new ESolver_DP(INPUT.mdp.pot_file);
+	}
+	// 	else if (esolver_type == "dm_lcao")
+	// {
+	// 	if(GlobalV::GAMMA_ONLY_LOCAL)
+	// 		p_esolver = new ESolver_DM<double, double>();
+	// 	else if (GlobalV::NSPIN < 4)
+	// 		p_esolver = new ESolver_DM<std::complex<double>, double>();
+	// 	else
+	// 		p_esolver = new ESolver_DM<std::complex<double>, std::complex<double>>();
+	// }
+	// kluo added directmin_lcao solver
+	else if (esolver_type == "directmin_lcao")
+	{
+		if(GlobalV::GAMMA_ONLY_LOCAL)
+			p_esolver = new ESolver_DirectMin<double, double>();
+		else if (GlobalV::NSPIN < 4)
+			p_esolver = new ESolver_DirectMin<std::complex<double>, double>();
+		else
+			p_esolver = new ESolver_DirectMin<std::complex<double>, std::complex<double>>();
 	}
 }
 

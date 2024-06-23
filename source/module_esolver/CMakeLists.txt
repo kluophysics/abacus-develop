@@ -11,6 +11,8 @@ list(APPEND objects
     esolver_of.cpp
     esolver_of_interface.cpp
     esolver_of_tool.cpp
+    esolver_directmin.cpp # by kluo
+    # esolver_dm.cpp # by kluo
 )
 if(ENABLE_LCAO)
   list(APPEND objects
