@@ -4060,6 +4060,30 @@ void Input::Bcast()
     Parallel_Common::bcast_double(pexsi_elec_thr);
     Parallel_Common::bcast_double(pexsi_zero_thr);
     /* broadcasting std::vector is sometime a annorying task... */
+
+    //==========================================================
+    // DirectMin  kluo added on 2024-06-25
+    //==========================================================
+    Parallel_Common::bcast_string(directmin_obj_type);
+    Parallel_Common::bcast_string(directmin_choice);
+    Parallel_Common::bcast_string(directmin_ls_method);
+    Parallel_Common::bcast_string(directmin_ls_algo);
+    Parallel_Common::bcast_string(directmin_ls_cg_algo);
+    Parallel_Common::bcast_string(directmin_ls_initstep_type);
+    Parallel_Common::bcast_string(directmin_retraction_type);
+    Parallel_Common::bcast_string(directmin_vectransport_type);
+
+
+    Parallel_Common::bcast_double(directmin_ls_alpha);
+    Parallel_Common::bcast_double(directmin_ls_beta);
+    Parallel_Common::bcast_double(directmin_ls_c1);
+    Parallel_Common::bcast_double(directmin_ls_c2);
+    Parallel_Common::bcast_double(directmin_ls_minstepsize);
+    Parallel_Common::bcast_double(directmin_ls_maxstepsize);
+    Parallel_Common::bcast_double(directmin_ls_initstepsize);
+    Parallel_Common::bcast_double(directmin_ls_finalstepsize);
+
+
     if (ntype != 0) /* ntype has been broadcasted before */
     {
         qo_strategy.resize(ntype); 

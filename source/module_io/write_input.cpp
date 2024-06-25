@@ -538,6 +538,29 @@ ModuleBase::GlobalFunc::OUTP(ofs, "out_bandgap", out_bandgap, "if true, print ou
     ModuleBase::GlobalFunc::OUTP(ofs, "pexsi_elec_thr", pexsi_elec_thr, "Stopping criterion of the PEXSI iteration in terms of the number of electrons compared to numElectronExact");
     ModuleBase::GlobalFunc::OUTP(ofs, "pexsi_zero_thr", pexsi_zero_thr, "if the absolute value of matrix element is less than ZERO_Limit, it will be considered as 0");
 
+
+    ofs << "\n#Parameters (25.direct minimization parameters)" << std::endl;
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_obj_type", directmin_obj_type, "objective function type, test, ks, rdmft, etc...");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_choice", directmin_choice, "DirectMin choice, either trust-region (tr) or line-search (ls) for now, tr is for later though.");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_maxiter", directmin_maxiter, "Maximal number of iterations");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_method", directmin_ls_method, "DirectMin line search method");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_algo", directmin_ls_algo, "DirectMin line search algorithm");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_cg_algo", directmin_ls_cg_algo, "DirectMin line search method cg algorithm");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_initstep_type", directmin_ls_initstep_type, "initial step type for DirectMin line search method,.");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_retraction_type", directmin_retraction_type, "Retraction for the Stiefel manifold");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_vectransport_type", directmin_vectransport_type, "Vector transport for the Stiefel manifold");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_alpha", directmin_ls_alpha, "the coefficient of the Wolfe first condition");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_beta", directmin_ls_beta, "the coefficient of the Wolfe second condition");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_c1", directmin_ls_c1, "the coefficient of the Armijo-Goldstein condition");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_c2", directmin_ls_c2, "the coefficient of the Armijo-Goldstein condition");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_minstepsize", directmin_ls_minstepsize, "the minimum stepsize allowed in the linesearch algorithm");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_maxstepsize", directmin_ls_maxstepsize, "the maximum stepsize allowed in the linesearch algorithm");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_initstepsize", directmin_ls_initstepsize, "initial stepsize at the first iteration");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_finalstepsize", directmin_ls_finalstepsize, "final stepsize");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_ftol", directmin_ls_ftol, "line search function value tolerance");
+    ModuleBase::GlobalFunc::OUTP(ofs, "directmin_ls_gtol", directmin_ls_gtol, "line search gradient tolerance");
+
+
     ofs.close();
     return;
 }
