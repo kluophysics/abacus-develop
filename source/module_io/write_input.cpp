@@ -538,7 +538,9 @@ ModuleBase::GlobalFunc::OUTP(ofs, "out_bandgap", out_bandgap, "if true, print ou
     ModuleBase::GlobalFunc::OUTP(ofs, "pexsi_elec_thr", pexsi_elec_thr, "Stopping criterion of the PEXSI iteration in terms of the number of electrons compared to numElectronExact");
     ModuleBase::GlobalFunc::OUTP(ofs, "pexsi_zero_thr", pexsi_zero_thr, "if the absolute value of matrix element is less than ZERO_Limit, it will be considered as 0");
 
-
+    //==========================================================
+    // DirectMin  kluo added on 2024-06-25
+    //==========================================================
     ofs << "\n#Parameters (25.direct minimization parameters)" << std::endl;
     ModuleBase::GlobalFunc::OUTP(ofs, "directmin_obj_type", directmin_obj_type, "objective function type, test, ks, rdmft, etc...");
     ModuleBase::GlobalFunc::OUTP(ofs, "directmin_choice", directmin_choice, "DirectMin choice, either trust-region (tr) or line-search (ls) for now, tr is for later though.");
