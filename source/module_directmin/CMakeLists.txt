@@ -1,7 +1,9 @@
 
 list(APPEND objects
     directmin.cpp
-    # options.cpp
+    options.cpp
+    options_ls.cpp
+    stiefel.cpp
     # optimizer/options_ls.cpp
     # optimizer/base.cpp
     # optimizer/ls_base.cpp
