@@ -309,14 +309,16 @@ double onsite_radius = 0.0;
 
 
 //==========================================================
-// DirectMin  kluo added on 2023-11-22
+// variables for  DirectMin  kluo added on 2024-06-25
 //==========================================================
+// files involved global_variable.h global_variable.cpp
+// input.h input.cpp input_conv.cpp
 std::string    directmin_obj_type = "ks";
 std::string    directmin_choice = "ls";
 std::string    directmin_retraction_type = "qf";
 std::string    directmin_vectransport_type = "parallelization";
 
-int directmin_maxiter = 1000;
+int directmin_maxiter = 100;
 
 std::string    directmin_ls_method = "cg";
 std::string    directmin_ls_algo = "swolfe"; 

@@ -859,6 +859,37 @@ void Input_Conv::Convert(void)
     GlobalV::qo_thr = INPUT.qo_thr;
     GlobalV::qo_screening_coeff = INPUT.qo_screening_coeff;
 
+
+    //==========================================================
+    // DirectMin  kluo added on 2024-06-25
+    //==========================================================
+    GlobalV::directmin_obj_type = INPUT.directmin_obj_type;
+    GlobalV::directmin_choice = INPUT.directmin_choice;
+    GlobalV::directmin_retraction_type = INPUT.directmin_retraction_type;
+    GlobalV::directmin_vectransport_type = INPUT.directmin_vectransport_type;
+    GlobalV::directmin_maxiter = INPUT.directmin_maxiter;
+
+
+    GlobalV::directmin_ls_method = INPUT.directmin_ls_method;
+    GlobalV::directmin_ls_algo = INPUT.directmin_ls_algo;
+    GlobalV::directmin_ls_cg_algo = INPUT.directmin_ls_cg_algo;
+    GlobalV::directmin_ls_initstep_type = INPUT.directmin_ls_initstep_type;
+
+    GlobalV::directmin_ls_alpha = INPUT.directmin_ls_alpha;
+    GlobalV::directmin_ls_beta = INPUT.directmin_ls_beta;
+    GlobalV::directmin_ls_c1 = INPUT.directmin_ls_c1;
+    GlobalV::directmin_ls_c2 = INPUT.directmin_ls_c2;
+
+    GlobalV::directmin_ls_minstepsize = INPUT.directmin_ls_minstepsize;
+    GlobalV::directmin_ls_maxstepsize = INPUT.directmin_ls_maxstepsize;
+    GlobalV::directmin_ls_initstepsize = INPUT.directmin_ls_initstepsize;
+    GlobalV::directmin_ls_finalstepsize = INPUT.directmin_ls_finalstepsize;
+
+    GlobalV::directmin_ls_ftol  = INPUT.directmin_ls_ftol;
+    GlobalV::directmin_ls_gtol  = INPUT.directmin_ls_gtol;
+
+
+
     //-----------------------------------------------
     // PEXSI related parameters
     //-----------------------------------------------

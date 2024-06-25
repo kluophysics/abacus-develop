@@ -653,6 +653,43 @@ void Input::Default(void)
     qo_thr = 1e-6;
     qo_screening_coeff = {};
 
+
+
+
+    //==========================================================
+    // variables for DirectMin  kluo added on 2024-06-25
+    //==========================================================
+    directmin_obj_type = "ks";
+    directmin_choice = "ls";
+    directmin_maxiter = 100;
+    directmin_retraction_type = "qf";
+    directmin_vectransport_type = "parallelization";
+
+    directmin_ls_method = "cg";
+    directmin_ls_algo = "swolfe"; 
+    directmin_ls_cg_algo = "dy";
+    directmin_ls_initstep_type = "quadint";
+
+
+    directmin_ls_alpha = 0.0001;
+    directmin_ls_beta = 0.999;
+    directmin_ls_c1 = 1e-4;
+    directmin_ls_c2 = 0.9;
+
+    directmin_ls_minstepsize = 1e-10;
+    directmin_ls_maxstepsize = 1e3;
+    directmin_ls_initstepsize = 1.0;
+    directmin_ls_finalstepsize = -1.0;
+
+    directmin_ls_ftol = 1e-8;
+    directmin_ls_gtol = 1e-6;
+
+    // ... more directmin related variables to be added
+    // files involved global_variable.h global_variable.cpp
+    // input.h input.cpp input_conv.cpp
+
+
+
     //==========================================================
     // variables for PEXSI
     //==========================================================
@@ -2419,6 +2456,92 @@ bool Input::Read(const std::string& fn)
         else if (strcmp("qo_screening_coeff", word) == 0){
             read_value2stdvector(ifs, qo_screening_coeff);
         }
+
+
+
+        //==========================================================
+        // DirectMin  kluo added on 2024-06-25
+        //========================================================== 
+        else if (strcmp("directmin_obj_type", word) == 0)
+        {
+            read_value(ifs, directmin_obj_type);
+        }
+        else if (strcmp("directmin_choice", word) == 0)
+        {
+            read_value(ifs, directmin_choice);
+        }
+        else if (strcmp("directmin_maxiter", word) == 0)
+        {
+            read_value(ifs, directmin_maxiter);
+        }
+        else if (strcmp("directmin_ls_method", word) == 0)
+        {
+            read_value(ifs, directmin_ls_method);
+        }
+        else if (strcmp("directmin_ls_algo", word) == 0)
+        {
+            read_value(ifs, directmin_ls_algo);
+        }        
+        else if (strcmp("directmin_ls_cg_algo", word) == 0)
+        {
+            read_value(ifs, directmin_ls_cg_algo);
+        }        
+        else if (strcmp("directmin_ls_initstep_type", word) == 0)
+        {
+            read_value(ifs, directmin_ls_initstep_type);
+        }        
+        else if (strcmp("directmin_retraction_type", word) == 0)
+        {
+            read_value(ifs, directmin_retraction_type);
+        }
+        else if (strcmp("directmin_vectransport_type", word) == 0)
+        {
+            read_value(ifs, directmin_vectransport_type);
+        }        
+        else if (strcmp("directmin_ls_alpha", word) == 0)
+        {
+            read_value(ifs, directmin_ls_alpha);
+        }        
+        else if (strcmp("directmin_ls_beta", word) == 0)
+        {
+            read_value(ifs, directmin_ls_beta);
+        }        
+        else if (strcmp("directmin_ls_c1", word) == 0)
+        {
+            read_value(ifs, directmin_ls_c1);
+        }        
+        else if (strcmp("directmin_ls_c2", word) == 0)
+        {
+            read_value(ifs, directmin_ls_c2);
+        }        
+        else if (strcmp("directmin_ls_minstepsize", word) == 0)
+        {
+            read_value(ifs, directmin_ls_minstepsize);
+        }        
+        else if (strcmp("directmin_ls_maxstepsize", word) == 0)
+        {
+            read_value(ifs, directmin_ls_maxstepsize);
+        }
+        else if (strcmp("directmin_ls_initstepsize", word) == 0)
+        {
+            read_value(ifs, directmin_ls_initstepsize);
+        }
+        else if (strcmp("directmin_ls_finalstepsize", word) == 0)
+        {
+            read_value(ifs, directmin_ls_finalstepsize);
+        }
+        else if (strcmp("directmin_ls_ftol", word) == 0)
+        {
+            read_value(ifs, directmin_ls_ftol);
+        }        
+        else if (strcmp("directmin_ls_gtol", word) == 0)
+        {
+            read_value(ifs, directmin_ls_gtol);
+        }   
+
+        // end of DirectMin
+
+
         //----------------------------------------------------------------------------------
         //    PEXSI
         //----------------------------------------------------------------------------------

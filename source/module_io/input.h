@@ -614,6 +614,74 @@ class Input
     double qo_thr = 1e-6;
     std::vector<std::string> qo_strategy = {};
     std::vector<double> qo_screening_coeff = {};
+
+    //==========================================================
+    // variables for DirectMin  kluo added on 2024-06-25
+    //==========================================================
+    // files involved global_variable.h global_variable.cpp
+    // input.h input.cpp input_conv.cpp
+
+    std::string directmin_obj_type; // objective function type, test, ks, rdmft, etc...
+    std::string directmin_choice; // DirectMin choice, either trust-region (tr) or line-search (ls) for now, tr is for later though.
+    double directmin_maxiter; // max number of iterations for minimization
+    std::string directmin_retraction_type; // Retraction for the Stiefel manifold
+	// QF: qf retraction defined in [AMS2008, (4.8)]
+	// POLAR: polar based retraction defined in [AMS2008, (4.7)]
+	// EXP: The exponential mapping
+	// CAYLEY: the Cayley transform in [Zhu2016]
+
+    std::string directmin_vectransport_type; // Vector transport for the Stiefel manifold
+    // PARALLELIZATION: Vector transport by parallelization, See [HAG2015, Section 2.3.1]
+	// RIGGING: Vector transport by rigging, See [HAG2015, Section 2.3.2]
+	// PARALLELTRANSLATION: parallel translation
+	// CAYLEYVT: the vector transport based on Cayley transform. [Zhu2016]
+
+    
+    std::string directmin_ls_method; // DirectMin line search method, such as 
+    // sd: steepest decent
+    // cg: conjugate gradient
+    // bfgs: Broyden-Fletcher-Goldfarb-Shanno
+    // lbfgs: limited memory bfgs
+    // newton: Newton's method
+    // other:  or other variant
+    std::string directmin_ls_algo; // DirectMin line search condition, such as 
+    // armijo: Armijo
+    // wolfe: classical Wolfe condition
+    // swolfe: Strong wolfe condition
+    // exact: exact condition
+
+    std::string directmin_ls_cg_algo; /* DirectMin line search method cg algorithm, such as 
+    // FR: FLETCHER_REEVES
+    // PR: POLAK_RIBIERE
+    // DY: DAI_YUAN
+    // HZ: HAGER_ZHANG
+    // HS: HESTENES_STIEFEL
+    */
+    std::string directmin_ls_initstep_type; // initial step type for DirectMin line search method, such as 
+    // BB: 
+    // QuadInt:
+    // ...
+
+
+    double directmin_ls_alpha; // the coefficient of the Wolfe first condition
+    double directmin_ls_beta;  // the coefficient of the Wolfe second condition
+    double directmin_ls_c1; // the coefficient of the Armijo-Goldstein condition
+    double directmin_ls_c2; // the coefficient of the Armijo-Goldstein condition
+
+    double directmin_ls_minstepsize; //the minimum stepsize allowed in the linesearch algorithm
+    double directmin_ls_maxstepsize; //the maximum stepsize allowed in the linesearch algorithm
+    double directmin_ls_initstepsize; // initial stepsize at the first iteration
+    double directmin_ls_finalstepsize; // final stepsize 
+
+    double directmin_ls_gtol; // line search gradient tolerance
+    double directmin_ls_ftol; // line search function value tolerance
+
+
+
+
+
+
+
     //==========================================================
     // variables for PEXSI
     //==========================================================
