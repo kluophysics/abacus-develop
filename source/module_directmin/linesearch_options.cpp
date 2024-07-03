@@ -1,4 +1,4 @@
-#include "options_ls.h"
+#include "linesearch_options.h"
 
 
 namespace ModuleDirectMin
@@ -12,7 +12,7 @@ namespace ModuleDirectMin
 
         // obj_type = "test"; // default for now, will be changed
 
-        retractionType = input.directmin_retraction_type;
+        retraction_type = input.directmin_retraction_type;
         vectransport_type = input.directmin_vectransport_type;
 
         // Options(input);
@@ -49,7 +49,7 @@ namespace ModuleDirectMin
         std::cout << "  choice: " << choice << std::endl;
         std::cout << "  maxiter: " << maxiter << std::endl;
         std::cout << "  functional: " << obj_type << std::endl;
-        std::cout << "  retraction: " << retractionType << std::endl;
+        std::cout << "  retraction: " << retraction_type << std::endl;
         std::cout << "  vectransport: " << vectransport_type << std::endl;
         std::cout << "  linesearch: " << ls_method << std::endl;
         std::cout << "  linesearch condition: " << ls_condition << std::endl;

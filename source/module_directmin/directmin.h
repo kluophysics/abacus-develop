@@ -9,6 +9,8 @@
 #include "module_io/input.h"
 #include "module_cell/unitcell.h"
 
+#include "options.h"
+#include "linesearch_options.h"
 // #include "optimizer/ls_rcg.h"
 // #include "optimizer/ls_rsd.h"
 // #include "optimizer/ls_rbfgs.h"
@@ -35,7 +37,7 @@ namespace ModuleDirectMin
 
         private:
         // Input input;
-        // ModuleDirectMin::LineSearchOptions* ls_opts; // directmin ls_options
+        ModuleDirectMin::LineSearchOptions* ls_opts; // directmin ls_options
         // // ModuleDirectMin::LineSearchOptions* ls_opts; // directmin ls_options
         // ModuleDirectMin::OptimizerBase * optimizer;
 

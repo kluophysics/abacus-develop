@@ -2,7 +2,7 @@
 #define LS_OPTIONS_H
 
 #include "options.h"
-#include <string>
+// #include <string>
 #include "module_io/input.h"
 
 namespace ModuleDirectMin
@@ -13,6 +13,10 @@ namespace ModuleDirectMin
     class LineSearchOptions : public Options
     {
     public:
+        LineSearchOptions(Input & input);  // constructor
+        ~LineSearchOptions(); // destructor
+        
+    // private: 
 
         std::string ls_method; // DirectMin line search method
         std::string ls_condition; // DirectMin line search condition
@@ -31,8 +35,7 @@ namespace ModuleDirectMin
         double ls_gtol; // line search gradient tolerance
         double ls_ftol; // line search function value tolerance
 
-        LineSearchOptions(Input & input);  // constructor
-        ~LineSearchOptions(); // destructor
+
 
         void print_info();
 

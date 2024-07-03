@@ -9,7 +9,7 @@
 #include "esolver_dp.h"
 #include "esolver_lj.h"
 #include "esolver_of.h"
-#include "esolver_directmin.h"
+#include "esolver_directmin_ks_lcao.h"
 // #include "esolver_dm.h"
 
 #include "module_md/md_para.h"
@@ -195,11 +195,11 @@ void init_esolver(ESolver*& p_esolver)
 	else if (esolver_type == "directmin_lcao")
 	{
 		if(GlobalV::GAMMA_ONLY_LOCAL)
-			p_esolver = new ESolver_DirectMin<double, double>();
+			p_esolver = new ESolver_DirectMin_KS_LCAO<double, double>();
 		else if (GlobalV::NSPIN < 4)
-			p_esolver = new ESolver_DirectMin<std::complex<double>, double>();
+			p_esolver = new ESolver_DirectMin_KS_LCAO<std::complex<double>, double>();
 		else
-			p_esolver = new ESolver_DirectMin<std::complex<double>, std::complex<double>>();
+			p_esolver = new ESolver_DirectMin_KS_LCAO<std::complex<double>, std::complex<double>>();
 	}
 }
 

@@ -2,8 +2,9 @@
 list(APPEND objects
     directmin.cpp
     options.cpp
-    options_ls.cpp
+    linesearch_options.cpp
     stiefel.cpp
+    linesearch_method.cpp
     # optimizer/options_ls.cpp
     # optimizer/base.cpp
     # optimizer/ls_base.cpp

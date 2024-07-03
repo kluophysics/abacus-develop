@@ -7,7 +7,7 @@ namespace ModuleDirectMin
     Options::Options()
     {
         choice = "lr";
-        retractionType = "qr";
+        retraction_type = "qr";
         vectransport_type = "qr";
         maxiter = 100;
         obj_type = "test";
@@ -16,7 +16,7 @@ namespace ModuleDirectMin
     Options::Options(Input & input)
     {
         choice = input.directmin_choice;
-        retractionType = input.directmin_retraction_type;
+        retraction_type = input.directmin_retraction_type;
         vectransport_type = input.directmin_vectransport_type;
         maxiter = input.directmin_maxiter;
         obj_type = input.directmin_obj_type;
@@ -28,7 +28,7 @@ namespace ModuleDirectMin
         {
             std::cout << "Using Line Search Algorithm" << std::endl; 
             std::cout << "Stiefel Manifold retraction type  is "
-                << retractionType << std::endl;
+                << retraction_type << std::endl;
             std::cout << "vector transport type is "
                 << vectransport_type << std::endl;
             std::cout << "Maximum number of iterations is " << maxiter << std::endl;
