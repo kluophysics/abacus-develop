@@ -104,6 +104,20 @@ namespace ModuleDirectMin
         return psm[k];
     }
 
+
+    Stiefel Stiefel::operator-() const
+    {
+        // Stiefel result(p);
+
+        for(int ik = 0; ik < this->nk; ik++)
+        {
+            (*this)[ik] = -(*this)[ik] ;
+        }
+        return *this;
+
+    }
+
+
     Stiefel& Stiefel::operator=(const Stiefel&p)
     {
         this->resize(p.nk, p.nr, p.nc);
@@ -204,17 +218,7 @@ namespace ModuleDirectMin
     }
 
 
-    const Stiefel operator-(const Stiefel&p)
-    {
-        Stiefel result(p);
 
-        for(int ik = 0; ik < p.nk; ik++)
-        {
-            result[ik] = - p[ik];
-        }
-        return result;
-
-    }
 
     const Stiefel operator+(const Stiefel&p,const   Stiefel& q)
     {

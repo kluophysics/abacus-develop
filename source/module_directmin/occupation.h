@@ -21,9 +21,19 @@ namespace ModuleDirectMin
 
         bool is_valid(); // check if the vector is valid
 
+        Occupation& operator=(const Occupation& occ);
+        Occupation& operator+=(const Occupation& occ);
+        Occupation& operator-=(const Occupation& occ);
+        // Occupation& operator*=(const Occupation& occ);
+        // Occupation& operator/=(const Occupation& occ);
+
+        Occupation operator*( double s) const; // add p with s
+        friend Occupation operator*(double s, const Occupation& occ);
+
         
-    
     };
+
+
 
 } // namespace ModuleDirectMin
 

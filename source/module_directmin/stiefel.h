@@ -19,7 +19,9 @@ namespace ModuleDirectMin
             // Stiefel operator+=(const Stiefel&p);
 
             // Stiefel operator*( double s);
-
+            // uni operator overload
+            Stiefel operator-() const; // negative operator
+            
             // assignment operator overload
             Stiefel& operator=(const Stiefel& p);
             Stiefel& operator-=(const Stiefel& p);
@@ -54,8 +56,7 @@ namespace ModuleDirectMin
             
     };
 
-    // uni operator overload
-    const Stiefel operator-(const Stiefel&p); // negative operator
+
     // Stiefel  operator+();
     
     // binary operator overload

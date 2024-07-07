@@ -38,4 +38,33 @@ namespace ModuleDirectMin
         }
         return true;
     }
+
+    Occupation& Occupation::operator=(const Occupation& occ)
+    {
+        size = occ.size;
+        occ_vector = occ.occ_vector;
+        return *this;
+
+    }
+
+    Occupation& Occupation::operator+=(const Occupation& occ)
+    {
+        size = occ.size;
+
+        for(int i=0; i < size; i++)
+        {
+            occ_vector[i] += occ.occ_vector[i];
+        }
+        return *this;
+    }
+    Occupation& Occupation::operator-=(const Occupation& occ)
+    {
+        size = occ.size;
+        for(int i=0; i < size; i++)
+        {
+            occ_vector[i] -= occ.occ_vector[i];
+        }
+        return *this;
+    }
+    
 } // namespace ModuleDirectMin

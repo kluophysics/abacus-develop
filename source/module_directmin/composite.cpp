@@ -9,5 +9,27 @@ namespace ModuleDirectMin
         p2 = Occupation(); // empty
     }
 
+    Composite::Composite(const Stiefel & s, const Occupation & occ)
+    {
+        p1 = s;
+        p2 = occ;
+        // return *this;
+    }
+
+
+    Composite & Composite::operator = (const Composite & comp)
+    {
+        p1 = comp.p1;
+        p2 = comp.p2;
+        return *this;
+
+    }
+    Composite & Composite::operator += (const Composite & comp)
+    {
+        p1 += comp.p1;
+        p2 += comp.p2;
+        return *this;
+
+    }
 
 }

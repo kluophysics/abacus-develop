@@ -21,11 +21,13 @@ namespace ModuleDirectMin
 
         Composite();
         // ~Composite();
-
+        Composite(const Stiefel & s, const Occupation & occ);
 
         Stiefel p1; // part 1
         Occupation p2; // part 2
 
+        Composite& operator=(const Composite& comp);
+        Composite& operator+=(const Composite& comp);
 
     };
 
