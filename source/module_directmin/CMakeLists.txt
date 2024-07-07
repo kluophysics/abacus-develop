@@ -4,6 +4,8 @@ list(APPEND objects
     options.cpp
     linesearch_options.cpp
     stiefel.cpp
+    occupation.cpp
+    composite.cpp 
     linesearch_method.cpp
     # optimizer/options_ls.cpp
     # optimizer/base.cpp

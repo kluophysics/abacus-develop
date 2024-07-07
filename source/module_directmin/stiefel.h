@@ -49,7 +49,7 @@ namespace ModuleDirectMin
             
             int size; // nk*nr*nc
             // std::vector<ModuleBase::ComplexMatrix> psm;
-            std::vector<arma::cx_mat> psm;
+            std::vector<arma::cx_mat> psm; // product of stiefel manifold
 
             
     };
