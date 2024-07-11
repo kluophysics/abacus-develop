@@ -35,6 +35,9 @@ namespace ModuleDirectMin
         double ls_gtol; // line search gradient tolerance
         double ls_ftol; // line search function value tolerance
 
+        // note this is empty, all parameters are 
+        // initialized from the input
+        void set_default_parameters(); 
 
 
         void print_info();

@@ -41,6 +41,11 @@ namespace ModuleDirectMin
         ;
     }
 
+    void LineSearchOptions::set_default_parameters()
+    {
+        
+    }
+
     void LineSearchOptions::print_info()
     {
         Options::print_info();

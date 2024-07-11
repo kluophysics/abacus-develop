@@ -23,11 +23,15 @@ namespace ModuleDirectMin
         // ~Composite();
         Composite(const Stiefel & s, const Occupation & occ);
 
-        Stiefel p1; // part 1
-        Occupation p2; // part 2
+        Stiefel p1; // part 1, Stiefel variable
+        Occupation p2; // part 2, Occupation variable
 
         Composite& operator=(const Composite& comp);
         Composite& operator+=(const Composite& comp);
+
+        Composite t(); // complex transpose
+
+        // Composite operator *(const Composite &p) const; // multiplicative operator
 
     };
 

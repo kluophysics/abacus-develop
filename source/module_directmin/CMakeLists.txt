@@ -1,12 +1,19 @@
 
 list(APPEND objects
-    directmin.cpp
-    options.cpp
-    linesearch_options.cpp
-    stiefel.cpp
-    occupation.cpp
+
     composite.cpp 
-    linesearch_method.cpp
+    directmin.cpp
+
+    linesearch_options.cpp
+    linesearch_helper.cpp
+    linesearch_base.cpp
+    occupation.cpp
+
+    options.cpp
+    problem.cpp
+
+    stiefel.cpp
+    
     # optimizer/options_ls.cpp
     # optimizer/base.cpp
     # optimizer/ls_base.cpp

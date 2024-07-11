@@ -32,4 +32,16 @@ namespace ModuleDirectMin
 
     }
 
+    Composite Composite::t() 
+    {
+        p1 = this->p1.t();
+        // p2 = this->p2;
+        return *this;
+    }
+
+    // Composite Composite::operator*(const Composite & p) const
+    // {
+       
+    // }
+
 }
