@@ -165,7 +165,86 @@ namespace ModuleDirectMin
         return *this;
     }
 
+    Stiefel Stiefel::operator +(double s) const
+    {
+        for(int ik = 0; ik < this->nk; ik++)
+        {
+            (*this)[ik] += s;
+        }
+        return *this;
+    }
 
+    Stiefel Stiefel::operator *(double s) const
+    {
+        for(int ik = 0; ik < this->nk; ik++)
+        {
+            (*this)[ik] *= s;
+        }
+        return *this;
+    }
+
+    Stiefel Stiefel::operator -(double s) const
+    {
+        for(int ik = 0; ik < this->nk; ik++)
+        {
+            (*this)[ik] -= s;
+        }
+        return *this;
+    }
+
+    Stiefel Stiefel::operator+( const Stiefel & p) const
+    {
+        assert(this->nk == p.nk);
+        assert(this->nc == p.nc);
+        assert(this->nr == p.nr);
+
+        for(int ik = 0; ik < this->nk; ik++)
+        {
+            (*this)[ik] += p[ik];
+        }
+        return *this;
+    }
+    Stiefel Stiefel::operator-( const Stiefel & p) const
+    {
+        assert(this->nk == p.nk);
+        assert(this->nc == p.nc);
+        assert(this->nr == p.nr);
+
+        for(int ik = 0; ik < this->nk; ik++)
+        {
+            (*this)[ik] -= p[ik];
+        }
+        return *this;
+    }
+
+    Stiefel Stiefel::operator*( const Stiefel & p) const
+    {
+
+        assert(this->nk == p.nk);
+        assert(this->nc == p.nr);
+
+        Stiefel result(p.nk, this->nr, p.nc);
+
+        for(int ik = 0; ik < this->nk; ik++)
+        {
+            result[ik] =  (*this)[ik] * p[ik];
+        }
+        return result;
+    }
+
+
+    Stiefel operator +(double s, const Stiefel & p)
+    {
+        return p+s;
+    }
+    Stiefel operator *(double s, const Stiefel & p)
+    {
+        return p*s;
+    }
+    Stiefel operator -(double s, const Stiefel & p)
+    {
+        return -p+s;
+    }
 
     double Stiefel::norm()
     {
@@ -220,133 +299,306 @@ namespace ModuleDirectMin
 
 
 
-    const Stiefel operator+(const Stiefel&p,const   Stiefel& q)
-    {
-        assert(q.nk == p.nk);
-        assert(q.nr == p.nr);
-        assert(q.nc == p.nc);
+    // const Stiefel operator+(const Stiefel&p,const   Stiefel& q)
+    // {
+    //     assert(q.nk == p.nk);
+    //     assert(q.nr == p.nr);
+    //     assert(q.nc == p.nc);
 
-        Stiefel result(p);
+    //     Stiefel result(p);
 
-        for(int ik = 0; ik < p.nk; ik++)
-        {
-            result[ik] = q[ik] + p[ik];
-        }
-        return result;
-    }
+    //     for(int ik = 0; ik < p.nk; ik++)
+    //     {
+    //         result[ik] = q[ik] + p[ik];
+    //     }
+    //     return result;
+    // }
 
-    const Stiefel operator-(const Stiefel&p,const   Stiefel& q)
-    {
-        assert(q.nk == p.nk);
-        assert(q.nr == p.nr);
-        assert(q.nc == p.nc);
+    // const Stiefel operator-(const Stiefel&p,const   Stiefel& q)
+    // {
+    //     assert(q.nk == p.nk);
+    //     assert(q.nr == p.nr);
+    //     assert(q.nc == p.nc);
 
-        Stiefel result(p);
+    //     Stiefel result(p);
 
-        for(int ik = 0; ik < p.nk; ik++)
-        {
-            result[ik] =  p[ik] -q[ik] ;
-        }
-        return result;
-    }
+    //     for(int ik = 0; ik < p.nk; ik++)
+    //     {
+    //         result[ik] =  p[ik] -q[ik] ;
+    //     }
+    //     return result;
+    // }
 
-    Stiefel operator*(const Stiefel&p,const   Stiefel& q)
-    {
-        assert(q.nk == p.nk);
-        assert(p.nc == q.nr);
+    // Stiefel operator*(const Stiefel&p,const   Stiefel& q)
+    // {
+    //     assert(q.nk == p.nk);
+    //     assert(p.nc == q.nr);
 
-        Stiefel result(p.nk, p.nr, q.nc);
+    //     Stiefel result(p.nk, p.nr, q.nc);
 
-        for(int ik = 0; ik < p.nk; ik++)
-        {
-            result[ik] = p[ik] * q[ik];
-        } 
-        return result;
-    }
-
-
-
-    Stiefel operator/(const Stiefel&p, const   Stiefel& q)
-    {
-        assert(q.nk == p.nk);
-        assert(q.nr == p.nr);
-        assert(q.nc == p.nc);
-        Stiefel result(p.nk, p.nr, q.nc);
-
-        for(int ik = 0; ik < p.nk; ik++)
-        {
-            result[ik] = p[ik] / q[ik];
-        }
-        return result;
-    }
-
-    Stiefel operator+(const Stiefel&p,  double s)
-    {
-        Stiefel result;
-
-        for(int ik = 0; ik < p.nk; ik++)
-        {
-            result[ik] = s+p[ik] ;
-        }
-        return result;
-    }
-    Stiefel operator+(double s, const Stiefel&p )
-    {
-        Stiefel result(p+s);
-
-        // for(int ik = 0; ik < p.nk; ik++)
-        // {
-        //     result[ik] = s+p[ik] ;
-        // }
-        return result;
-    }
-
-    Stiefel operator-(const Stiefel&p,  double s)
-    {
-        Stiefel result;
-
-        for(int ik = 0; ik < p.nk; ik++)
-        {
-            result[ik] = p[ik] - s ;
-        }
-        return result;
-    }
-
-    Stiefel operator-( double s, const Stiefel&p )
-    {
-        Stiefel result(s - p);
-
-        // for(int ik = 0; ik < p.nk; ik++)
-        // {
-        //     result[ik] = s - p[ik] ;
-        // }
-        return result;
-    }
-    Stiefel operator*(const Stiefel&p,  double s)
-    {
-        Stiefel result;
-
-        for(int ik = 0; ik < p.nk; ik++)
-        {
-            result[ik] = s*p[ik] ;
-        }
-        return result;
-    }
-
-    Stiefel operator*( double s, const Stiefel&p)
-    {
-
-        Stiefel result(p);
-
-        for(int ik = 0; ik < p.nk; ik++)
-        {
-            result[ik] = s*p[ik] ;
-        }
-        return result;
-    }
+    //     for(int ik = 0; ik < p.nk; ik++)
+    //     {
+    //         result[ik] = p[ik] * q[ik];
+    //     } 
+    //     return result;
+    // }
 
 
-    Stiefel proj(const Stiefel& X, const Stiefel& Z)
+
+    // Stiefel operator/(const Stiefel&p, const   Stiefel& q)
+    // {
+    //     assert(q.nk == p.nk);
+    //     assert(q.nr == p.nr);
+    //     assert(q.nc == p.nc);
+    //     Stiefel result(p.nk, p.nr, q.nc);
+
+    //     for(int ik = 0; ik < p.nk; ik++)
+    //     {
+    //         result[ik] = p[ik] / q[ik];
+    //     }
+    //     return result;
+    // }
+
+    // Stiefel operator+(const Stiefel&p,  double s)
+    // {
+    //     Stiefel result;
+
+    //     for(int ik = 0; ik < p.nk; ik++)
+    //     {
+    //         result[ik] = s+p[ik] ;
+    //     }
+    //     return result;
+    // }
+    // Stiefel operator+(double s, const Stiefel&p )
+    // {
+    //     Stiefel result(p+s);
+
+    //     // for(int ik = 0; ik < p.nk; ik++)
+    //     // {
+    //     //     result[ik] = s+p[ik] ;
+    //     // }
+    //     return result;
+    // }
+
+    // Stiefel operator-(const Stiefel&p,  double s)
+    // {
+    //     Stiefel result;
+
+    //     for(int ik = 0; ik < p.nk; ik++)
+    //     {
+    //         result[ik] = p[ik] - s ;
+    //     }
+    //     return result;
+    // }
+
+    // Stiefel operator-( double s, const Stiefel&p )
+    // {
+    //     Stiefel result(s - p);
+
+    //     // for(int ik = 0; ik < p.nk; ik++)
+    //     // {
+    //     //     result[ik] = s - p[ik] ;
+    //     // }
+    //     return result;
+    // }
+    // Stiefel operator*(const Stiefel&p,  double s)
+    // {
+    //     Stiefel result;
+
+    //     for(int ik = 0; ik < p.nk; ik++)
+    //     {
+    //         result[ik] = s*p[ik] ;
+    //     }
+    //     return result;
+    // }
+
+    // Stiefel operator*( double s, const Stiefel&p)
+    // {
+
+    //     Stiefel result(p);
+
+    //     for(int ik = 0; ik < p.nk; ik++)
+    //     {
+    //         result[ik] = s*p[ik] ;
+    //     }
+    //     return result;
+    // }
+
+
+    // Stiefel proj(const Stiefel& X, const Stiefel& Z)
+    // {
+    //     // Projection onto the tangent space to the Stiefel manifold.
+    //     // Input: X is the foot point, matrix, and Z is the direction, matrix.
+    //     // Output: P is the projection tangent vector, matrix.
+        
+    //     // Stiefel XZ = X.t() * Z;
+    //     // Stiefel P = Z - 0.5 * X * (XZ + XZ.t());
+        
+    //     assert(X.size == Z.size);
+    //     int nk = X.nk;
+
+    //     Stiefel XZ(X);
+    //     Stiefel P(X);
+
+    //     // for (int ik = 0; ik < nk; ++ik)
+    //     // {
+    //     //     XZ[ik] = X[ik].t() * Z[ik]; // XZ[ik] is square matrix
+    //     //     P[ik] = Z[ik] - 0.5* X[ik]*( XZ[ik] + XZ[ik].t() );
+    //     // }
+
+    //     XZ = X.t() * Z; // XZ[ik] is square matrix
+    //     P = Z - 0.5* X *( XZ + XZ.t() );
+        
+
+    //     return P;
+    // }
+
+    // Stiefel vectran(const Stiefel& X, const Stiefel& Z)
+    // {
+    //     // if (vectran_choice == 'qr')
+    //     // left for future choices of vector transport
+    //     // here only projection vector transport is done
+    //     return proj(X, Z);
+    // }
+
+
+    // Stiefel retraction(const Stiefel& X, const Stiefel& Z)
+    // {
+    //     assert(X.nk == Z.nk);
+    //     assert(X.nr == Z.nr);
+    //     assert(X.nc == Z.nc);
+
+    //     // arma::cx_mat W;
+    //     Stiefel W = X + Z;
+    //     Stiefel result(X);
+
+    //     for (int ik = 0; ik < X.nk; ik++)
+    //     {
+    //         arma::cx_mat Y, R;
+    //         arma::qr_econ(Y, R, W[ik]);
+    //         // Apply the sign function to the diagonal of R
+    //         R.diag() = arma::sign(arma::sign(R.diag()) + 0.5);
+    //         // // Modify X and R based on the sign of the diagonal Stiefels of R
+    //         Y = Y * arma::diagmat(arma::sign(arma::sign(arma::diagvec(R)) + 0.5));
+
+    //         result[ik] = Y;
+    //     }
+    //     return result;
+    // }
+
+    // Stiefel diff_retraction(const Stiefel& X, const Stiefel& Z)
+    // {
+    //     assert(X.nk == Z.nk);
+    //     assert(X.nr == Z.nr);
+    //     assert(X.nc == Z.nc);
+        
+    //     arma::cx_mat Y, R;
+    //     // arma::cx_mat W;
+    //     arma::cx_mat U, D;
+
+    //     arma::cx_mat ZRinv, XZRinv, XXZRinv;
+
+    //     Stiefel W = X + Z;
+
+    //     Stiefel result(X);
+
+    //     for (int ik = 0; ik < X.nk; ik++)
+    //     {
+    //         // W = X[ik] + Z[ik];
+    //         arma::qr_econ(Y, R, W[ik]);
+    //         // Apply the sign function to the diagonal of R
+    //         R.diag() = arma::sign(arma::sign(R.diag()) + 0.5);
+    //         R = arma::diagmat(R.diag()) * R;
+    //         // // Modify X and R based on the sign of the diagonal Stiefels of R
+    //         // Y = Y * arma::diagmat(arma::sign(arma::sign(arma::diagvec(R)) + 0.5));
+    //         // result[ik] = Y;
+
+    //         // note it uses the R matrix from retraction function
+    //         ZRinv = Z [ik] * arma::inv(R);
+    //         XZRinv = X[ik].t() * ZRinv;
+    //         XXZRinv = X[ik] * XZRinv;
+    //         U = arma::trimatl(XZRinv, -1); // Lower triangular part
+    //         D = X[ik] * (U - U.t()) + ZRinv - XXZRinv;
+    //         result[ik] = D;
+    //     }
+    //     return result;
+    // }
+
+    // double metric(const Stiefel& X, const Stiefel& A, const Stiefel& B)
+    // {
+    //     assert(A.nk == B.nk);
+    //     assert(A.nr == B.nr);
+    //     assert(A.nc == B.nc);
+
+    //     assert(X.nk == A.nk);
+    //     assert(X.nr == A.nr);
+    //     assert(X.nc == A.nc);
+
+    //     arma::cx_mat term1, term2;
+
+    //     // (X.t()*A).brief_print("Y'*A");
+    //     // (X.t()*B).brief_print("Y'*B");
+
+    //     double result=0.0;
+
+    //     bool use_canonical_metric = true;
+    //     if(use_canonical_metric)
+
+    //         for (int ik = 0; ik < X.nk; ik++)
+    //         {
+    //             term1 = X[ik] * ((X[ik].t() * B[ik]) / 2.0);
+    //             term2 = B[ik] - term1;
+    //             arma::cx_double innerProduct = arma::trace(A[ik].t() * term2);
+
+    //             result += innerProduct.real(); // the metric in product manifold is the sum of metrics in submanifold
+    //         }
+    //     // std::cout << "Canonical metric=" << result << std::endl;
+
+       
+    //     if(false)
+    //     {
+    //          result = 0.0;
+    //         for (int ik = 0; ik < X.nk; ik++)
+    //         {
+    //             // result += arma::norm(A[ik].t() * B[ik]);
+    //             arma::cx_double innerProduct = arma::trace(A[ik].t() * B[ik]);
+    //             result += innerProduct.real(); // the metric in product manifold is the sum of metrics in submanifold
+    //         }
+    //     std::cout << "Euclidean metric=" << result << std::endl;
+    //     }        
+
+    //     return result;
+    // }
+
+    // bool is_orthogonal(const Stiefel& X)
+    // {
+    //     bool result = false;
+
+    //     for(int ik = 0; ik < X.nk; ik++)
+    //     {
+            
+    //     }
+    //     return false;
+    // }
+
+    // Stiefel vectran(const Stiefel& X, const Stiefel& Z)
+    // {
+    //     return proj(X, Z);
+    //     // return Stiefel();
+    // }
+
+    // Stiefel diff_retraction(const Stiefel& X, const Stiefel& Z)
+    // {
+    //     return Stiefel();
+    // }
+
+    // double metric(const Stiefel& X, const Stiefel& A, Stiefel& B)
+    // {
+    //     return 0.0;
+    // }
+
+
+    Stiefel Stiefel::projection(const Stiefel& Z)
     {
         // Projection onto the tangent space to the Stiefel manifold.
         // Input: X is the foot point, matrix, and Z is the direction, matrix.
@@ -355,36 +607,50 @@ namespace ModuleDirectMin
         // Stiefel XZ = X.t() * Z;
         // Stiefel P = Z - 0.5 * X * (XZ + XZ.t());
         
+        Stiefel X(*this);
+
         assert(X.size == Z.size);
         int nk = X.nk;
 
         Stiefel XZ(X);
         Stiefel P(X);
 
-        // for (int ik = 0; ik < nk; ++ik)
-        // {
-        //     XZ[ik] = X[ik].t() * Z[ik]; // XZ[ik] is square matrix
-        //     P[ik] = Z[ik] - 0.5* X[ik]*( XZ[ik] + XZ[ik].t() );
-        // }
-
         XZ = X.t() * Z; // XZ[ik] is square matrix
         P = Z - 0.5* X *( XZ + XZ.t() );
-        
-
+    
         return P;
     }
 
-    Stiefel vectran(const Stiefel& X, const Stiefel& Z)
+    Stiefel Stiefel::vector_transport(const Stiefel& Z, const std::string & vectran="QR")
     {
+        if(vectran == "QR")
+        {
+            return this->projection(Z);
+        }
+        else if (vectran == "POLAR")
+        {
+            // left for future choices of vector transport
+            // here only projection vector transport is done
+            return this->projection(Z);
+        }
+        else
+        {
+            // left for future choices of vector transport
+            // here only projection vector transport is done
+            return this->projection(Z);
+        }     
         // if (vectran_choice == 'qr')
         // left for future choices of vector transport
         // here only projection vector transport is done
-        return proj(X, Z);
+        // return proj(X, Z);
     }
 
 
-    Stiefel retraction(const Stiefel& X, const Stiefel& Z)
+    Stiefel Stiefel::retraction(const Stiefel& Z,const  std::string & retr="QR")
     {
+        // currently only support QR retraction 
+        Stiefel X(*this);
+
         assert(X.nk == Z.nk);
         assert(X.nr == Z.nr);
         assert(X.nc == Z.nc);
@@ -407,8 +673,11 @@ namespace ModuleDirectMin
         return result;
     }
 
-    Stiefel diff_retraction(const Stiefel& X, const Stiefel& Z)
-    {
+    Stiefel Stiefel::diff_retraction(const Stiefel& Z)
+    {        
+        // currently only support QR retraction 
+        Stiefel X(*this);
+
         assert(X.nk == Z.nk);
         assert(X.nr == Z.nr);
         assert(X.nc == Z.nc);
@@ -445,8 +714,10 @@ namespace ModuleDirectMin
         return result;
     }
 
-    double metric(const Stiefel& X, const Stiefel& A, const Stiefel& B)
+    double Stiefel::canonical_metric(const Stiefel& A, const Stiefel& B)
     {
+        Stiefel X(*this);
+
         assert(A.nk == B.nk);
         assert(A.nr == B.nr);
         assert(A.nc == B.nc);
@@ -462,37 +733,49 @@ namespace ModuleDirectMin
 
         double result=0.0;
 
-        bool use_canonical_metric = true;
-        if(use_canonical_metric)
-
-            for (int ik = 0; ik < X.nk; ik++)
-            {
-                term1 = X[ik] * ((X[ik].t() * B[ik]) / 2.0);
-                term2 = B[ik] - term1;
-                arma::cx_double innerProduct = arma::trace(A[ik].t() * term2);
-
-                result += innerProduct.real(); // the metric in product manifold is the sum of metrics in submanifold
-            }
-        // std::cout << "Canonical metric=" << result << std::endl;
-
-       
-        if(false)
+        for (int ik = 0; ik < X.nk; ik++)
         {
-             result = 0.0;
-            for (int ik = 0; ik < X.nk; ik++)
-            {
-                // result += arma::norm(A[ik].t() * B[ik]);
-                arma::cx_double innerProduct = arma::trace(A[ik].t() * B[ik]);
-                result += innerProduct.real(); // the metric in product manifold is the sum of metrics in submanifold
-            }
-        std::cout << "Euclidean metric=" << result << std::endl;
-        }        
+            term1 = X[ik] * ((X[ik].t() * B[ik]) / 2.0);
+            term2 = B[ik] - term1;
+            arma::cx_double innerProduct = arma::trace(A[ik].t() * term2);
+
+            result += innerProduct.real(); // the metric in product manifold is the sum of metrics in submanifold
+        }
+        return result;
+       
+  
+
+    }
+
+    double Stiefel::euclidean_metric(const Stiefel& A, const Stiefel& B)
+    {
+        Stiefel X(*this);
+
+        assert(A.nk == B.nk);
+        assert(A.nr == B.nr);
+        assert(A.nc == B.nc);
+
+        assert(X.nk == A.nk);
+        assert(X.nr == A.nr);
+        assert(X.nc == A.nc);
+
+        arma::cx_mat term1, term2;
+
+        double result=0.0;
+       
+        for (int ik = 0; ik < X.nk; ik++)
+        {
+            // result += arma::norm(A[ik].t() * B[ik]);
+            arma::cx_double innerProduct = arma::trace(A[ik].t() * B[ik]);
+            result += innerProduct.real(); // the metric in product manifold is the sum of metrics in submanifold
+        } 
 
         return result;
     }
-
-    bool is_orthogonal(const Stiefel& X)
+    bool Stiefel::is_orthogonal()
     {
+        Stiefel X(*this);
+
         bool result = false;
 
         for(int ik = 0; ik < X.nk; ik++)
@@ -501,20 +784,4 @@ namespace ModuleDirectMin
         }
         return false;
     }
-
-    // Stiefel vectran(const Stiefel& X, const Stiefel& Z)
-    // {
-    //     return proj(X, Z);
-    //     // return Stiefel();
-    // }
-
-    // Stiefel diff_retraction(const Stiefel& X, const Stiefel& Z)
-    // {
-    //     return Stiefel();
-    // }
-
-    // double metric(const Stiefel& X, const Stiefel& A, Stiefel& B)
-    // {
-    //     return 0.0;
-    // }
 };

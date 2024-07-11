@@ -14,7 +14,7 @@ namespace ModuleDirectMin
 
     void LineSearchBase::evaluate_phi_and_dphi(double *phi, double *dphi)
     {
-        
+        eta2 = eta1 * step_size;
     }
 
 

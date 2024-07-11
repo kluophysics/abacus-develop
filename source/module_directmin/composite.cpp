@@ -16,6 +16,14 @@ namespace ModuleDirectMin
         // return *this;
     }
 
+    Composite & Composite::operator*(const double s)
+    {
+        p1 = this->p1 * s;
+        p2 = this->p2 * s;
+        return *this;
+    }
+
+    
 
     Composite & Composite::operator = (const Composite & comp)
     {
@@ -43,5 +51,10 @@ namespace ModuleDirectMin
     // {
        
     // }
+    Composite Composite::apply_async_scaling(double beta=1.0)
+    {
+        p2 = beta * this->p2;
+        return * this;
+    }
 
 }

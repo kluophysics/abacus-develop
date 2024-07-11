@@ -32,6 +32,19 @@ namespace ModuleDirectMin
             arma::cx_mat operator[](const int k) const;
             arma::cx_mat & operator[](const int k);
 
+
+            Stiefel operator+( double s) const; // add p with s, p+s;
+            Stiefel operator-( double s) const; // p-s;
+            Stiefel operator*( double s) const; //  p*s;
+            Stiefel operator+( const Stiefel & p) const; // add p with s, p+s;
+            Stiefel operator-( const Stiefel & p) const; // add p with s, p+s;
+            Stiefel operator*( const Stiefel & p) const; // add p with s, p+s;
+
+            friend Stiefel operator+(double s, const Stiefel & p); // s+p
+            friend Stiefel operator*(double s, const Stiefel & p); // s*p
+            friend Stiefel operator-(double s, const Stiefel & p); // s-p
+
+            
             void resize(int k, int r, int c);
 
             double norm();
@@ -53,43 +66,49 @@ namespace ModuleDirectMin
             // std::vector<ModuleBase::ComplexMatrix> psm;
             std::vector<arma::cx_mat> psm; // product of stiefel manifold
 
-            
+            Stiefel projection(const Stiefel& Z);     // Projection onto the tangent space to the Stiefel manifold.
+            Stiefel vector_transport(const Stiefel& Z, const std::string & vectran);     // vector transport in Stiefel manifold
+            Stiefel retraction(const Stiefel& Z, const std::string & retr);             // retraction function in Stiefel manifold
+            Stiefel diff_retraction(const Stiefel& Z);     // differentiated retraction function in Stiefel manifold
+            double canonical_metric(const Stiefel& A, const Stiefel& B); // canonical metric for stiefel manifold
+            double euclidean_metric(const Stiefel& A, const Stiefel& B); // euclidean metric
+            bool is_orthogonal(); // check for orthogonal
     };
 
 
     // Stiefel  operator+();
     
     // binary operator overload
-    const Stiefel operator+(const Stiefel&p,const   Stiefel& q); // addition operator
-    const Stiefel operator-(const Stiefel&p,const   Stiefel& q); // addition operator
-    Stiefel operator*(const Stiefel&p,const   Stiefel& q); // multiplicative operator
-    Stiefel operator%(const Stiefel&p,const   Stiefel& q); // elementwise
-    Stiefel operator/(const Stiefel&p,const   Stiefel& q); // elementwise division
+    // const Stiefel operator+(const Stiefel&p,const   Stiefel& q); // addition operator
+    // const Stiefel operator-(const Stiefel&p,const   Stiefel& q); // addition operator
+    // Stiefel operator*(const Stiefel&p,const   Stiefel& q); // multiplicative operator
+    // Stiefel operator%(const Stiefel&p,const   Stiefel& q); // elementwise
+    // Stiefel operator/(const Stiefel&p,const   Stiefel& q); // elementwise division
 
-    Stiefel operator+( double s, const Stiefel&p); // add p with s
-    Stiefel operator+( const Stiefel&p,  double s); // add p with s
-    Stiefel operator-( double s, const Stiefel&p); //  p with s
-    Stiefel operator-( const Stiefel&p,  double s); // add p with s
+    // Stiefel operator+( double s, const Stiefel&p); // add p with s
+    // Stiefel operator+( const Stiefel&p,  double s); // add p with s
+    // Stiefel operator-( double s, const Stiefel&p); //  p with s
+    // Stiefel operator-( const Stiefel&p,  double s); // add p with s
 
-    Stiefel operator*( double s, const Stiefel&p); // scale p with s
-    Stiefel operator*(const Stiefel&p,  double s); // same as above but order is reversed.
+    // Stiefel operator*( double s, const Stiefel&p); // scale p with s
+    // Stiefel operator*(const Stiefel&p,  double s); // same as above but order is reversed.
 
     // Projection onto the tangent space to the Stiefel manifold.
-    Stiefel proj(const Stiefel& X, const Stiefel& Z) ;
+    // Stiefel proj(const Stiefel& X, const Stiefel& Z) ;
 
-    // vector transport in Stiefel manifold
-    Stiefel vectran(const Stiefel& X, const Stiefel& Z);
+    // // vector transport in Stiefel manifold
+    // Stiefel vectran(const Stiefel& X, const Stiefel& Z);
 
-    // retraction function in Stiefel manifold
-    Stiefel retraction(const Stiefel& X, const Stiefel& Z);
+    // // retraction function in Stiefel manifold
+    // Stiefel retraction(const Stiefel& X, const Stiefel& Z);
 
-    // differentiated retraction function in Stiefel manifold
-    Stiefel diff_retraction(const Stiefel& X, const Stiefel& Z);
+    // // differentiated retraction function in Stiefel manifold
+    // Stiefel diff_retraction(const Stiefel& X, const Stiefel& Z);
 
-    // canonical metric for stiefel manifold
-    double metric(const Stiefel& X, const Stiefel& A, const Stiefel& B);
+    // // canonical metric for stiefel manifold
+    // double metric(const Stiefel& X, const Stiefel& A, const Stiefel& B);
 
-    bool is_orthogonal(const Stiefel& X);
+    // bool is_orthogonal(const Stiefel& X);
 }
 
 

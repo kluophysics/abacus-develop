@@ -17,7 +17,7 @@ namespace ModuleDirectMin
 
     class Composite
     {
-        public:
+    public:
 
         Composite();
         // ~Composite();
@@ -28,11 +28,20 @@ namespace ModuleDirectMin
 
         Composite& operator=(const Composite& comp);
         Composite& operator+=(const Composite& comp);
+        Composite & operator*(const double s); // multiplicative by a factor s
 
         Composite t(); // complex transpose
 
+        
         // Composite operator *(const Composite &p) const; // multiplicative operator
-
+        
+        // Occupation vector can change explicitly if true
+        // fixed or only implicitly varied with the Stiefel variable if false
+        bool explicit_occupation_flag;
+        
+        // apply a scaling factor beta to the direction vector for 
+        // occupation variable, which might be helpful in convergence.
+        Composite apply_async_scaling(double beta);
     };
 
 } // end namespace ModuleDirectMin

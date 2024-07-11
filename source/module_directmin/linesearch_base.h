@@ -5,12 +5,44 @@
 #include <vector>
 #include <list>
 
-
+#include "problem.h"
 #include "composite.h"
 #include "linesearch_options.h"
 
 namespace ModuleDirectMin
 {
+    /* Linesearch status. It is an output argument and users don't need to assign this enumerate to any member variable.
+	NOCURVATURE: the second Wolfe condition is not satisfied
+	MINSTEPSIZE: line search algorithm reaches the minimum stepsize
+	MAXSTEPSIZE: line search algorithm reaches the maximum stepsize
+	NONEXACT: exact line search algorithm does not find a point satisfying the inner stopping criterion
+	SUCCESS: line search algorithm succeeds in finding a point satisfying the line search condition
+	*/
+    enum LineSearchStatus{ 
+        NOCURVATURE, 
+        MINSTEPSIZE, 
+        MAXSTEPSIZE, 
+        // NONEXACT, 
+        LSERROR, 
+        SUCCESS, 
+        LineSearchStatusLength };
+
+	/*Initial step size in line search algorithm.
+	ONESTEP: t0 = one 
+	BBSTEP: t0 = g(s, s) / g(s, y), s is the difference of consecutive iterates and y is the difference of the
+			gradients at consecutie iterates.
+	QUADINT: t0 = [(3.60), NW06]
+	QUADINTMOD: t0 = [page 60, NW06]
+	[NW06]: J. Nocedal and S. J. Wright. Numerical optimization. Springer, second edition, 2006
+	*/
+    enum InitStepsizeType { 
+        ONESTEP, 
+        BBSTEP, 
+        QUADINT, 
+        QUADINTMOD, 
+        EXTRBBSTEP, 
+        InitStepsizeTypeLength };
+
 
     class LineSearchBase
     {
@@ -31,6 +63,9 @@ namespace ModuleDirectMin
 
         // do a linesearch with the step size according to the condition type
         virtual void do_line_search();
+
+        // iterate a step
+        virtual void iterate();
 
 		//Evaluate the cost function
         //      phi(stepsize) = f(R_{x_1}(stepsize * \eta))
@@ -61,7 +96,7 @@ namespace ModuleDirectMin
 		virtual void Wolfe();
         
 
-
+        Problem * prob;
 
         std::string method_name; // name of method: conjugate gradient
         bool verbose; // verbosity level
@@ -73,6 +108,9 @@ namespace ModuleDirectMin
         Composite gf1, gf2;
         /*Pgf1: preconditioned gradient at x1, Pgf2: preconditioned gradient at x2, used in RCG and RBFGS*/
         Composite Pgf1, Pgf2;
+
+        /*In Line search-based methods, eta1 is the search direction. eta2 is stepsize * eta1.*/
+        Composite eta1, eta2; 
 
 
         // f1: function value at x1, f2: function value at x2
