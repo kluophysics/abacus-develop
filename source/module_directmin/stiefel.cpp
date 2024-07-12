@@ -48,6 +48,21 @@ namespace ModuleDirectMin
         }
     }
 
+
+    void Stiefel::switch_metric(StieMetric met)
+    {
+        metric_type = met;
+    }
+    void Stiefel::switch_retraction(StieRetraction retr)
+    {
+        retraction_type = retr;
+    }
+    void Stiefel::switch_vector_transport(StieVectorTransport vectran)
+    {
+        vector_transport_type = vectran;
+    }
+
+
     void Stiefel::resize(int k, int r, int c)
     {
         psm.resize(k);
