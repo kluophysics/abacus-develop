@@ -8,6 +8,36 @@
 
 namespace ModuleDirectMin
 {
+	/*Note that not all metrics, retractions and vector transports have been done.*/
+
+	/* Riemannian Metric for the Stiefel manifold:
+	Eucldean: g_x(etax, xix) = \trace(etax^T xix);
+	Canonical: g_x(etax, xix) = \trace(etax^T (I_n - x x^T / 2) xix); */
+	enum StieMetric{ STIE_EUCLIDEAN, STIE_CANONICAL, STIEMETRICLENGTH };
+
+	/*Retraction for the Stiefel manifold
+	QF: qf retraction defined in [AMS2008, (4.8)]
+	POLAR: polar based retraction defined in [AMS2008, (4.7)]
+	EXP: The exponential mapping
+	CAYLEYR: the Cayley transform in [Zhu2016]
+	[AMS2008]P.-A. Absil, R. Mahony, and R. Sepulchre. Optimization algorithms on matrix manifolds.
+	Princeton University Press, Princeton, NJ, 2008.
+	[HGA2015]:Wen Huang, K. A. Gallivan, and P.-A. Absil. A Broyden Class of Quasi-Newton Methods for Riemannian Optimization.
+	SIAM Journal on Optimization, 25(3):1660?685,2015.
+	[Hua2013]:W. Huang. Optimization algorithms on Riemannian manifolds with applications.
+	PhD thesis, Florida State University, Department of Mathematics, 2013.
+	[Zhu2016]: Xiaojing Zhu, A Riemannian conjugate gradient method for optimization on the Stiefel Manifold */
+	enum StieRetraction{ STIE_QF, STIE_POLAR, STIE_EXP, STIE_CAYLEYR, STIERETRACTIONLENGTH };
+
+	/*Vector transport for the Stiefel manifold
+	PARALLELIZATION: Vector transport by parallelization, See [HAG2015, Section 2.3.1]
+	RIGGING: Vector transport by rigging, See [HAG2015, Section 2.3.2]
+	PARALLELTRANSLATION: parallel translation
+	CAYLEYVT: the vector transport based on Cayley transform. [Zhu2016]
+	[HAG2015]:W. Huang, P.-A. Absil, and K. A. Gallivan. A Riemannian symmetric rank-one trust-region method.
+	Mathematical Programming, 150(2):179?16, February 2015
+	[Zhu2016]: Xiaojing Zhu, A Riemannian conjugate gradient method for optimization on the Stiefel Manifold */
+	enum StieVectorTransport{ STIE_PARALLELIZATION, STIE_RIGGING, STIE_PARALLELTRANSLATION, STIE_PROJECTION, STIE_CAYLEYVT, STIEVECTORTRANSPORTLENGTH };
 
     class Stiefel
     {
@@ -36,6 +66,7 @@ namespace ModuleDirectMin
             Stiefel operator+( double s) const; // add p with s, p+s;
             Stiefel operator-( double s) const; // p-s;
             Stiefel operator*( double s) const; //  p*s;
+
             Stiefel operator+( const Stiefel & p) const; // add p with s, p+s;
             Stiefel operator-( const Stiefel & p) const; // add p with s, p+s;
             Stiefel operator*( const Stiefel & p) const; // add p with s, p+s;
@@ -56,20 +87,34 @@ namespace ModuleDirectMin
             void reset();
             void clear();
 
-        // private:
             int nk; // number of manifolds, each manifold in this case is of same size
 
-            int nr; // number of columns for each manifold
+            int nr; // number of rows for each manifold
             int nc; // number of columns for each manifold
             
             int size; // nk*nr*nc
             // std::vector<ModuleBase::ComplexMatrix> psm;
             std::vector<arma::cx_mat> psm; // product of stiefel manifold
 
+
+        protected:
+            
+            StieMetric metric_type; // Riemannian metric
+            StieRetraction retraction_type; // retraction method
+            StieVectorTransport vector_transport_type; // vector transport method
+
+            void switch_metric(StieMetric metric);
+            void switch_retraction(StieRetraction retraction_type);
+            void switch_vector_transport(StieVectorTransport vector_transport_type);
+
+
             Stiefel projection(const Stiefel& Z);     // Projection onto the tangent space to the Stiefel manifold.
-            Stiefel vector_transport(const Stiefel& Z, const std::string & vectran);     // vector transport in Stiefel manifold
-            Stiefel retraction(const Stiefel& Z, const std::string & retr);             // retraction function in Stiefel manifold
-            Stiefel diff_retraction(const Stiefel& Z);     // differentiated retraction function in Stiefel manifold
+            Stiefel vector_transport(const Stiefel& Z);     // vector transport in Stiefel manifold
+            Stiefel retraction(const Stiefel& Z);             // retraction function in Stiefel manifold
+            
+            // Stiefel diff_retraction(const Stiefel& Z);     // differentiated retraction function in Stiefel manifold
+            
+            double metric(const Stiefel& A, const Stiefel& B); // metric for stiefel manifold
             double canonical_metric(const Stiefel& A, const Stiefel& B); // canonical metric for stiefel manifold
             double euclidean_metric(const Stiefel& A, const Stiefel& B); // euclidean metric
             bool is_orthogonal(); // check for orthogonal

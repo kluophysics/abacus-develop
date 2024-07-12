@@ -13,7 +13,12 @@ namespace ModuleDirectMin
         nr = 0;
         nc = 0;
         size = 0;
-        psm.clear();;
+        psm.clear();
+
+        metric_type = STIE_CANONICAL;
+        retraction_type = STIE_QF;
+        vector_transport_type = STIE_PROJECTION;
+
     }
 
     Stiefel::Stiefel(const Stiefel& var)
@@ -23,6 +28,10 @@ namespace ModuleDirectMin
         nc = var.nc;
         size = var.size;
         psm = var.psm;
+
+        metric_type = STIE_CANONICAL;
+        retraction_type = STIE_QF;
+        vector_transport_type = STIE_PROJECTION;
     }
 
     Stiefel::Stiefel(int k, int r, int c)
@@ -606,28 +615,27 @@ namespace ModuleDirectMin
         
         // Stiefel XZ = X.t() * Z;
         // Stiefel P = Z - 0.5 * X * (XZ + XZ.t());
-        
+
         Stiefel X(*this);
-
-        assert(X.size == Z.size);
-        int nk = X.nk;
-
         Stiefel XZ(X);
         Stiefel P(X);
 
+        assert(X.size == Z.size);
+        // int nk = X.nk;
         XZ = X.t() * Z; // XZ[ik] is square matrix
         P = Z - 0.5* X *( XZ + XZ.t() );
     
         return P;
+
     }
 
-    Stiefel Stiefel::vector_transport(const Stiefel& Z, const std::string & vectran="QR")
+    Stiefel Stiefel::vector_transport(const Stiefel& Z)
     {
-        if(vectran == "QR")
+        if(vector_transport_type == STIE_PROJECTION)
         {
             return this->projection(Z);
         }
-        else if (vectran == "POLAR")
+        else if (vector_transport_type == STIE_CAYLEYVT)
         {
             // left for future choices of vector transport
             // here only projection vector transport is done
@@ -646,7 +654,7 @@ namespace ModuleDirectMin
     }
 
 
-    Stiefel Stiefel::retraction(const Stiefel& Z,const  std::string & retr="QR")
+    Stiefel Stiefel::retraction(const Stiefel& Z)
     {
         // currently only support QR retraction 
         Stiefel X(*this);
@@ -659,59 +667,92 @@ namespace ModuleDirectMin
         Stiefel W = X + Z;
         Stiefel result(X);
 
-        for (int ik = 0; ik < X.nk; ik++)
+        if(retraction_type == STIE_EXP)
         {
-            arma::cx_mat Y, R;
-            arma::qr_econ(Y, R, W[ik]);
-            // Apply the sign function to the diagonal of R
-            R.diag() = arma::sign(arma::sign(R.diag()) + 0.5);
-            // // Modify X and R based on the sign of the diagonal Stiefels of R
-            Y = Y * arma::diagmat(arma::sign(arma::sign(arma::diagvec(R)) + 0.5));
+            return result; 
 
-            result[ik] = Y;
         }
-        return result;
+        else if(retraction_type == STIE_CAYLEYR)
+        {
+            return result;
+        }
+        else if(retraction_type == STIE_POLAR)
+        {
+            return result;
+        }
+        else // STIE_QF is default
+        {
+            for (int ik = 0; ik < X.nk; ik++)
+            {
+                arma::cx_mat Y, R;
+                arma::qr_econ(Y, R, W[ik]);
+                // Apply the sign function to the diagonal of R
+                R.diag() = arma::sign(arma::sign(R.diag()) + 0.5);
+                // // Modify X and R based on the sign of the diagonal Stiefels of R
+                Y = Y * arma::diagmat(arma::sign(arma::sign(arma::diagvec(R)) + 0.5));
+
+                result[ik] = Y;
+            }
+            return result;
+
+        }
+
     }
 
-    Stiefel Stiefel::diff_retraction(const Stiefel& Z)
-    {        
-        // currently only support QR retraction 
-        Stiefel X(*this);
+    // Stiefel Stiefel::diff_retraction(const Stiefel& Z)
+    // {        
+    //     // currently only support QR retraction 
+    //     Stiefel X(*this);
 
-        assert(X.nk == Z.nk);
-        assert(X.nr == Z.nr);
-        assert(X.nc == Z.nc);
+    //     assert(X.nk == Z.nk);
+    //     assert(X.nr == Z.nr);
+    //     assert(X.nc == Z.nc);
         
-        arma::cx_mat Y, R;
-        // arma::cx_mat W;
-        arma::cx_mat U, D;
+    //     arma::cx_mat Y, R;
+    //     // arma::cx_mat W;
+    //     arma::cx_mat U, D;
 
-        arma::cx_mat ZRinv, XZRinv, XXZRinv;
+    //     arma::cx_mat ZRinv, XZRinv, XXZRinv;
 
-        Stiefel W = X + Z;
+    //     Stiefel W = X + Z;
 
-        Stiefel result(X);
+    //     Stiefel result(X);
 
-        for (int ik = 0; ik < X.nk; ik++)
+    //     for (int ik = 0; ik < X.nk; ik++)
+    //     {
+    //         // W = X[ik] + Z[ik];
+    //         arma::qr_econ(Y, R, W[ik]);
+    //         // Apply the sign function to the diagonal of R
+    //         R.diag() = arma::sign(arma::sign(R.diag()) + 0.5);
+    //         R = arma::diagmat(R.diag()) * R;
+    //         // // Modify X and R based on the sign of the diagonal Stiefels of R
+    //         // Y = Y * arma::diagmat(arma::sign(arma::sign(arma::diagvec(R)) + 0.5));
+    //         // result[ik] = Y;
+
+    //         // note it uses the R matrix from retraction function
+    //         ZRinv = Z [ik] * arma::inv(R);
+    //         XZRinv = X[ik].t() * ZRinv;
+    //         XXZRinv = X[ik] * XZRinv;
+    //         U = arma::trimatl(XZRinv, -1); // Lower triangular part
+    //         D = X[ik] * (U - U.t()) + ZRinv - XXZRinv;
+    //         result[ik] = D;
+    //     }
+    //     return result;
+    // }
+    double Stiefel::metric(const Stiefel& A, const Stiefel& B)
+    {
+        if(metric_type == STIE_CANONICAL)
         {
-            // W = X[ik] + Z[ik];
-            arma::qr_econ(Y, R, W[ik]);
-            // Apply the sign function to the diagonal of R
-            R.diag() = arma::sign(arma::sign(R.diag()) + 0.5);
-            R = arma::diagmat(R.diag()) * R;
-            // // Modify X and R based on the sign of the diagonal Stiefels of R
-            // Y = Y * arma::diagmat(arma::sign(arma::sign(arma::diagvec(R)) + 0.5));
-            // result[ik] = Y;
-
-            // note it uses the R matrix from retraction function
-            ZRinv = Z [ik] * arma::inv(R);
-            XZRinv = X[ik].t() * ZRinv;
-            XXZRinv = X[ik] * XZRinv;
-            U = arma::trimatl(XZRinv, -1); // Lower triangular part
-            D = X[ik] * (U - U.t()) + ZRinv - XXZRinv;
-            result[ik] = D;
+            return canonical_metric(A,B);
         }
-        return result;
+        else if(metric_type == STIE_EUCLIDEAN)
+        {
+            return euclidean_metric(A,B);
+        }
+        else
+        {
+            return 0.0;
+        }
     }
 
     double Stiefel::canonical_metric(const Stiefel& A, const Stiefel& B)
