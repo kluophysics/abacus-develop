@@ -624,7 +624,7 @@ class Input
 
     std::string directmin_obj_type; // objective function type, test, ks, rdmft, etc...
     std::string directmin_choice; // DirectMin choice, either trust-region (tr) or line-search (ls) for now, tr is for later though.
-    double directmin_maxiter; // max number of iterations for minimization
+    int directmin_maxiter; // max number of iterations for minimization
     std::string directmin_retraction_type; // Retraction for the Stiefel manifold
 	// QF: qf retraction defined in [AMS2008, (4.8)]
 	// POLAR: polar based retraction defined in [AMS2008, (4.7)]

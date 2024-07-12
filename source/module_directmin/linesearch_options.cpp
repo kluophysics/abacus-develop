@@ -3,19 +3,29 @@
 
 namespace ModuleDirectMin
 {
+    LineSearchOptions::LineSearchOptions()
+    {
+        // Options();
+        // obj_type = "ks";
+        // choice = "ls";
+        // maxiter = 100;
+
+        // retraction_type = 
+    }
 
     LineSearchOptions::LineSearchOptions(Input& input)
     {
-        obj_type = input.directmin_obj_type;
-        choice = input.directmin_choice;
-        maxiter = input.directmin_maxiter;
+        // obj_type = input.directmin_obj_type;
+        // choice = input.directmin_choice;
+        // maxiter = input.directmin_maxiter;
 
-        // obj_type = "test"; // default for now, will be changed
+        // // obj_type = "test"; // default for now, will be changed
 
-        retraction_type = input.directmin_retraction_type;
-        vectransport_type = input.directmin_vectransport_type;
+        // retraction_type = input.directmin_retraction_type;
+        // vectransport_type = input.directmin_vectransport_type;
 
-        // Options(input);
+        Options::update_from_input(input);
+
         ls_method = input.directmin_ls_method;
         ls_condition = input.directmin_ls_algo;
         ls_cg_algo = input.directmin_ls_cg_algo;

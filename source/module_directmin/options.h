@@ -6,23 +6,68 @@
 
 namespace ModuleDirectMin
 {
+    // Objective Type
+    // 'test': test problems
+    // 'ks': Kohn-Sham energy functional 
+    // 'ks-sic' : self-interaction-corrected Kohn-Sham energy functional
+    // 'hybrid': hybrid Kohn-Sham energy functional
+    // 'rdmft': reduced density matrix energy functional
+    enum ObjectiveType {
+        TEST,
+        KS,
+        KS_SIC,
+        HYBRID,
+        RDMFT,
+        ObjectiveTypeLength
+    };
 
-    enum RetractionMethod {
-        QR,
+	/* Riemannian Metric for the Stiefel manifold:
+	Eucldean: g_x(etax, xix) = \trace(etax^T xix);
+	Canonical: g_x(etax, xix) = \trace(etax^T (I_n - x x^T / 2) xix); */
+	enum MetricType { 
+        EUCLIDEAN, 
+        CANONICAL, 
+        MetricTypeLength
+    };
+
+	/*Retraction for the Stiefel manifold
+	QF: qf retraction defined in [AMS2008, (4.8)]
+	POLAR: polar based retraction defined in [AMS2008, (4.7)]
+	EXP: The exponential mapping
+	CAYLEYR: the Cayley transform in [Zhu2016]
+	[AMS2008]P.-A. Absil, R. Mahony, and R. Sepulchre. Optimization algorithms on matrix manifolds.
+	Princeton University Press, Princeton, NJ, 2008.
+	[HGA2015]:Wen Huang, K. A. Gallivan, and P.-A. Absil. A Broyden Class of Quasi-Newton Methods for Riemannian Optimization.
+	SIAM Journal on Optimization, 25(3):1660?685,2015.
+	[Hua2013]:W. Huang. Optimization algorithms on Riemannian manifolds with applications.
+	PhD thesis, Florida State University, Department of Mathematics, 2013.
+	[Zhu2016]: Xiaojing Zhu, A Riemannian conjugate gradient method for optimization on the Stiefel Manifold */
+    enum RetractionType {
+        QF,
         EXP,
         CAYLEY,
         POLAR,
-        RetractionMethod_Length
+        RetractionTypeLength
     };
     // VectorTransport should  use the corresponding retraction method 
 
+	/*Vector transport for the Stiefel manifold
+	PARALLELIZATION: Vector transport by parallelization, See [HAG2015, Section 2.3.1]
+	RIGGING: Vector transport by rigging, See [HAG2015, Section 2.3.2]
+	PARALLELTRANSLATION: parallel translation
+	CAYLEYVT: the vector transport based on Cayley transform. [Zhu2016]
+	[HAG2015]:W. Huang, P.-A. Absil, and K. A. Gallivan. A Riemannian symmetric rank-one trust-region method.
+	Mathematical Programming, 150(2):179?16, February 2015
+	[Zhu2016]: Xiaojing Zhu, A Riemannian conjugate gradient method for optimization on the Stiefel Manifold */
     enum VectorTranportType {
         PROJECTION,
+        PARALLELTRANSLATION,
         DIFFERENTIATED,
-        VectorTranportType_Length
+        CAYLEYVT,
+        RIGGING,
+        PARALLELIZATION,
+        VectorTranportTypeLength
     };
-
-
 
 
     class Options
@@ -30,15 +75,11 @@ namespace ModuleDirectMin
     public:
 
         std::string choice; // DirectMin choice, either trust-region (tr) or line-search (ls) for now, tr is for later though.
-        std::string retraction_type; // Retraction for the Stiefel manifold
-        std::string vectransport_type; // Vector transport for the Stiefel manifold
+        RetractionType retraction_type; // Retraction for the Stiefel manifold
+        VectorTranportType vectransport_type; // Vector transport for the Stiefel manifold
 
-        std::string obj_type; // functional type
-        // 'test': test problems
-        // 'ks': Kohn-Sham energy functional 
-        // 'ks-sic' : self-interaction-corrected Kohn-Sham energy functional
-        // 'hybrid': hybrid Kohn-Sham energy functional
-        // 'rdmft': reduced density matrix energy functional
+        ObjectiveType obj_type; // functional type
+
 
         int maxiter; // max number of iterations for minimization 
 
@@ -46,6 +87,8 @@ namespace ModuleDirectMin
 
         Options();
         Options(Input & input);  // constructor
+
+        void update_from_input(Input & input);
         virtual void print_info();
         // virtual ~Options();
     };

@@ -7,19 +7,27 @@ namespace ModuleDirectMin
     Options::Options()
     {
         choice = "lr";
-        retraction_type = "qr";
-        vectransport_type = "qr";
+        retraction_type = QF;
+        vectransport_type = PROJECTION;
         maxiter = 100;
-        obj_type = "test";
+        obj_type = KS;
     }
 
     Options::Options(Input & input)
     {
+        update_from_input(input);
+    }
+
+    void Options::update_from_input(Input & input)
+    {
         choice = input.directmin_choice;
-        retraction_type = input.directmin_retraction_type;
-        vectransport_type = input.directmin_vectransport_type;
+        if( input.directmin_retraction_type == "qf")
+            retraction_type = QF;
+        if(input.directmin_vectransport_type == "projection")
+            vectransport_type = PROJECTION;
+        if(input.directmin_obj_type == "ks")
+            obj_type = KS;
         maxiter = input.directmin_maxiter;
-        obj_type = input.directmin_obj_type;
     }
 
     void Options::print_info()

@@ -326,10 +326,10 @@ std::string    directmin_ls_cg_algo = "dy";
 std::string    directmin_ls_initstep_type = "quadint";
 
 
-double    directmin_ls_alpha = 0.0001;
-double    directmin_ls_beta = 0.999;
-double    directmin_ls_c1 = 1e-4;
-double    directmin_ls_c2 = 0.9;
+double    directmin_ls_alpha = 0.1; // Armijo-Goldstein parameters c 
+double    directmin_ls_beta = 0.9; // Armijo-Goldstein parameters (1-c)
+double    directmin_ls_c1 = 1e-4; // Wolfe condition c1, sufficient decrease
+double    directmin_ls_c2 = 0.9;  // Wolfe condition c2, curvature condition
 
 double    directmin_ls_minstepsize = 1e-10;
 double    directmin_ls_maxstepsize = 1e3;

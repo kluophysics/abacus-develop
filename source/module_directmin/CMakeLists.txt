@@ -7,13 +7,14 @@ list(APPEND objects
     linesearch_options.cpp
     linesearch_helper.cpp
     linesearch_base.cpp
-    occupation.cpp
 
+    occupation.cpp
     options.cpp
+    
     problem.cpp
 
     stiefel.cpp
-    
+
     # optimizer/options_ls.cpp
     # optimizer/base.cpp
     # optimizer/ls_base.cpp

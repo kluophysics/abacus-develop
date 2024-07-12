@@ -13,6 +13,8 @@ namespace ModuleDirectMin
     class LineSearchOptions : public Options
     {
     public:
+        LineSearchOptions();  // default constructor
+
         LineSearchOptions(Input & input);  // constructor
         ~LineSearchOptions(); // destructor
         

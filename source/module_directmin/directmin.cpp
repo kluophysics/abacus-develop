@@ -42,18 +42,18 @@ namespace ModuleDirectMin{
 
 
         // choose objective type 
-        if (ls_opts->obj_type == "test")
+        if (ls_opts->obj_type == TEST)
         {
             // work for test problem
         }
-        else if(ls_opts-> obj_type == "ks")
+        else if(ls_opts-> obj_type == KS)
         {
             // work for Kohn-Sham problem 
 
             // std::cout << "Warning: KS not implemented" << std::endl;
             //prob = new Problem_KS(inp, cell);
         }
-        else if (ls_opts -> obj_type == "rdmft")
+        else if (ls_opts -> obj_type == RDMFT)
         {
             // prob = NULL;
             std::cout << "Warning: RDMFT not implemented" << std::endl;
@@ -90,7 +90,7 @@ namespace ModuleDirectMin{
     {
 
     //     // define the problem first!!!
-    //     if(ls_opts->obj_type == "test")
+    //     if(ls_opts->obj_type == TEST)
     //     {
     //         prob = new Problem_Test();
     //     }
@@ -98,12 +98,12 @@ namespace ModuleDirectMin{
     //     {
     //         prob = new Problem_Eig();
     //     }
-    //     else if(ls_opts-> obj_type == "ks")
+    //     else if(ls_opts-> obj_type == KS)
     //     {
     //         // std::cout << "Warning: KS not implemented" << std::endl;
     //         prob = new Problem_KS(inp, cell);
     //     }
-    //     else if (ls_opts -> obj_type == "rdmft")
+    //     else if (ls_opts -> obj_type == RDMFT)
     //     {
     //         prob = NULL;
     //         std::cout << "Warning: RDMFT not implemented" << std::endl;

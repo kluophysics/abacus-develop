@@ -43,6 +43,11 @@ namespace ModuleDirectMin
         EXTRBBSTEP, 
         InitStepsizeTypeLength };
 
+    enum ConditionType {ARMIJO,
+                        WOLFE,
+                        STRONG_WOLFE,
+                        ConditionTypeLength
+                       };
 
     class LineSearchBase
     {
@@ -98,8 +103,14 @@ namespace ModuleDirectMin
 
         Problem * prob;
 
+        // parameters for this class
+
         std::string method_name; // name of method: conjugate gradient
         bool verbose; // verbosity level
+        LineSearchOptions * ls_options;
+        ConditionType condition_type; // The condition type
+        
+        LineSearchStatus LS_status;
 
         // algorithm-related variables:
         // x1: current iterate, x2: next iterate
@@ -132,8 +143,8 @@ namespace ModuleDirectMin
 
 
 
-        LineSearchOptions * ls_options;
         // for debug
+
 		int iter; /*iteration number*/
 
         int nf; // number of function evaluations

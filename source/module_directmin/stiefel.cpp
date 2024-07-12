@@ -1,4 +1,5 @@
 #include "stiefel.h"
+#include "options.h"
 #include <string>
 #include <cassert>
 
@@ -15,9 +16,9 @@ namespace ModuleDirectMin
         size = 0;
         psm.clear();
 
-        metric_type = STIE_CANONICAL;
-        retraction_type = STIE_QF;
-        vector_transport_type = STIE_PROJECTION;
+        metric_type = CANONICAL;
+        retraction_type = QF;
+        vector_transport_type = PROJECTION;
 
     }
 
@@ -29,9 +30,9 @@ namespace ModuleDirectMin
         size = var.size;
         psm = var.psm;
 
-        metric_type = STIE_CANONICAL;
-        retraction_type = STIE_QF;
-        vector_transport_type = STIE_PROJECTION;
+        metric_type = CANONICAL;
+        retraction_type = QF;
+        vector_transport_type = PROJECTION;
     }
 
     Stiefel::Stiefel(int k, int r, int c)
@@ -49,15 +50,15 @@ namespace ModuleDirectMin
     }
 
 
-    void Stiefel::switch_metric(StieMetric met)
+    void Stiefel::switch_metric(MetricType met)
     {
         metric_type = met;
     }
-    void Stiefel::switch_retraction(StieRetraction retr)
+    void Stiefel::switch_retraction(RetractionType retr)
     {
         retraction_type = retr;
     }
-    void Stiefel::switch_vector_transport(StieVectorTransport vectran)
+    void Stiefel::switch_vector_transport(VectorTranportType vectran)
     {
         vector_transport_type = vectran;
     }
@@ -646,11 +647,11 @@ namespace ModuleDirectMin
 
     Stiefel Stiefel::vector_transport(const Stiefel& Z)
     {
-        if(vector_transport_type == STIE_PROJECTION)
+        if(vector_transport_type == DIFFERENTIATED)
         {
             return this->projection(Z);
         }
-        else if (vector_transport_type == STIE_CAYLEYVT)
+        else if (vector_transport_type == CAYLEYVT)
         {
             // left for future choices of vector transport
             // here only projection vector transport is done
@@ -682,16 +683,16 @@ namespace ModuleDirectMin
         Stiefel W = X + Z;
         Stiefel result(X);
 
-        if(retraction_type == STIE_EXP)
+        if(retraction_type == EXP)
         {
             return result; 
 
         }
-        else if(retraction_type == STIE_CAYLEYR)
+        else if(retraction_type == CAYLEY)
         {
             return result;
         }
-        else if(retraction_type == STIE_POLAR)
+        else if(retraction_type == POLAR)
         {
             return result;
         }
@@ -756,11 +757,11 @@ namespace ModuleDirectMin
     // }
     double Stiefel::metric(const Stiefel& A, const Stiefel& B)
     {
-        if(metric_type == STIE_CANONICAL)
+        if(metric_type == CANONICAL)
         {
             return canonical_metric(A,B);
         }
-        else if(metric_type == STIE_EUCLIDEAN)
+        else if(metric_type == EUCLIDEAN)
         {
             return euclidean_metric(A,B);
         }
