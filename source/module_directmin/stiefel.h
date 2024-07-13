@@ -145,17 +145,18 @@ namespace ModuleDirectMin
     // Projection onto the tangent space to the Stiefel manifold.
     // Stiefel proj(const Stiefel& X, const Stiefel& Z) ;
 
-    // // vector transport in Stiefel manifold
-    // Stiefel vectran(const Stiefel& X, const Stiefel& Z);
+    // vector transport in Stiefel manifold
+    Stiefel vector_transport(const Stiefel& x, const Stiefel& etax,
+    const Stiefel& y, const Stiefel& xix);
 
     // // retraction function in Stiefel manifold
-    // Stiefel retraction(const Stiefel& X, const Stiefel& Z);
+    Stiefel retraction(const Stiefel& x, const Stiefel& etax);
 
     // // differentiated retraction function in Stiefel manifold
     // Stiefel diff_retraction(const Stiefel& X, const Stiefel& Z);
 
-    // // canonical metric for stiefel manifold
-    // double metric(const Stiefel& X, const Stiefel& A, const Stiefel& B);
+    // canonical metric for stiefel manifold
+    double metric(const Stiefel& X, const Stiefel& A, const Stiefel& B);
 
     // bool is_orthogonal(const Stiefel& X);
 }

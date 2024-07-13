@@ -57,6 +57,9 @@ namespace ModuleDirectMin
         ;
 
     protected:
+        // initialize( the problem involved (functional type)
+        virtual void initialize(Problem *prob_in);
+        
         // set default params for line search
         virtual void set_default_parameters();
         
@@ -107,12 +110,12 @@ namespace ModuleDirectMin
         
 
         Problem * prob;
+        LineSearchOptions * ls_options;
 
         // parameters for this class
 
         std::string method_name; // name of method: conjugate gradient
         bool verbose; // verbosity level
-        LineSearchOptions * ls_options;
         ConditionType condition_type; // The condition type
         
         LineSearchStatus LS_status;

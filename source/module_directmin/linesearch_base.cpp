@@ -10,7 +10,19 @@ namespace ModuleDirectMin
         this->set_default_parameters();
 
     }
-    
+    // LineSearchBase::LineSearchBase(const Problem * prob, LineSearchOptions * ls_opt_in)
+    // {
+    //     this->set_default_parameters();
+        
+    // }
+
+    void LineSearchBase::initialize(Problem *prob_in)
+    {
+        prob = prob_in;
+        
+        // x1 = prob->X0;
+    }
+
     void LineSearchBase::set_default_parameters()
     {
         // parameters for linesearch conditions, either Strong Wolfe conditions,

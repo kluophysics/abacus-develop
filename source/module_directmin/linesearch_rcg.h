@@ -21,6 +21,8 @@ namespace ModuleDirectMin
     class LineSearchRCG : public LineSearchBase
     {
     public:
+        LineSearchRCG(const Problem * prob, LineSearchOptions * ls_opt_in);
+
         std::string *cg_algo_names;
         double sigma;
 

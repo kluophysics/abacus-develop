@@ -2,6 +2,12 @@
 
 namespace ModuleDirectMin
 {
+    LineSearchRCG::LineSearchRCG(const Problem * prob, LineSearchOptions * ls_opt_in)
+    {
+        this->set_default_parameters();
+
+        ;
+    }
 
     void LineSearchRCG::set_default_parameters()
     {
@@ -64,121 +70,121 @@ namespace ModuleDirectMin
     }
 
 
-    void LineSearchRCG::update_data()
-    {
-        // compute_sigma();
-        // Stiefel Td1, Tgf1;
+    // void LineSearchRCG::update_data()
+    // {
+    //     // compute_sigma();
+    //     // Stiefel Td1, Tgf1;
 
-        // Td1 = vectran(x2, eta1);
-        double sigmaFR, sigmaPR;
+    //     // Td1 = vectran(x2, eta1);
+    //     double sigmaFR, sigmaPR;
 
-        Stiefel Td1, Tgf1;
-        Stiefel y1;
-        Td1 = vectran(x2, eta1);  nV ++;
-        Tgf1 = vectran(x2, gf1); nV ++;
+    //     Stiefel Td1, Tgf1;
+    //     Stiefel y1;
+    //     Td1 = vectran(x2, eta1);  nV ++;
+    //     Tgf1 = vectran(x2, gf1); nV ++;
 
-        Pgf2 = prob->preconditioner(gf2);
-        // Stiefel Td1, Tgf1;
-        // Stiefel y1;
+    //     Pgf2 = prob->preconditioner(gf2);
+    //     // Stiefel Td1, Tgf1;
+    //     // Stiefel y1;
 
-        if(fabs(metric(x2, gf2, Tgf1)) / metric( x1, gf1, gf1) > 0.1)
-        { 
-            /*Restart using the safeguard (5.52) in [NW06] */
-            sigma = 0;
-        }
-        else
-        {
-            switch(cg_algo)
-            {
-                case FLETCHER_REEVES:
-                    sigma = metric(x2, gf2, Pgf2) 
-                                /metric(x1, gf1, Pgf1);
-                    break;
-                case DAI_YUAN:
-                    y1 = gf2 - Tgf1;
-                    sigma = metric(x1, gf2, Pgf2) 
-                                /metric(x2, Td1, y1);
-                    break;
-                case POLAK_RIBIERES:
-                    y1 = gf2 - Tgf1;
-                    sigma = metric(x2, Pgf2, y1) 
-                                /metric(x1, gf1, Pgf1);
-                    break;
+    //     if(fabs(metric(x2, gf2, Tgf1)) / metric( x1, gf1, gf1) > 0.1)
+    //     { 
+    //         /*Restart using the safeguard (5.52) in [NW06] */
+    //         sigma = 0;
+    //     }
+    //     else
+    //     {
+    //         switch(cg_algo)
+    //         {
+    //             case FLETCHER_REEVES:
+    //                 sigma = metric(x2, gf2, Pgf2) 
+    //                             /metric(x1, gf1, Pgf1);
+    //                 break;
+    //             case DAI_YUAN:
+    //                 y1 = gf2 - Tgf1;
+    //                 sigma = metric(x1, gf2, Pgf2) 
+    //                             /metric(x2, Td1, y1);
+    //                 break;
+    //             case POLAK_RIBIERES:
+    //                 y1 = gf2 - Tgf1;
+    //                 sigma = metric(x2, Pgf2, y1) 
+    //                             /metric(x1, gf1, Pgf1);
+    //                 break;
 
-                // case POLAK_RIBIERES_MOD:
-                //     y1 = gf2 - Tgf1;
-                //     sigma = metric(x2, y1, gf2) 
-                //             /metric(x1, gf1, gf1);
-                //     sigma = (sigma < 0) ? 0 : sigma;
-                //     break;
+    //             // case POLAK_RIBIERES_MOD:
+    //             //     y1 = gf2 - Tgf1;
+    //             //     sigma = metric(x2, y1, gf2) 
+    //             //             /metric(x1, gf1, gf1);
+    //             //     sigma = (sigma < 0) ? 0 : sigma;
+    //             //     break;
 
-                case FR_PR:
-                    sigmaFR = metric(x2, gf2, gf2) 
-                                /metric(x1, gf1, gf1);
-                    sigmaPR = metric(x2, gf2, Tgf1) 
-                                /metric(x1, gf1, gf1);
-                    sigma = (sigmaPR < -sigmaFR) ? - sigmaFR : ((sigmaPR > sigmaFR) ? sigmaFR : sigmaPR);
-                    break;
+    //             case FR_PR:
+    //                 sigmaFR = metric(x2, gf2, gf2) 
+    //                             /metric(x1, gf1, gf1);
+    //                 sigmaPR = metric(x2, gf2, Tgf1) 
+    //                             /metric(x1, gf1, gf1);
+    //                 sigma = (sigmaPR < -sigmaFR) ? - sigmaFR : ((sigmaPR > sigmaFR) ? sigmaFR : sigmaPR);
+    //                 break;
 
-                // case HAGER_ZHANG:
-                //     y1 = gf2 - Tgf1;
-                //     sigma = metric(x2, Tgf1, Pgf2) / metric 
-                //     break;
+    //             // case HAGER_ZHANG:
+    //             //     y1 = gf2 - Tgf1;
+    //             //     sigma = metric(x2, Tgf1, Pgf2) / metric 
+    //             //     break;
 
-                case HESTENES_STIEFEL:
-                    y1 = gf2 - Tgf1;
-                    sigma = metric(x2, Pgf2, Tgf1) 
-                                /metric(x2, Tgf1, Td1);
-                    break;
-                default:
-                    std::cout << "Unknown RCG algorithm" << std::endl;
-                    sigma = 0;
-            }
+    //             case HESTENES_STIEFEL:
+    //                 y1 = gf2 - Tgf1;
+    //                 sigma = metric(x2, Pgf2, Tgf1) 
+    //                             /metric(x2, Tgf1, Td1);
+    //                 break;
+    //             default:
+    //                 std::cout << "Unknown RCG algorithm" << std::endl;
+    //                 sigma = 0;
+    //         }
                     
-        }
-        // if (cg_algo == FLETCHER_REEVES)
-        // {
-        //     Td1 = vectran(x2, eta1);
-        //     sigma = metric(x2, gf2, gf2) 
-        //                 /metric(x1, gf1, gf1);
-        // }
-        // else if (cg_algo == POLAK_RIBIERES ) 
-        // {
-        //     Td1 = vectran(x2, eta1);
-        //     sigma = metric(x2, Td1, gf2) 
-        //                 /metric(x1, gf1, gf1);
-        // }
-        // else if (cg_algo == HESTENES_STIEFEL)
-        // {
-        //     Td1 = vectran(x2, eta1);
-        //     Tgf1 = vectran(x2, gf1);
+    //     }
+    //     // if (cg_algo == FLETCHER_REEVES)
+    //     // {
+    //     //     Td1 = vectran(x2, eta1);
+    //     //     sigma = metric(x2, gf2, gf2) 
+    //     //                 /metric(x1, gf1, gf1);
+    //     // }
+    //     // else if (cg_algo == POLAK_RIBIERES ) 
+    //     // {
+    //     //     Td1 = vectran(x2, eta1);
+    //     //     sigma = metric(x2, Td1, gf2) 
+    //     //                 /metric(x1, gf1, gf1);
+    //     // }
+    //     // else if (cg_algo == HESTENES_STIEFEL)
+    //     // {
+    //     //     Td1 = vectran(x2, eta1);
+    //     //     Tgf1 = vectran(x2, gf1);
 
-        //     y1 = gf2 - Tgf1;
-        //     sigma = metric(x1, gf2, y1) 
-        //                 /metric(x2, Td1, y1);
-        // }
+    //     //     y1 = gf2 - Tgf1;
+    //     //     sigma = metric(x1, gf2, y1) 
+    //     //                 /metric(x2, Td1, y1);
+    //     // }
 
-        // else if (cg_algo == DAI_YUAN)
-        // {
+    //     // else if (cg_algo == DAI_YUAN)
+    //     // {
 
-        //     Td1 = vectran(x2, eta1);
-        //     Tgf1 = vectran(x2, gf1);
-        //     y1 = gf2 - Tgf1;
-        //     sigma = metric(x1, gf2, gf2) 
-        //                 /metric(x2, Td1, y1);
-        // }
+    //     //     Td1 = vectran(x2, eta1);
+    //     //     Tgf1 = vectran(x2, gf1);
+    //     //     y1 = gf2 - Tgf1;
+    //     //     sigma = metric(x1, gf2, gf2) 
+    //     //                 /metric(x2, Td1, y1);
+    //     // }
 
-        Pgf1 = Pgf2;
-        if (sigma == 0)
-        {
-            eta1 = -gf2;
-        }
-        else 
-        {
-            eta1 = - gf2 + sigma * Td1; // update new direction
-        }
-        // std::cout << "sigma=" << sigma << std::endl;
-    }
+    //     Pgf1 = Pgf2;
+    //     if (sigma == 0)
+    //     {
+    //         eta1 = -gf2;
+    //     }
+    //     else 
+    //     {
+    //         eta1 = - gf2 + sigma * Td1; // update new direction
+    //     }
+    //     // std::cout << "sigma=" << sigma << std::endl;
+    // }
 
 
     void LineSearchRCG::set_cg_algo( std::string & name)
@@ -218,44 +224,44 @@ namespace ModuleDirectMin
         }
     }
     
-    void LineSearchRCG::compute_sigma()
-    {
-        Stiefel Td1, Tgf1;
-        Stiefel y1;
-        Td1 = vectran(x2, eta1);  nV ++;
-        Tgf1 = vectran(x2, gf1); nV ++;
+    // void LineSearchRCG::compute_sigma()
+    // {
+    //     Stiefel Td1, Tgf1;
+    //     Stiefel y1;
+    //     Td1 = vectran(x2, eta1);  nV ++;
+    //     Tgf1 = vectran(x2, gf1); nV ++;
 
-        if(fabs(metric(x2, gf2, Tgf1)) / metric( x1, gf1, gf1) > 0.1)
-        {
-            sigma = 0;
-        }
-        switch(cg_algo)
-        {
-            case FLETCHER_REEVES:
-                sigma = metric(x2, gf2, gf2) 
-                            /metric(x1, gf1, gf1);
-                break;
-            case DAI_YUAN:
-                y1 = gf2 - Tgf1;
-                sigma = metric(x1, gf2, gf2) 
-                            /metric(x2, Td1, y1);
-                break;
-            case POLAK_RIBIERES:
-                sigma = metric(x2, Td1, gf2) 
-                        /metric(x1, gf1, gf1);
-                break;
-            case HAGER_ZHANG:
-                break;
-            case HESTENES_STIEFEL:
-                y1 = gf2 - Tgf1;
-                sigma = metric(x1, Pgf2, y1) 
-                            /metric(x2, Td1, y1);
-                break;
-            default:
-                std::cout << "Unknown RCG algorithm" << std::endl;
-                sigma = 0;
-        }
-    }
+    //     if(fabs(metric(x2, gf2, Tgf1)) / metric( x1, gf1, gf1) > 0.1)
+    //     {
+    //         sigma = 0;
+    //     }
+    //     switch(cg_algo)
+    //     {
+    //         case FLETCHER_REEVES:
+    //             sigma = metric(x2, gf2, gf2) 
+    //                         /metric(x1, gf1, gf1);
+    //             break;
+    //         case DAI_YUAN:
+    //             y1 = gf2 - Tgf1;
+    //             sigma = metric(x1, gf2, gf2) 
+    //                         /metric(x2, Td1, y1);
+    //             break;
+    //         case POLAK_RIBIERES:
+    //             sigma = metric(x2, Td1, gf2) 
+    //                     /metric(x1, gf1, gf1);
+    //             break;
+    //         case HAGER_ZHANG:
+    //             break;
+    //         case HESTENES_STIEFEL:
+    //             y1 = gf2 - Tgf1;
+    //             sigma = metric(x1, Pgf2, y1) 
+    //                         /metric(x2, Td1, y1);
+    //             break;
+    //         default:
+    //             std::cout << "Unknown RCG algorithm" << std::endl;
+    //             sigma = 0;
+    //     }
+    // }
 
 
 } // namespace ModuleDirectMin
