@@ -66,5 +66,17 @@ namespace ModuleDirectMin
         }
         return *this;
     }
+
+    Occupation Occupation::operator-() const
+    {
+        Occupation result = *this;
+
+
+        for(int i=0; i < size; i++)
+        {
+            result.occ_vector[i] = -this->occ_vector[i];
+        }
+        return result;
+    }
     
 } // namespace ModuleDirectMin

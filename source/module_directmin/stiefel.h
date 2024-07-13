@@ -99,7 +99,7 @@ namespace ModuleDirectMin
             std::vector<arma::cx_mat> psm; // product of stiefel manifold
 
 
-        protected:
+        // protected:
             MetricType metric_type; // Riemannian metric
             RetractionType retraction_type; // retraction method
             VectorTranportType vector_transport_type; // vector transport method

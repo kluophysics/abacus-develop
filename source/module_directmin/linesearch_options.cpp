@@ -5,12 +5,7 @@ namespace ModuleDirectMin
 {
     LineSearchOptions::LineSearchOptions()
     {
-        // Options();
-        // obj_type = "ks";
-        // choice = "ls";
-        // maxiter = 100;
-
-        // retraction_type = 
+        this->set_default_parameters();
     }
 
     LineSearchOptions::LineSearchOptions(Input& input)
@@ -53,7 +48,30 @@ namespace ModuleDirectMin
 
     void LineSearchOptions::set_default_parameters()
     {
-        
+        ls_method = "cg";
+        ls_condition = "swolfe";
+        if(ls_method == "cg")
+        {
+            ls_cg_algo = "dy";
+        }
+        else
+        {
+            ls_cg_algo="";
+        }
+
+        // ls_initstep_type = input.directmin_ls_initstep_type;
+
+        ls_alpha = 0.1;
+        ls_beta = 0.9;
+        ls_c1 = 1e-4;
+        ls_c2 = 0.9;
+
+        ls_minstepsize = 1e-10;
+        ls_maxstepsize = 1000;
+        ls_initstepsize = 1.0;
+        ls_finalstepsize = -1.0;
+        ls_gtol = 1e-5;
+        ls_ftol = 1e-7;
     }
 
     void LineSearchOptions::print_info()

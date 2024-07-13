@@ -72,6 +72,11 @@ namespace ModuleDirectMin
         // iterate a step
         virtual void iterate();
 
+        // update one iteration, some algorithms need to update some information. For example,
+		// quasi-Newton methods need to update the Hessian approximation and nonlinear conjugate gradient
+		// needs to update the search direction. They are done in the following function
+        virtual void update_data()=0;
+
 		//Evaluate the cost function
         //      phi(stepsize) = f(R_{x_1}(stepsize * \eta))
         // virtual double phi();
@@ -126,7 +131,7 @@ namespace ModuleDirectMin
 
         // f1: function value at x1, f2: function value at x2
         double f1, f2;
-
+        double ngf1, ngf2; // norm of gf1 and gf2
         double step_size; // The stepsize
 
 

@@ -7,8 +7,7 @@ namespace ModuleDirectMin
 
     LineSearchBase::LineSearchBase()
     {
-        method_name = "Unspecified";
-        verbose = false;
+        this->set_default_parameters();
 
     }
     
@@ -33,6 +32,10 @@ namespace ModuleDirectMin
         // set default parameters for ls_options
         ls_options = new LineSearchOptions();
 
+        LS_status = SUCCESS;
+
+        method_name = "Unspecified";
+        verbose = false;
     }
 
 

@@ -38,4 +38,9 @@ namespace ModuleDirectMin
         return C_in; // default Identity, means no preconditioner
     }
 
+    void Problem::set_domain(Composite * domain_in)
+    {
+        domain = domain_in;
+    }
+
 }

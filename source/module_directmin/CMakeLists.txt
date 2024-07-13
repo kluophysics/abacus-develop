@@ -4,9 +4,10 @@ list(APPEND objects
     composite.cpp 
     directmin.cpp
 
-    linesearch_options.cpp
-    linesearch_helper.cpp
     linesearch_base.cpp
+    linesearch_helper.cpp
+    linesearch_options.cpp
+    linesearch_rcg.cpp 
 
     occupation.cpp
     options.cpp

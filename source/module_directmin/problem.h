@@ -27,8 +27,13 @@ namespace ModuleDirectMin
         // preconditioner...
         virtual Composite  preconditioner(const Composite & C_in);
 
+
+        virtual void set_domain(Composite * domain_in);
+        
         // print information
         // virtual void print();
+    protected:
+        Composite * domain;
     };
 
 }

@@ -27,6 +27,7 @@ namespace ModuleDirectMin
         // Occupation& operator*=(const Occupation& occ);
         // Occupation& operator/=(const Occupation& occ);
 
+        Occupation operator - () const; // negation operator
         Occupation operator*( double s) const; // add p with s
         friend Occupation operator*(double s, const Occupation& occ);
 

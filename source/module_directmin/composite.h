@@ -26,12 +26,15 @@ namespace ModuleDirectMin
         Stiefel p1; // part 1, Stiefel variable
         Occupation p2; // part 2, Occupation variable
 
+        Composite operator-() const; // negative operator
+
         Composite& operator=(const Composite& comp);
         Composite& operator+=(const Composite& comp);
-        Composite & operator*(const double s); // multiplicative by a factor s
-
+        Composite & operator*(double s); // multiplicative by a factor s
+        friend Composite & operator*(double s, Composite& comp);
         Composite t(); // complex transpose
 
+        double inner_product(const Composite& c1, const Composite& c2);
         
         // Composite operator *(const Composite &p) const; // multiplicative operator
         
