@@ -8,12 +8,42 @@ namespace ModuleDirectMin
     {
         p1 = Stiefel(); // empty
         p2 = Occupation(); // empty
+        nr = p1.nr;
+        nc = p1.nc;
+        nk = p1.nk;
+        metric_type = p1.metric_type;
+        retraction_type = p1.retraction_type;
+        vector_transport_type = p1.vector_transport_type;
+
+    }
+
+    Composite::Composite(int nk, int nr, int nc)
+    {
+        p1 = Stiefel(nk, nr, nc); // empty
+        p2 = Occupation(nk, nr); // nr == norb
+        nr = p1.nr;
+        nc = p1.nc;
+        nk = p1.nk;
+        metric_type = p1.metric_type;
+        retraction_type = p1.retraction_type;
+        vector_transport_type = p1.vector_transport_type;
     }
 
     Composite::Composite(const Stiefel & s, const Occupation & occ)
     {
+        assert(s.nk == occ.nk);
+        assert(s.nr == occ.norb);
+
         p1 = s;
         p2 = occ;
+
+        // nr = p1.nr;
+        // nc = p1.nc;
+        // nk = p1.nk;
+        // metric_type = p1.metric_type;
+        // retraction_type = p1.retraction_type;
+        // vector_transport_type = p1.vector_transport_type;
+    
         // return *this;
     }
     Composite Composite::operator - () const
@@ -68,9 +98,9 @@ namespace ModuleDirectMin
         // metric contribution from the occupation vector
         if(explicit_occupation_flag)
         {
-            for(int i=0; i < c1.p2.size; ++i)
+            for(int ik=0; ik < c1.p2.nk; ++ik)
             {
-                total_metric += c1.p2.occ_vector[i] * c2.p2.occ_vector[i];
+                total_metric += arma::norm(c1.p2.occ_vector[ik]);
             }
         }
 

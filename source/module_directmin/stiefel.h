@@ -109,9 +109,9 @@ namespace ModuleDirectMin
             void switch_vector_transport(VectorTranportType vector_transport_type);
 
 
-            Stiefel projection(const Stiefel& Z);     // Projection onto the tangent space to the Stiefel manifold.
-            Stiefel vector_transport(const Stiefel& Z);     // vector transport in Stiefel manifold
-            Stiefel retraction(const Stiefel& Z);             // retraction function in Stiefel manifold
+            // Stiefel projection(const Stiefel& Z);     // Projection onto the tangent space to the Stiefel manifold.
+            // Stiefel vector_transport(const Stiefel& Z);     // vector transport in Stiefel manifold
+            // Stiefel retraction(const Stiefel& Z);             // retraction function in Stiefel manifold
             
             // Stiefel diff_retraction(const Stiefel& Z);     // differentiated retraction function in Stiefel manifold
             

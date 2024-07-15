@@ -20,6 +20,8 @@ namespace ModuleDirectMin
     {
         prob = prob_in;
         
+
+		eta1 = prob->get_domain()->
         // x1 = prob->X0;
     }
 

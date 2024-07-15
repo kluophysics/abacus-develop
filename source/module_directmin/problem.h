@@ -30,6 +30,8 @@ namespace ModuleDirectMin
 
         virtual void set_domain(Composite * domain_in);
         
+        /*Obtain the domain manifold of the cost function*/
+        inline Composite * get_domain() const { return domain; };
         // print information
         // virtual void print();
     protected:

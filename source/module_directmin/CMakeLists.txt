@@ -4,10 +4,10 @@ list(APPEND objects
     composite.cpp 
     directmin.cpp
 
-    linesearch_base.cpp
+    # linesearch_base.cpp
     linesearch_helper.cpp
     linesearch_options.cpp
-    linesearch_rcg.cpp 
+    # linesearch_rcg.cpp 
 
     occupation.cpp
     options.cpp
@@ -15,6 +15,10 @@ list(APPEND objects
     problem.cpp
 
     stiefel.cpp
+
+    manifold/manifold.cpp
+    manifold/matrix_vector.cpp
+    manifold/stiefel.cpp
 
     # optimizer/options_ls.cpp
     # optimizer/base.cpp

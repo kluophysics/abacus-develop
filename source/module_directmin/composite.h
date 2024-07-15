@@ -20,11 +20,23 @@ namespace ModuleDirectMin
     public:
 
         Composite();
+        Composite(int nk, int nr, int nc);
         // ~Composite();
         Composite(const Stiefel & s, const Occupation & occ);
 
         Stiefel p1; // part 1, Stiefel variable
         Occupation p2; // part 2, Occupation variable
+
+        int nr;
+        int nc;
+        int nk;
+        MetricType metric_type; // Riemannian metric
+        RetractionType retraction_type; // retraction method
+        VectorTranportType vector_transport_type; // vector transport method
+
+
+        Composite create_empty();
+        // Composite EMPTY;
 
         Composite operator-() const; // negative operator
 
@@ -45,6 +57,8 @@ namespace ModuleDirectMin
         // apply a scaling factor beta to the direction vector for 
         // occupation variable, which might be helpful in convergence.
         Composite apply_async_scaling(double beta);
+
+
     };
 
 } // end namespace ModuleDirectMin

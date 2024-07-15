@@ -111,7 +111,7 @@ namespace ModuleDirectMin
 
         Problem * prob;
         LineSearchOptions * ls_options;
-
+        
         // parameters for this class
 
         std::string method_name; // name of method: conjugate gradient

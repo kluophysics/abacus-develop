@@ -151,6 +151,10 @@ namespace ModuleDirectMin
         {
             (*this)[ik] = p[ik];
         }
+        this->metric_type = p.metric_type;
+        this->retraction_type = p.retraction_type;
+        this->vector_transport_type = p.vector_transport_type;
+
         return *this;
     }
 
@@ -623,97 +627,97 @@ namespace ModuleDirectMin
     // }
 
 
-    Stiefel Stiefel::projection(const Stiefel& Z)
-    {
-        // Projection onto the tangent space to the Stiefel manifold.
-        // Input: X is the foot point, matrix, and Z is the direction, matrix.
-        // Output: P is the projection tangent vector, matrix.
+    // Stiefel Stiefel::projection(const Stiefel& Z)
+    // {
+    //     // Projection onto the tangent space to the Stiefel manifold.
+    //     // Input: X is the foot point, matrix, and Z is the direction, matrix.
+    //     // Output: P is the projection tangent vector, matrix.
         
-        // Stiefel XZ = X.t() * Z;
-        // Stiefel P = Z - 0.5 * X * (XZ + XZ.t());
+    //     // Stiefel XZ = X.t() * Z;
+    //     // Stiefel P = Z - 0.5 * X * (XZ + XZ.t());
 
-        Stiefel X(*this);
-        Stiefel XZ(X);
-        Stiefel P(X);
+    //     Stiefel X(*this);
+    //     Stiefel XZ(X);
+    //     Stiefel P(X);
 
-        assert(X.size == Z.size);
-        // int nk = X.nk;
-        XZ = X.t() * Z; // XZ[ik] is square matrix
-        P = Z - 0.5* X *( XZ + XZ.t() );
+    //     assert(X.size == Z.size);
+    //     // int nk = X.nk;
+    //     XZ = X.t() * Z; // XZ[ik] is square matrix
+    //     P = Z - 0.5* X *( XZ + XZ.t() );
     
-        return P;
+    //     return P;
 
-    }
+    // }
 
-    Stiefel Stiefel::vector_transport(const Stiefel& Z)
-    {
-        if(vector_transport_type == DIFFERENTIATED)
-        {
-            return this->projection(Z);
-        }
-        else if (vector_transport_type == CAYLEYVT)
-        {
-            // left for future choices of vector transport
-            // here only projection vector transport is done
-            return this->projection(Z);
-        }
-        else
-        {
-            // left for future choices of vector transport
-            // here only projection vector transport is done
-            return this->projection(Z);
-        }     
-        // if (vectran_choice == 'qr')
-        // left for future choices of vector transport
-        // here only projection vector transport is done
-        // return proj(X, Z);
-    }
+    // Stiefel Stiefel::vector_transport(const Stiefel& Z)
+    // {
+    //     if(vector_transport_type == DIFFERENTIATED)
+    //     {
+    //         return this->projection(Z);
+    //     }
+    //     else if (vector_transport_type == CAYLEYVT)
+    //     {
+    //         // left for future choices of vector transport
+    //         // here only projection vector transport is done
+    //         return this->projection(Z);
+    //     }
+    //     else
+    //     {
+    //         // left for future choices of vector transport
+    //         // here only projection vector transport is done
+    //         return this->projection(Z);
+    //     }     
+    //     // if (vectran_choice == 'qr')
+    //     // left for future choices of vector transport
+    //     // here only projection vector transport is done
+    //     // return proj(X, Z);
+    // }
 
 
-    Stiefel Stiefel::retraction(const Stiefel& Z)
-    {
-        // currently only support QR retraction 
-        Stiefel X(*this);
+    // Stiefel Stiefel::retraction(const Stiefel& Z)
+    // {
+    //     // currently only support QR retraction 
+    //     Stiefel X(*this);
 
-        assert(X.nk == Z.nk);
-        assert(X.nr == Z.nr);
-        assert(X.nc == Z.nc);
+    //     assert(X.nk == Z.nk);
+    //     assert(X.nr == Z.nr);
+    //     assert(X.nc == Z.nc);
 
-        // arma::cx_mat W;
-        Stiefel W = X + Z;
-        Stiefel result(X);
+    //     // arma::cx_mat W;
+    //     Stiefel W = X + Z;
+    //     Stiefel result(X);
 
-        if(retraction_type == EXP)
-        {
-            return result; 
+    //     if(retraction_type == EXP)
+    //     {
+    //         return result; 
 
-        }
-        else if(retraction_type == CAYLEY)
-        {
-            return result;
-        }
-        else if(retraction_type == POLAR)
-        {
-            return result;
-        }
-        else // STIE_QF is default
-        {
-            for (int ik = 0; ik < X.nk; ik++)
-            {
-                arma::cx_mat Y, R;
-                arma::qr_econ(Y, R, W[ik]);
-                // Apply the sign function to the diagonal of R
-                R.diag() = arma::sign(arma::sign(R.diag()) + 0.5);
-                // // Modify X and R based on the sign of the diagonal Stiefels of R
-                Y = Y * arma::diagmat(arma::sign(arma::sign(arma::diagvec(R)) + 0.5));
+    //     }
+    //     else if(retraction_type == CAYLEY)
+    //     {
+    //         return result;
+    //     }
+    //     else if(retraction_type == POLAR)
+    //     {
+    //         return result;
+    //     }
+    //     else // STIE_QF is default
+    //     {
+    //         for (int ik = 0; ik < X.nk; ik++)
+    //         {
+    //             arma::cx_mat Y, R;
+    //             arma::qr_econ(Y, R, W[ik]);
+    //             // Apply the sign function to the diagonal of R
+    //             R.diag() = arma::sign(arma::sign(R.diag()) + 0.5);
+    //             // // Modify X and R based on the sign of the diagonal Stiefels of R
+    //             Y = Y * arma::diagmat(arma::sign(arma::sign(arma::diagvec(R)) + 0.5));
 
-                result[ik] = Y;
-            }
-            return result;
+    //             result[ik] = Y;
+    //         }
+    //         return result;
 
-        }
+    //     }
 
-    }
+    // }
 
     // Stiefel Stiefel::diff_retraction(const Stiefel& Z)
     // {        
