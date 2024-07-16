@@ -25,7 +25,7 @@ namespace ModuleDirectMin
             MatrixVector operator-() const; // negative operator
             
             // assignment operator overload
-            MatrixVector& operator=(const MatrixVector& p);
+            MatrixVector& operator=(const MatrixVector& p) ;
             MatrixVector& operator-=(const MatrixVector& p);
             MatrixVector& operator+=(const MatrixVector& p);
             MatrixVector& operator*=(const MatrixVector& p);
@@ -57,11 +57,13 @@ namespace ModuleDirectMin
             void reset();
             void clear();
 
-            inline int get_nk() { return nk;}; 
-            inline int get_nr() { return nr;}; 
-            inline int get_nc() { return nc;}; 
-            inline int get_size() { return size;}; 
+            inline int get_nk() const { return nk;}; 
+            inline int get_nr() const { return nr;}; 
+            inline int get_nc() const { return nc;}; 
+            inline int get_size() const { return size;}; 
 
+            // check if two matrices a and b are of the same dimensions
+            friend bool equal_dimension(const MatrixVector & a, const MatrixVector & b); // 
 
 
         private:

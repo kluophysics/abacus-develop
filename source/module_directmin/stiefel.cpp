@@ -17,8 +17,8 @@ namespace ModuleDirectMin
         psm.clear();
 
         metric_type = CANONICAL;
-        retraction_type = QF;
-        vector_transport_type = PROJECTION;
+        retraction_type = RT_QF;
+        vector_transport_type = VT_PROJECTION;
 
     }
 
@@ -31,8 +31,8 @@ namespace ModuleDirectMin
         psm = var.psm;
 
         metric_type = CANONICAL;
-        retraction_type = QF;
-        vector_transport_type = PROJECTION;
+        retraction_type = RT_QF;
+        vector_transport_type = VT_PROJECTION;
     }
 
     Stiefel::Stiefel(int k, int r, int c)
@@ -651,11 +651,11 @@ namespace ModuleDirectMin
 
     // Stiefel Stiefel::vector_transport(const Stiefel& Z)
     // {
-    //     if(vector_transport_type == DIFFERENTIATED)
+    //     if(vector_transport_type == VT_DIFFERENTIATED)
     //     {
     //         return this->projection(Z);
     //     }
-    //     else if (vector_transport_type == CAYLEYVT)
+    //     else if (vector_transport_type == VT_CAYLEY)
     //     {
     //         // left for future choices of vector transport
     //         // here only projection vector transport is done
@@ -687,16 +687,16 @@ namespace ModuleDirectMin
     //     Stiefel W = X + Z;
     //     Stiefel result(X);
 
-    //     if(retraction_type == EXP)
+    //     if(retraction_type == RT_EXP)
     //     {
     //         return result; 
 
     //     }
-    //     else if(retraction_type == CAYLEY)
+    //     else if(retraction_type == RT_CAYLEY)
     //     {
     //         return result;
     //     }
-    //     else if(retraction_type == POLAR)
+    //     else if(retraction_type == RT_POLAR)
     //     {
     //         return result;
     //     }

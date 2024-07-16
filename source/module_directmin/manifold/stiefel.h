@@ -1,7 +1,8 @@
 #ifndef STIEFEL_H
 #define STIEFEL_H
 
-#define StiefelVector StiefelPoint
+#define StiefelPoint MatrixVector // StiefelPoint is the same as MatrixVector
+#define StiefelVector MatrixVector // StiefelVector is the same as MatrixVector
 #include "matrix_vector.h"
 
 #include "manifold.h"
@@ -18,9 +19,9 @@ namespace ModuleDirectMin
     };
 
 	/*Retraction for the Stiefel manifold
-	QF: qf retraction defined in [AMS2008, (4.8)]
-	POLAR: polar based retraction defined in [AMS2008, (4.7)]
-	EXP: The exponential mapping
+	RT_QF: qf retraction defined in [AMS2008, (4.8)]
+	RT_POLAR: polar based retraction defined in [AMS2008, (4.7)]
+	RT_EXP: The exponential mapping
 	CAYLEYR: the Cayley transform in [Zhu2016]
 	[AMS2008]P.-A. Absil, R. Mahony, and R. Sepulchre. Optimization algorithms on matrix manifolds.
 	Princeton University Press, Princeton, NJ, 2008.
@@ -30,29 +31,29 @@ namespace ModuleDirectMin
 	PhD thesis, Florida State University, Department of Mathematics, 2013.
 	[Zhu2016]: Xiaojing Zhu, A Riemannian conjugate gradient method for optimization on the Stiefel Manifold */
     enum RetractionType {
-        QF,
-        EXP,
-        CAYLEY,
-        POLAR,
+        RT_QF,
+        RT_EXP,
+        RT_CAYLEY,
+        RT_POLAR,
         RetractionTypeLength
     };
     // VectorTransport should  use the corresponding retraction method 
 
 	/*Vector transport for the Stiefel manifold
-	PARALLELIZATION: Vector transport by parallelization, See [HAG2015, Section 2.3.1]
-	RIGGING: Vector transport by rigging, See [HAG2015, Section 2.3.2]
-	PARALLELTRANSLATION: parallel translation
-	CAYLEYVT: the vector transport based on Cayley transform. [Zhu2016]
+	VT_PARALLELIZATION: Vector transport by parallelization, See [HAG2015, Section 2.3.1]
+	VT_RIGGING: Vector transport by rigging, See [HAG2015, Section 2.3.2]
+	VT_PARALLELTRANSLATION: parallel translation
+	VT_CAYLEY: the vector transport based on Cayley transform. [Zhu2016]
 	[HAG2015]:W. Huang, P.-A. Absil, and K. A. Gallivan. A Riemannian symmetric rank-one trust-region method.
 	Mathematical Programming, 150(2):179?16, February 2015
 	[Zhu2016]: Xiaojing Zhu, A Riemannian conjugate gradient method for optimization on the Stiefel Manifold */
     enum VectorTranportType {
-        PROJECTION,
-        PARALLELTRANSLATION,
-        DIFFERENTIATED,
-        CAYLEYVT,
-        RIGGING,
-        PARALLELIZATION,
+        VT_PROJECTION,
+        VT_PARALLELTRANSLATION,
+        VT_DIFFERENTIATED,
+        VT_CAYLEY,
+        VT_RIGGING,
+        VT_PARALLELIZATION,
         VectorTranportTypeLength
     };
 
@@ -64,25 +65,29 @@ namespace ModuleDirectMin
     public:
 
         //Define the Riemannian metric: g_x(etax, xix). The default one is the Euclidean metric.
-        virtual double metric(const StiefelPoint & x, const StiefelVector & etax, const StiefelVector &xix) const;
-
-        // This function projects etax onto the tangent space of x, i.e., result = P_{T_x M} etax
-		virtual StiefelVector & projection(const StiefelPoint &x, const StiefelVector &etax) const;
+        virtual double metric(const StiefelPoint & x, const StiefelVector & etax, const StiefelVector &xix) ;
 
         // Compute the retraction result = R_x(etax). Default: result = x + etax
-        virtual StiefelPoint & retraction(const StiefelPoint & x, const StiefelVector & etax) const;
+        virtual StiefelPoint retraction(const StiefelPoint & x, const StiefelVector & etax) ;
         
+        // Computes the vector transport, i.e., result = \mathcal{T}_etax (xix)
+        virtual StiefelVector vector_transport(const StiefelPoint &x, const StiefelVector &etax, const StiefelPoint &y, const StiefelVector &xix) ;
+        
+
+
+
+        // This function projects etax onto the tangent space of x, i.e., result = P_{T_x M} etax
+		virtual StiefelVector projection(const StiefelPoint &x, const StiefelVector &etax) ;
+
         // Compute the inverse retraction result = R_x^{-1} (etax). Default: result = x + etax
-        virtual StiefelVector & inverse_retraction(const StiefelPoint & x, const StiefelPoint & y) const;
+        virtual StiefelVector inverse_retraction(const StiefelPoint & x, const StiefelPoint & y) ;
         
         // Computes the vector transport by differentiated retraction, i.e., result = \mathcal{T}_{R_etax} (xix)
-        virtual StiefelVector &diff_retraction(const StiefelPoint &x, const StiefelVector &etax, const StiefelPoint &y, const StiefelVector &xix) const;
+        virtual StiefelVector diff_retraction(const StiefelPoint &x, const StiefelVector &etax, const StiefelPoint &y, const StiefelVector &xix) ;
 
-        // Computes the vector transport, i.e., result = \mathcal{T}_etax (xix)
-        virtual StiefelVector &vector_transport(const StiefelPoint &x, const StiefelVector &etax, const StiefelVector &xix) const;
-        
+
         // Computes the inverse vector transport, i.e., result = \mathcal{T}_etax^{-1} (xiy)
-        virtual StiefelVector &inverse_vector_transport(const StiefelPoint &x, const StiefelVector &etax, const StiefelVector &xiy) const;
+        virtual StiefelVector inverse_vector_transport(const StiefelPoint &x, const StiefelVector &etax,  const StiefelPoint &y, const StiefelVector &xiy) ;
 
         inline void switch_metric(MetricType metric_type_in) 
         {
@@ -103,15 +108,15 @@ namespace ModuleDirectMin
     };
 
     // StiefelPoint inherits from MatrixVector class and so does the StiefelVector
-    class StiefelPoint: public ManifoldPoint, public MatrixVector
-    {
-        bool is_orthogonal(); // check for orthogonal
-    };
-
-    // // StiefelVector inherits from MatrixVector class 
-    // class StiefelVector: public ManifoldVector , public MatrixVector
+    // class StiefelPoint: public ManifoldPoint, public MatrixVector
     // {
     //     bool is_orthogonal(); // check for orthogonal
+    // };
+
+    // StiefelVector inherits from MatrixVector class 
+    // class StiefelVector: public ManifoldVector , public MatrixVector
+    // {
+    //     // bool is_orthogonal(); // check for orthogonal
     // };
 }
 

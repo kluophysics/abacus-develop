@@ -18,9 +18,9 @@ namespace ModuleDirectMin
 	// enum MetricType{ STIE_EUCLIDEAN, STIE_CANONICAL, STIEMETRICLENGTH };
 
 	// /*Retraction for the Stiefel manifold
-	// QF: qf retraction defined in [AMS2008, (4.8)]
-	// POLAR: polar based retraction defined in [AMS2008, (4.7)]
-	// EXP: The exponential mapping
+	// RT_QF: qf retraction defined in [AMS2008, (4.8)]
+	// RT_POLAR: polar based retraction defined in [AMS2008, (4.7)]
+	// RT_EXP: The exponential mapping
 	// CAYLEYR: the Cayley transform in [Zhu2016]
 	// [AMS2008]P.-A. Absil, R. Mahony, and R. Sepulchre. Optimization algorithms on matrix manifolds.
 	// Princeton University Press, Princeton, NJ, 2008.
@@ -32,10 +32,10 @@ namespace ModuleDirectMin
 	// enum RetractionType{ STIE_QF, STIE_POLAR, STIE_EXP, STIE_CAYLEYR, STIERETRACTIONLENGTH };
 
 	// /*Vector transport for the Stiefel manifold
-	// PARALLELIZATION: Vector transport by parallelization, See [HAG2015, Section 2.3.1]
-	// RIGGING: Vector transport by rigging, See [HAG2015, Section 2.3.2]
-	// PARALLELTRANSLATION: parallel translation
-	// CAYLEYVT: the vector transport based on Cayley transform. [Zhu2016]
+	// VT_PARALLELIZATION: Vector transport by parallelization, See [HAG2015, Section 2.3.1]
+	// VT_RIGGING: Vector transport by rigging, See [HAG2015, Section 2.3.2]
+	// VT_PARALLELTRANSLATION: parallel translation
+	// VT_CAYLEY: the vector transport based on Cayley transform. [Zhu2016]
 	// [HAG2015]:W. Huang, P.-A. Absil, and K. A. Gallivan. A Riemannian symmetric rank-one trust-region method.
 	// Mathematical Programming, 150(2):179?16, February 2015
 	// [Zhu2016]: Xiaojing Zhu, A Riemannian conjugate gradient method for optimization on the Stiefel Manifold */

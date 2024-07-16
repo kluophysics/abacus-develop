@@ -225,6 +225,11 @@ namespace ModuleDirectMin
         return -p+s;
     }
 
+    bool equal_dimension(const MatrixVector& a, const MatrixVector& b) 
+    {
+        return a.get_nk() == b.get_nk() && a.get_nc() == b.get_nc() && a.get_nr() == b.get_nr();
+    }
+
     double MatrixVector::norm()
     {
         double result = 0.0;
