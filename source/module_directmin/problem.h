@@ -1,7 +1,7 @@
 #ifndef PROBLEM_H
 #define PROBLEM_H
 
-#include "composite.h"
+#include "domain.h"
 
 namespace ModuleDirectMin
 {
@@ -13,29 +13,29 @@ namespace ModuleDirectMin
         virtual ~Problem();
 
         // function value evaluated on x, which has to be defined for each problem
-        virtual double fval(const Composite& x) = 0;
+        virtual double fval(const Domain& x) = 0;
         // function value evaluated on matrix x and vector v, made for occupation as vector v;
-        // virtual double fval(const Composite& x,  arma::vec & v) =0;
+        // virtual double fval(const Domain& x,  arma::vec & v) =0;
 
 
         // Euclidean gradient of fval, which has to be defined for each problem
-        virtual Composite grad(const Composite& x) =0;
+        virtual Domain grad(const Domain& x) =0;
 
         // Riemannian gradient defined on the Stiefel manifold 
-        virtual Composite rgrad(const Composite& x);
+        virtual Domain rgrad(const Domain& x);
 
         // preconditioner...
-        virtual Composite  preconditioner(const Composite & C_in);
+        virtual Domain  preconditioner(const Domain & C_in);
 
 
-        virtual void set_domain(Composite * domain_in);
+        virtual void set_domain(Domain * domain_in);
         
         /*Obtain the domain manifold of the cost function*/
-        inline Composite * get_domain() const { return domain; };
+        inline Domain * get_domain() const { return domain; };
         // print information
         // virtual void print();
     protected:
-        Composite * domain;
+        Domain * domain;
     };
 
 }

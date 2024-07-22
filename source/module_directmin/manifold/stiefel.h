@@ -101,7 +101,10 @@ namespace ModuleDirectMin
         {
             vector_transport_type = vector_transport_type_in;
         };
-
+        
+        int nr;
+        int nc;
+        int nk;
         MetricType metric_type; // Riemannian metric
         RetractionType retraction_type; // retraction method
         VectorTranportType vector_transport_type; // vector transport method

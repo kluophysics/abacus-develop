@@ -1,8 +1,9 @@
 
 list(APPEND objects
 
-    composite.cpp 
+    # composite.cpp 
     directmin.cpp
+    domain.cpp
 
     # linesearch_base.cpp
     linesearch_helper.cpp
@@ -14,7 +15,7 @@ list(APPEND objects
     
     problem.cpp
 
-    stiefel.cpp
+    # stiefel.cpp
 
     manifold/manifold.cpp
     manifold/matrix_vector.cpp
