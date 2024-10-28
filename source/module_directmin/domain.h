@@ -23,10 +23,10 @@ namespace ModuleDirectMin
         void apply_async_scaling(DomainVector * dv, double beta);
 
 
-        virtual DomainPoint retraction(const DomainPoint& x, const DomainVector& d);
-        virtual DomainVector diff_retraction(const DomainPoint &x, const DomainVector d1,
-                            const DomainPoint & x2, const DomainVector & d2);
-        virtual double metric(const DomainPoint &x, 
+        // virtual DomainPoint retraction(const DomainPoint& x, const DomainVector& d);
+        // virtual DomainVector diff_retraction(const DomainPoint &x, const DomainVector d1,
+        //                     const DomainPoint & x2, const DomainVector & d2);
+        virtual double norm(const DomainPoint &x, 
                  DomainVector& d1, const DomainVector& d2);
     };
 

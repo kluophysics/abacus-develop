@@ -9,7 +9,7 @@
 // By properly switching a flag, the occupation vector can be 
 // unchanged, or update with the Stiefel variable (which is the case 
 // in the finite temperature smearning )
-// The design is not perfect but I hope this could serve as a 
+// The design is certainly not perfect but I hope this could serve as a 
 // good starting point for future.
 
 namespace ModuleDirectMin

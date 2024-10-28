@@ -8,7 +8,7 @@
 
 namespace ModuleDirectMin
 {
-	
+	// a vector of matrices denoted as MatrixVector class
     class MatrixVector
     {
         public:

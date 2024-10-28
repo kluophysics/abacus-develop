@@ -1,6 +1,8 @@
 #include "stiefel.h"
 #include <cassert>
 
+#include "module_base/tool_quit.h"
+
 namespace ModuleDirectMin
 {
 
@@ -27,7 +29,7 @@ namespace ModuleDirectMin
             }
             return result;
         }
-        else
+        else if (metric_type == EUCLIDEAN)
         {
             for (int ik = 0; ik < x.get_nk(); ik++)
             {
@@ -38,12 +40,18 @@ namespace ModuleDirectMin
 
             return result;
         }
+        else
+        {
+            ModuleBase::WARNING_QUIT("Stiefel::metric", "unknown metric type, please specify either EUCLIDEAN or CANONICAL!");
+            return 0.0;
+        }
     }
 
     StiefelPoint Stiefel::retraction(const StiefelPoint & x, const StiefelVector & etax)  
     {
         if(retraction_type == RT_POLAR)
         {
+            // left for future change, same for RT_CAYLEY
             return projection(x, etax);
         }
         else if (retraction_type == RT_CAYLEY)

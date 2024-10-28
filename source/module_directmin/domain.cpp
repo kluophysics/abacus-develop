@@ -5,23 +5,23 @@ namespace ModuleDirectMin
 {
 
 
-    DomainPoint Domain::retraction(const DomainPoint& dp,
-                                   const DomainVector& dv)                               
-    {
-        DomainPoint result(dp);
-        result.x = Stiefel::retraction(dp.x, dv.x);
-        return result;
-    }
-    DomainVector Domain::diff_retraction(const DomainPoint& dp1,
-                                         const DomainVector dv1,
-                                         const DomainPoint& dp2,
-                                         const DomainVector& dv2) 
-    {
-        DomainVector result(dp2);
-        result.x = Stiefel::diff_retraction(dp1.x, dv1.x, dp2.x, dv2.x);
-        return result;
-    }
-    double Domain::metric(const DomainPoint& dp,
+    // DomainPoint Domain::retraction(const DomainPoint& dp,
+    //                                const DomainVector& dv)                               
+    // {
+    //     DomainPoint result(dp);
+    //     result.x = Stiefel::retraction(dp.x, dv.x);
+    //     return result;
+    // }
+    // DomainVector Domain::diff_retraction(const DomainPoint& dp1,
+    //                                      const DomainVector dv1,
+    //                                      const DomainPoint& dp2,
+    //                                      const DomainVector& dv2) 
+    // {
+    //     DomainVector result(dp2);
+    //     result.x = Stiefel::diff_retraction(dp1.x, dv1.x, dp2.x, dv2.x);
+    //     return result;
+    // }
+    double Domain::norm(const DomainPoint& dp,
                           DomainVector& dv1,
                           const DomainVector& dv2) 
     {
