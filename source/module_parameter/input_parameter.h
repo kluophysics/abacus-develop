@@ -586,5 +586,72 @@ struct Input_para
     int  test_pp = 0;                ///< variables for test_pp only
     int  test_relax_method = false;  ///< variables for test_relax_method only
     int  test_deconstructor = false; ///< variables for test_deconstructor only
+
+    // ==============   #Parameters (21.DirectMin) =====================
+    //==========================================================
+    // variables for  DirectMin  kluo added on 2024-10-28
+    //==========================================================
+    std::string    directmin_obj_type = "ks"; // objective function type, test, ks, rdmft, etc...
+    std::string    directmin_choice = "ls"; // DirectMin choice, either trust-region (tr) or line-search (ls) for now, tr is for later though.
+    
+    // Retraction for the Stiefel manifold
+    // QF: qf retraction defined in [AMS2008, (4.8)]
+    // POLAR: polar based retraction defined in [AMS2008, (4.7)]
+    // EXP: The exponential mapping
+    // CAYLEY: the Cayley transform in [Zhu2016]
+    std::string    directmin_retraction_type = "qf";
+
+    // Vector transport for the Stiefel manifold
+    // PARALLELIZATION: Vector transport by parallelization, See [HAG2015, Section 2.3.1]
+    // RIGGING: Vector transport by rigging, See [HAG2015, Section 2.3.2]
+    // PARALLELTRANSLATION: parallel translation
+    // CAYLEYVT: the vector transport based on Cayley transform. [Zhu2016]
+    std::string    directmin_vectransport_type = "parallelization";
+
+    int directmin_maxiter = 100;
+
+    /*DirectMin line search method, such as 
+    sd: steepest decent
+    cg: conjugate gradient
+    bfgs: Broyden-Fletcher-Goldfarb-Shanno
+    lbfgs: limited memory bfgs
+    newton: Newton's method
+    other:  or other variant
+    */
+    std::string    directmin_ls_method = "cg";
+
+    /* DirectMin line search condition, such as 
+    armijo: Armijo
+    wolfe: classical Wolfe condition
+    swolfe: Strong wolfe condition
+    exact: exact condition
+    */
+    std::string    directmin_ls_algo = "swolfe"; 
+    /* DirectMin line search method cg algorithm, such as 
+        FR: FLETCHER_REEVES
+        PR: POLAK_RIBIERE
+        DY: DAI_YUAN
+        HZ: HAGER_ZHANG
+        HS: HESTENES_STIEFEL
+    */
+    std::string    directmin_ls_cg_algo = "dy";
+    // initial step type for DirectMin line search method, such as 
+    // BB: 
+    // QuadInt:
+    // ...
+    std::string    directmin_ls_initstep_type = "quadint";
+
+
+    double    directmin_ls_alpha = 0.1; // Armijo-Goldstein parameters c 
+    double    directmin_ls_beta = 0.9; // Armijo-Goldstein parameters (1-c)
+    double    directmin_ls_c1 = 1e-4; // Wolfe condition c1, sufficient decrease
+    double    directmin_ls_c2 = 0.9;  // Wolfe condition c2, curvature condition
+
+    double    directmin_ls_minstepsize = 1e-10;  //the minimum stepsize allowed in the linesearch algorithm
+    double    directmin_ls_maxstepsize = 1e3; //the maximum stepsize allowed in the linesearch algorithm
+    double    directmin_ls_initstepsize = 1.0; // initial stepsize at the first iteration
+    double    directmin_ls_finalstepsize = -1.0; // final stepsize 
+    double    directmin_ls_ftol = 1e-8; // line search function value tolerance 
+    double    directmin_ls_gtol = 1e-6; // line search gradient tolerance
 };
 #endif
