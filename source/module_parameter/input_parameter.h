@@ -153,6 +153,7 @@ struct Input_para
     bool relax = false; ///< allow relaxation along the specific direction
     double relax_scale_force = 0.5;
     int relax_nmax = -1;       ///< number of max ionic iter
+    int relax_nmax = -1;       ///< number of max ionic iter
     double relax_cg_thr = 0.5; ///< threshold when cg to bfgs, pengfei add 2011-08-15
     double force_thr = -1;     ///< threshold of force in unit (Ry/Bohr)
     double force_thr_ev = -1;  ///< threshold of force in unit (eV/Angstrom)
@@ -299,6 +300,7 @@ struct Input_para
 
     // ==============   #Parameters (10.lr-tddft) ===========================
     int lr_nstates = 1; ///< the number of 2-particle states to be solved
+    std::vector<std::string> lr_init_xc_kernel = {};    ///< The method to initalize the xc kernel
     std::vector<std::string> lr_init_xc_kernel = {};    ///< The method to initalize the xc kernel
     int nocc = -1;      ///< the number of occupied orbitals to form the 2-particle basis
     int nvirt = 1;      ///< the number of virtual orbitals to form the 2-particle basis (nocc + nvirt <= nbands)
