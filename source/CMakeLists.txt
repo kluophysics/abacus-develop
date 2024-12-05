@@ -21,6 +21,9 @@ add_subdirectory(module_lr)
 # add by jghan
 add_subdirectory(module_rdmft)
 
+# kluo 2024-12-03
+add_subdirectory(module_optim)
+
 add_library(
     driver
     OBJECT
