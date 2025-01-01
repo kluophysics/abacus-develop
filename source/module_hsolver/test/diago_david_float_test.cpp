@@ -113,16 +113,18 @@ public:
 		auto hpsi_func = [phm](std::complex<float>* psi_in,std::complex<float>* hpsi_out,
 					const int ld_psi, const int nvec)
                     {
-                        auto psi_iter_wrapper = psi::Psi<std::complex<float>>(psi_in, 1, nvec, ld_psi, nullptr);
+                        auto psi_iter_wrapper = psi::Psi<std::complex<float>>(psi_in, 1, nvec, ld_psi, true);
                         psi::Range bands_range(true, 0, 0, nvec-1);
                         using hpsi_info = typename hamilt::Operator<std::complex<float>>::hpsi_info;
                         hpsi_info info(&psi_iter_wrapper, bands_range, hpsi_out);
                         phm->ops->hPsi(info);
                     };
-		auto spsi_func = [phm](const std::complex<float>* psi_in, std::complex<float>* spsi_out,const int ld_psi, const int nbands){
-			phm->sPsi(psi_in, spsi_out, ld_psi, ld_psi, nbands);
-		};
-		dav.diag(hpsi_func,spsi_func, ld_psi, phi.get_pointer(), en, eps, maxiter);
+        auto spsi_func = [phm](const std::complex<float>* psi_in,
+                               std::complex<float>* spsi_out,
+                               const int ld_psi,
+                               const int nbands) { phm->sPsi(psi_in, spsi_out, ld_psi, ld_psi, nbands); };
+        std::vector<double> ethr_band(phi.get_nbands(), eps);
+		dav.diag(hpsi_func,spsi_func, ld_psi, phi.get_pointer(), en, ethr_band, maxiter);
 
 #ifdef __MPI		
 		end = MPI_Wtime();

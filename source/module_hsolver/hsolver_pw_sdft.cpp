@@ -29,32 +29,10 @@ void HSolverPW_SDFT<T, Device>::solve(const UnitCell& ucell,
     const int nbands = psi.get_nbands();
     const int nks = psi.get_nk();
 
-    //---------------------------------------------------------------------------------------------------------------
-    //---------------------------------for psi init guess!!!!--------------------------------------------------------
-    //---------------------------------------------------------------------------------------------------------------
-    // if (!PARAM.inp.psi_initializer && !this->initialed_psi && this->basis_type == "pw")
-    // {
-    //     for (int ik = 0; ik < nks; ++ik)
-    //     {
-    //         /// update H(k) for each k point
-    //         pHamilt->updateHk(ik);
-
-    //         if (nbands > 0 && GlobalV::MY_STOGROUP == 0)
-    //         {
-    //             /// update psi pointer for each k point
-    //             psi.fix_k(ik);
-
-    //             /// for psi init guess!!!!
-    //             hamilt::diago_PAO_in_pw_k2(this->ctx, ik, psi, this->wfc_basis, this->pwf, pHamilt);
-    //         }
-    //     }
-    // }
-    //---------------------------------------------------------------------------------------------------------------
-    //---------------------------------------------------------------------------------------------------------------
-    //---------------------------------------------------------------------------------------------------------------
-
     // prepare for the precondition of diagonalization
     std::vector<double> precondition(psi.get_nbasis(), 0.0);
+
+    this->ethr_band.resize(psi.get_nbands(), this->diag_thr);
 
     // report if the specified diagonalization method is not supported
     const std::initializer_list<std::string> _methods = {"cg", "dav", "dav_subspace", "bpcg"};
@@ -76,7 +54,7 @@ void HSolverPW_SDFT<T, Device>::solve(const UnitCell& ucell,
             this->update_precondition(precondition, ik, this->wfc_basis->npwk[ik], pes->pot->get_vl_of_0());
             /// solve eigenvector and eigenvalue for H(k)
             double* p_eigenvalues = &(pes->ekb(ik, 0));
-            this->hamiltSolvePsiK(pHamilt, psi, precondition, p_eigenvalues);
+            this->hamiltSolvePsiK(pHamilt, psi, precondition, p_eigenvalues, nks);
         }
 
 #ifdef __MPI

@@ -4,7 +4,7 @@
 #include "module_cell/module_neighbor/sltk_grid_driver.h"
 #include "module_hamilt_pw/hamilt_pwdft/global.h"
 #include "module_parameter/parameter.h"
-Record_adj::Record_adj() : iat2ca(nullptr)
+Record_adj::Record_adj()
 {
 }
 Record_adj::~Record_adj()
@@ -43,7 +43,7 @@ void Record_adj::delete_grid()
 // be called only once in an ion-step.
 //--------------------------------------------
 void Record_adj::for_2d(const UnitCell& ucell,
-                        Grid_Driver& grid_d,
+                        const Grid_Driver& grid_d,
                         Parallel_Orbitals& pv,
                         bool gamma_only,
                         const std::vector<double>& orb_cutoff)
@@ -287,7 +287,7 @@ void Record_adj::for_2d(const UnitCell& ucell,
 // grid division (cut along z direction)
 //--------------------------------------------
 void Record_adj::for_grid(const UnitCell& ucell,
-                          Grid_Driver& grid_d,
+                          const Grid_Driver& grid_d,
                           const Grid_Technique& gt,
                           const std::vector<double>& orb_cutoff)
 {

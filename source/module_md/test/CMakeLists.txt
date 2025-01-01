@@ -36,7 +36,6 @@ list(APPEND depend_files
   ../../module_base/math_integral.cpp
   ../../module_cell/module_neighbor/sltk_atom_arrange.cpp
   ../../module_cell/module_neighbor/sltk_atom.cpp
-  ../../module_cell/module_neighbor/sltk_atom_input.cpp
   ../../module_cell/module_neighbor/sltk_grid.cpp
   ../../module_cell/module_neighbor/sltk_grid_driver.cpp
   ../../module_io/output.cpp
@@ -88,6 +87,8 @@ AddTest(
   SOURCES nhchain_test.cpp
   ../md_base.cpp
   ../nhchain.cpp
+  ../../module_cell/update_cell.cpp
+  ../../module_io/output.cpp
   ${depend_files}
 )
 
@@ -97,6 +98,8 @@ AddTest(
   SOURCES msst_test.cpp
   ../md_base.cpp
   ../msst.cpp
+  ../../module_cell/update_cell.cpp
+  ../../module_io/output.cpp
   ${depend_files}
 )
 

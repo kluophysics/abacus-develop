@@ -28,16 +28,20 @@ class berryphase
     const Parallel_Orbitals* paraV;
 #endif
 
-    int total_string;
+    int total_string=0;
     std::vector<std::vector<int>> k_index;
-    int nppstr;
-    int direction;
-    int occ_nbands;
+    int nppstr=0;
+    int direction=0;
+    int occ_nbands=0;
     int GDIR;
 
     void get_occupation_bands();
 #ifdef __LCAO
-    void lcao_init(const UnitCell& ucell, const K_Vectors& kv, const Grid_Technique& grid_tech, const LCAO_Orbitals& orb);
+    void lcao_init(const UnitCell& ucell,
+                   const Grid_Driver& gd,
+                   const K_Vectors& kv,
+                   const Grid_Technique& grid_tech,
+                   const LCAO_Orbitals& orb);
 #endif
     void set_kpoints(const K_Vectors& kv, const int direction);
 

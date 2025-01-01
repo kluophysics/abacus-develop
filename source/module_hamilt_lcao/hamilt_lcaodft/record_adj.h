@@ -21,7 +21,7 @@ class Record_adj
     // HPSEPS's 2D block division.
     //--------------------------------------------
     void for_2d(const UnitCell& ucell,
-                Grid_Driver& grid_d,
+                const Grid_Driver& grid_d,
                 Parallel_Orbitals& pv,
                 bool gamma_only,
                 const std::vector<double>& orb_cutoff);
@@ -31,14 +31,14 @@ class Record_adj
     // grid division (cut along z direction)
     //--------------------------------------------
     void for_grid(const UnitCell& ucell,
-                  Grid_Driver& grid_d,
+                  const Grid_Driver& grid_d,
                   const Grid_Technique& gt,
                   const std::vector<double>& orb_cutoff);
 
     void delete_grid();
 
-    int na_proc;
-    int* na_each;
+    int na_proc=0;
+    int* na_each=nullptr;
 
     //--------------------------------------------
     // record sparse atom index in for_grid(const Grid_Technique &gt);
@@ -53,12 +53,12 @@ class Record_adj
     // 1. iat2ca[iat] > 0 ? na_each[iat2ca[iat]] : 0
     // 2. iat2ca[iat] > 0 ? info[iat2ca[iat]] : nullptr
     //--------------------------------------------
-    int* iat2ca;
+    int* iat2ca=nullptr;
 
     //------------------------------------------------
     // info will identify each atom in each unitcell.
     //------------------------------------------------
-    int*** info;
+    int*** info=nullptr;
 
   private:
 };

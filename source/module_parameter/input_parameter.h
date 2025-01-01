@@ -86,6 +86,7 @@ struct Input_para
     int nspin = 1;                          ///< LDA ; LSDA ; non-linear spin
     int pw_diag_nmax = 50;
     double pw_diag_thr = 0.01; ///< used in cg method
+    bool diago_smooth_ethr = false; ///< smooth ethr for iter methods
     int pw_diag_ndim = 4;      ///< dimension of workspace for Davidson diagonalization
     int diago_cg_prec = 1;     ///< mohan add 2012-03-31
 
@@ -118,6 +119,7 @@ struct Input_para
     bool scf_os_stop = false;  ///< whether to stop scf when oscillation is detected
     double scf_os_thr = -0.01;  ///< drho threshold for oscillation
     int scf_os_ndim = 0;       ///< number of old iterations used for oscillation detection
+    int sc_os_ndim = 5;       ///< number of old iterations used for oscillation detection in Spin-Constrained DFT
 
     bool lspinorb = false;   ///< consider the spin-orbit interaction
     bool noncolin = false;   ///< using non-collinear-spin
@@ -309,12 +311,12 @@ struct Input_para
     bool lr_unrestricted = false; ///< whether to use the unrestricted construction for LR-TDDFT
     std::vector<double> abs_wavelen_range = {}; ///< the range of wavelength(nm) to output the absorption spectrum
     double abs_broadening = 0.01;                     ///< the broadening (eta) for LR-TDDFT absorption spectrum
+    std::string abs_gauge = "length";               ///< whether to use length or velocity gauge to calculate the absorption spectrum in LR-TDDFT
     std::string ri_hartree_benchmark = "none"; ///< whether to use the RI approximation for the Hartree potential in LR-TDDFT for benchmark (with FHI-aims/ABACUS read-in style)
     std::vector<int> aims_nbasis = {};  ///< the number of basis functions for each atom type used in FHI-aims (for benchmark)
     // ==============   #Parameters (11.Output) ===========================
     bool out_stru = false;                ///< outut stru file each ion step
-    int out_freq_elec = 0;                ///< the frequency ( >= 0) of electronic iter to output charge
-                                          ///< 0: output only when converged
+    int out_freq_elec = 0;                ///< the frequency of electronic iter to output charge and wavefunction
     int out_freq_ion = 0;                 ///< the frequency ( >= 0 ) of ionic step to output charge density;
                                           ///< 0: output only when ion steps are finished
     std::vector<int> out_chg = {0, 3};    ///< output charge density. 0: no; 1: yes
