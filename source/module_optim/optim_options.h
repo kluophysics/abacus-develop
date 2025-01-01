@@ -8,6 +8,14 @@
     #define OPTIM_USE_ARMA
 #endif
 
+namespace Module_Optim
+{
+    class Options
+    {
+        ;
+    };
+};
+
 
 
 #endif // OPTIM_OPTIONS_H
