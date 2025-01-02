@@ -60,12 +60,12 @@ Solvers/SolversSM.cpp
 # find_package(Armadillo REQUIRED)
 
  add_library(
-    optim
+    ropt
     OBJECT
     ${objects}
 )
 
-target_link_libraries(optim
+target_link_libraries(ropt
   # ${ARMADILLO_LIBRARIES}
 )
 
@@ -78,7 +78,7 @@ Others/fftw/
 Others/wavelet/
 )
 
-target_include_directories(optim PUBLIC
+target_include_directories(ropt PUBLIC
     #  Manifolds
     #  Others
     #  Problems
@@ -86,5 +86,5 @@ target_include_directories(optim PUBLIC
 )
 
 if(ENABLE_COVERAGE)
-  add_coverage(optim)
+  add_coverage(ropt)
 endif()

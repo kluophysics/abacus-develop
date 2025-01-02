@@ -710,7 +710,7 @@ target_link_libraries(
   hamilt_pwdft
   hamilt_ofdft
   hamilt_stodft
-  optim # added optim
+  ropt # kluo added ropt
   psi
   psi_initializer
   psi_overall_init
