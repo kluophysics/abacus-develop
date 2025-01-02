@@ -1,6 +1,0 @@
-#ifndef MANIFOLD_POINT_H
-#define MANIFOLD_POINT_H
-
-
-
-#endif //MANIFOLD_POINT_H
