@@ -14,10 +14,11 @@ namespace Module_Optim
             /* OptimVector supports up to three dimensions
             Default: it is a one-dimensional vector with n2=1, n3 = 1
             Else if: only 2 numbers are provided, then n3=1;
+            Else: 3 numbers, it is a product of manifolds
             */
             OptimVector(int n1, int n2=1, int n3=1);
 
-
+        
             arma::cx_mat operator[](const int n3) const;
             arma::cx_mat & operator[](const int n3);
 
