@@ -21,6 +21,8 @@ extern "C"
 #include "module_parameter/md_parameter.h"
 #include <stdexcept>
 
+#include "module_esolver/esolver_directmin.h"
+
 namespace ModuleESolver
 {
 
@@ -40,6 +42,11 @@ std::string determine_type()
         else if (PARAM.inp.esolver_type == "ksdft")
         {
             esolver_type = "ksdft_pw";
+        }
+        // kluo 2025-01-02, has not been implemented yet
+        else if (PARAM.inp.esolver_type == "directmin")
+        {
+            esolver_type = "directmin_pw";
         }
     }
     else if (PARAM.inp.basis_type == "lcao_in_pw")
@@ -75,6 +82,11 @@ std::string determine_type()
         else if (PARAM.inp.esolver_type == "lr")
         {
             esolver_type = "lr_lcao";
+        }
+        // kluo added 2024-01-02
+        else if (PARAM.inp.esolver_type == "directmin")
+        {
+            esolver_type = "directmin_lcao";
         }
 #else
 		ModuleBase::WARNING_QUIT("ESolver", "Calculation involving numerical orbitals must be compiled with __LCAO");
@@ -209,6 +221,21 @@ ESolver* init_esolver(const Input_para& inp, UnitCell& ucell)
         else
         {
             return new ESolver_KS_LCAO<std::complex<double>, std::complex<double>>();
+        }
+    }
+    else if (esolver_type == "directmin_lcao")
+    {
+        if (PARAM.globalv.gamma_only_local)
+        {
+            return new ESolver_DirectMin_LCAO<double, double>();
+        }
+        else if (PARAM.inp.nspin < 4)
+        {
+            return new ESolver_DirectMin_LCAO<std::complex<double>, double>();
+        }
+        else
+        {
+            return new ESolver_DirectMin_LCAO<std::complex<double>, std::complex<double>>();
         }
     }
     else if (esolver_type == "ksdft_lcao_tddft")

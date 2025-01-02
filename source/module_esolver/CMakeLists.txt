@@ -19,6 +19,7 @@ if(ENABLE_LCAO)
       lcao_before_scf.cpp
       esolver_gets.cpp
       lcao_others.cpp
+      esolver_directmin.cpp
   )
 endif()
 
