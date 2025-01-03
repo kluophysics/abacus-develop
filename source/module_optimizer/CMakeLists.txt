@@ -1,9 +1,11 @@
 list(APPEND objects
-
+manifolds/matrix.cpp
+# manifolds/stiefel.cpp
+# manifolds/manifold.cpp
 optimizer.cpp
     )
 
-# find_package(Armadillo REQUIRED)
+find_package(Armadillo REQUIRED)
 
  add_library(
     optimizer
@@ -12,7 +14,7 @@ optimizer.cpp
 )
 
 target_link_libraries(optimizer
-  # ${ARMADILLO_LIBRARIES}
+  ${ARMADILLO_LIBRARIES}
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
