@@ -22,7 +22,7 @@ add_subdirectory(module_lr)
 add_subdirectory(module_rdmft)
 
 # kluo 2025-01-02
-add_subdirectory(module_ropt)
+add_subdirectory(module_directmin)
 
 add_library(
     driver
