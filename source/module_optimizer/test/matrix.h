@@ -8,12 +8,6 @@
 
 namespace Module_Optimizer
 {
-    template<typename T>
-    class Matrix;
-
-    // template<typename T>
-    // bool equal_dimension(const Matrix<T>& a, const Matrix<T>& b);
-
 	//a Matrix class from armadillo
     template<typename T>
     class Matrix
@@ -23,36 +17,6 @@ namespace Module_Optimizer
             Matrix(const Matrix<T>&  var);
             Matrix(int nr, int nc);
 
-
-            // arma::cx_mat operator[](const int k) const;
-            // arma::cx_mat & operator[](const int k);
-
-
-            // // uni operator overload
-            // Matrix<T> operator-() const; // negative operator
-            
-            // // assignment operator overload
-            // Matrix<T>& operator=(const Matrix<T>& p) ;
-            // Matrix<T>& operator-=(const Matrix<T>& p);
-            // Matrix<T>& operator+=(const Matrix<T>& p);
-            // Matrix<T>& operator*=(const Matrix<T>& p);
-
-
-
-
-            // Matrix<T> operator+( double s) const; // add p with s, p+s;
-            // Matrix<T> operator-( double s) const; // p-s;
-            // Matrix<T> operator*( double s) const; //  p*s;
-
-            // Matrix<T> operator+( const Matrix<T> & p) const; // add p with s, p+s;
-            // Matrix<T> operator-( const Matrix<T> & p) const; // add p with s, p+s;
-            // Matrix<T> operator*( const Matrix<T> & p) const; // add p with s, p+s;
-
-            // friend Matrix<T> operator+(double s, const Matrix<T> & p); // s+p
-            // friend Matrix<T> operator*(double s, const Matrix<T> & p); // s*p
-            // friend Matrix<T> operator-(double s, const Matrix<T> & p); // s-p
-
-            
             // void resize(int nr, int nc);
 
             // double norm();
@@ -85,15 +49,7 @@ namespace Module_Optimizer
             arma::Mat<T> data; // data of the matrix
     };
 
-    // template<typename T>
-    // bool equal_dimension(const Matrix<T> & a, const Matrix<T>  & b)
-    // {
-    //     return (a.nr == b.nr) && (a.nc == b.nc);
-    // }
-    // Friend function definition
-
 }
-
 
 
 #endif // MATRIX_H

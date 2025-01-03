@@ -1,57 +1,42 @@
-#ifndef STIEFEL_H
-#define STIEFEL_H
+#ifndef STIEFEL_MANIFOLD_H
+#define STIEFEL_MANIFOLD_H
 
-
-#include "stiefel_def.h"
 #include "manifold.h"
+#include <complex>
 
 namespace Module_Optimizer
 {
-
-    class StiefelPoint;
-    class StiefelVector;
-    class Stiefel;
-
-    class Stiefel:public Manifold
+    template<typename T>
+    class StiefelManifold : public Manifold<T>
     {
-        //Define the Riemannian metric: g_x(etax, xix). The default one is the Euclidean metric.
-        virtual double metric(const StiefelPoint & x, const StiefelVector & etax, const StiefelVector &xix) ;
+    public:
+        using typename Manifold<T>::ManifoldPoint;
+        using typename Manifold<T>::ManifoldVector;
 
-        // Compute the retraction result = R_x(etax). Default: result = x + etax
-        virtual StiefelPoint retraction(const StiefelPoint & x, const StiefelVector & etax) ;
-        
-        // Computes the vector transport, i.e., result = \mathcal{T}_etax (xix)
-        virtual StiefelVector vector_transport(const StiefelPoint &x, const StiefelVector &etax, const StiefelPoint &y, const StiefelVector &xix) ;
-        
+        StiefelManifold(int p, int n);
 
+        double metric(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldVector &xix) const override;
 
+        ManifoldVector projection(const ManifoldPoint &x, const ManifoldVector &etax) const override;
 
-        // This function projects etax onto the tangent space of x, i.e., result = P_{T_x M} etax
-		virtual StiefelVector projection(const StiefelPoint &x, const StiefelVector &etax) ;
+        ManifoldPoint retraction(const ManifoldPoint &x, const ManifoldVector &etax) const override;
 
-        // Compute the inverse retraction result = R_x^{-1} (etax). Default: result = x + etax
-        virtual StiefelVector inverse_retraction(const StiefelPoint & x, const StiefelPoint & y) ;
-        
-        // Computes the vector transport by differentiated retraction, i.e., result = \mathcal{T}_{R_etax} (xix)
-        virtual StiefelVector diff_retraction(const StiefelPoint &x, const StiefelVector &etax, const StiefelPoint &y, const StiefelVector &xix) ;
+        ManifoldVector inverse_retraction(const ManifoldPoint &x, const ManifoldPoint &y) const override;
 
+        ManifoldVector diff_retraction(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldPoint &y, const ManifoldVector &xix) const override;
 
-        // Computes the inverse vector transport, i.e., result = \mathcal{T}_etax^{-1} (xiy)
-        virtual StiefelVector inverse_vector_transport(const StiefelPoint &x, const StiefelVector &etax,  const StiefelPoint &y, const StiefelVector &xiy) ;
+        ManifoldVector vector_transport(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldPoint &y, const ManifoldVector &xix) const override;
 
+        ManifoldVector inverse_vector_transport(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldPoint &y, const ManifoldVector &xiy) const override;
 
-        friend bool equal_dimension(const StiefelPoint & a, const StiefelPoint & b); // 
-        friend bool equal_dimension(const StiefelPoint & a, const StiefelVector & b); // 
-        friend bool equal_dimension(const StiefelVector & a, const StiefelPoint & b); // 
-        friend bool equal_dimension(const StiefelVector & a, const StiefelVector & b); // 
+        int dimension() const override;
 
-        MetricType metric_type; // Riemannian metric
-        RetractionType retraction_type; // retraction method
-        VectorTranportType vector_transport_type; // vector transport method
+    private:
+        int p; // Number of rows
+        int n; // Number of columns
     };
-
-
 }
 
+// #include "stiefel_manifold.cpp"
 
-#endif //STIEFEL_H
+#endif // STIEFEL_MANIFOLD_H

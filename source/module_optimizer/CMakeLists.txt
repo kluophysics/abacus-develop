@@ -1,7 +1,8 @@
 list(APPEND objects
-manifolds/matrix.cpp
-# manifolds/stiefel.cpp
+# manifolds/matrix.cpp
+manifolds/stiefel.cpp
 # manifolds/manifold.cpp
+# manifolds/product_manifold.cpp
 optimizer.cpp
     )
 
