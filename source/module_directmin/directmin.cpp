@@ -12,13 +12,21 @@ DirectMin::~DirectMin()
 
 }
 
-void DirectMin::initialize(Problem * prob_in, Logger * logger_in, Options * options_in)
+void DirectMin::initialize(const Input_para & inp, UnitCell & cell)
 {
 
 
     return ;
     
 }
+
+// void DirectMin::initialize(Problem * prob_in, Logger * logger_in, Options * options_in)
+// {
+
+
+//     return ;
+    
+// }
 
 void DirectMin::update_params(Options * options_in)
 {

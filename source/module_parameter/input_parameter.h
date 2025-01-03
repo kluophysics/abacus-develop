@@ -600,5 +600,34 @@ struct Input_para
     double rdmft_power_alpha = 0.656;             // the alpha parameter of power-functional, g(occ_number) = occ_number^alpha
     // double rdmft_wp22_omega;                 // the omega parameter of wp22-functional = exx_hse_omega
 
+  // directmin kluo add on 2024-01-03
+  // ==============   #Parameters (22. DirectMin) =====================
+
+  // std::string directmin_obj_type;
+  std::string directmin_choice;
+  std::string directmin_retraction_type;
+  std::string directmin_vectransport_type;
+    int directmin_maxiter;
+
+  std::string directmin_ls_method;
+  std::string directmin_ls_algo ; 
+  std::string directmin_ls_cg_algo;
+  std::string directmin_ls_initstep_type;
+  double directmin_ls_gtol;
+  double directmin_ls_ftol;
+
+  double directmin_ls_alpha;
+  double directmin_ls_beta;
+  double directmin_ls_c1;
+  double directmin_ls_c2;
+
+  double directmin_ls_minstepsize;
+  double directmin_ls_maxstepsize;
+  double directmin_ls_initstepsize;
+  double directmin_ls_finalstepsize;
+
+  // more to be added later in DirectMin
+
+  
 };
 #endif
