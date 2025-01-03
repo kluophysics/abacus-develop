@@ -710,7 +710,7 @@ target_link_libraries(
   hamilt_pwdft
   hamilt_ofdft
   hamilt_stodft
-  directmin # kluo added directmin
+  optimizer # kluo added optimizer
   psi
   psi_initializer
   psi_overall_init

@@ -1,0 +1,36 @@
+list(APPEND objects
+
+optimizer.cpp
+    )
+
+# find_package(Armadillo REQUIRED)
+
+ add_library(
+    optimizer
+    OBJECT
+    ${objects}
+)
+
+target_link_libraries(optimizer
+  # ${ARMADILLO_LIBRARIES}
+)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(
+# cwrapper/blas/ 
+# cwrapper/lapack/
+# Others/SparseBLAS/
+# Others/fftw/
+# Others/wavelet/
+)
+
+target_include_directories(optimizer PUBLIC
+    #  Manifolds
+    #  Others
+    #  Problems
+    #  Solvers
+)
+
+if(ENABLE_COVERAGE)
+  add_coverage(optimizer)
+endif()
