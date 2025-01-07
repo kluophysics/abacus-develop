@@ -34,30 +34,6 @@ namespace Module_Optimizer
 
     private:
         std::tuple<Manifolds...> manifolds;
-
-        template<std::size_t... Is>
-        double metric_impl(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldVector &xix, std::index_sequence<Is...>) const;
-
-        template<std::size_t... Is>
-        ManifoldVector projection_impl(const ManifoldPoint &x, const ManifoldVector &etax, std::index_sequence<Is...>) const;
-
-        template<std::size_t... Is>
-        ManifoldPoint retraction_impl(const ManifoldPoint &x, const ManifoldVector &etax, std::index_sequence<Is...>) const;
-
-        template<std::size_t... Is>
-        ManifoldVector inverse_retraction_impl(const ManifoldPoint &x, const ManifoldPoint &y, std::index_sequence<Is...>) const;
-
-        template<std::size_t... Is>
-        ManifoldVector diff_retraction_impl(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldPoint &y, const ManifoldVector &xix, std::index_sequence<Is...>) const;
-
-        template<std::size_t... Is>
-        ManifoldVector vector_transport_impl(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldPoint &y, const ManifoldVector &xix, std::index_sequence<Is...>) const;
-
-        template<std::size_t... Is>
-        ManifoldVector inverse_vector_transport_impl(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldPoint &y, const ManifoldVector &xiy, std::index_sequence<Is...>) const;
-
-        template<std::size_t... Is>
-        int dimension_impl(std::index_sequence<Is...>) const;
     };
 }
 

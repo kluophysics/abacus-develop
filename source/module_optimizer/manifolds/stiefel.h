@@ -3,6 +3,7 @@
 
 #include "manifold.h"
 #include <complex>
+#include <armadillo>
 
 namespace Module_Optimizer
 {
@@ -64,8 +65,8 @@ namespace Module_Optimizer
         using typename Manifold<T>::ManifoldVector;
 
         // StiefelManifold(int p, int n);
-        StiefelManifold(int nr, int nc) : 
-            p(nr), n(nc), metric_type(EUCLIDEAN), retraction_type(RT_QF), vector_transport_type(VT_PROJECTION) {}
+        StiefelManifold(int nr, int nc, int num_manifolds) : 
+            p(nr), n(nc), k(num_manifolds), metric_type(EUCLIDEAN), retraction_type(RT_QF), vector_transport_type(VT_PROJECTION) {}
 
         double metric(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldVector &xix) const override;
 
@@ -86,9 +87,10 @@ namespace Module_Optimizer
         inline void switch_retraction(RetractionType retraction_type_in) { retraction_type = retraction_type_in; }
         inline void switch_vector_transport(VectorTranportType vector_transport_type_in) { vector_transport_type = vector_transport_type_in; }
         
-        private:
+    private:
         int p; // Number of rows
         int n; // Number of columns
+        int k; // Number of Stiefel manifolds in the product
         MetricType metric_type; // Riemannian metric
         RetractionType retraction_type; // retraction method
         VectorTranportType vector_transport_type; // vector transport method

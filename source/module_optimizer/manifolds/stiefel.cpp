@@ -12,34 +12,28 @@ namespace Module_Optimizer
     template<typename T>
     double StiefelManifold<T>::metric(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldVector &xix) const
     {
-        assert(x.n_rows == etax.n_rows && x.n_cols == etax.n_cols);
-        assert(etax.n_rows == xix.n_rows && etax.n_cols == xix.n_cols);
+        assert(x.n_slices == etax.n_slices && x.n_slices == xix.n_slices);
+        double result = 0.0;
 
-
-        double result=0.0;
-
-        if(metric_type == CANONICAL)
+        for (size_t i = 0; i < x.n_slices; ++i)
         {
-            // if(std::is_same<T, std::complex<double>>::value)
-            // {
-            //         result = std::real(arma::trace(etax.t() * (arma::Mat<T>(n, p, arma::fill::eye) - x * x.t() / 2) * xix));
+            arma::Mat<T> xi = x.slice(i);
+            arma::Mat<T> etaxi = etax.slice(i);
+            arma::Mat<T> xixi = xix.slice(i);
 
-            // }
-            // else
-            // {
-            //      result =  arma::trace(etax.t() * (arma::Mat<T>(n, p, arma::fill::eye) - x * x.t() / 2) * xix);
-
-            // }
-            result = std::real(arma::trace(etax.t() * (arma::Mat<T>(n, p, arma::fill::eye) - x * x.t() / 2) * xix));
-        }
-        else if (metric_type == EUCLIDEAN)
-        {
-            result =  std::real( arma::trace(etax.t() * xix) );
-        }
-        else
-        {
-            ModuleBase::WARNING_QUIT("Stiefel::metric", "unknown metric type, please specify either EUCLIDEAN or CANONICAL!");
-            result =  0.0;
+            if (metric_type == CANONICAL)
+            {
+                result += std::real(arma::trace(etaxi.t() * (arma::Mat<T>(n, p, arma::fill::eye) - xi * xi.t() / 2) * xixi));
+            }
+            else if (metric_type == EUCLIDEAN)
+            {
+                result += std::real(arma::trace(etaxi.t() * xixi));
+            }
+            else
+            {
+                ModuleBase::WARNING_QUIT("Stiefel::metric", "unknown metric type, please specify either EUCLIDEAN or CANONICAL!");
+                result = 0.0;
+            }
         }
         return result;
     }
@@ -47,22 +41,37 @@ namespace Module_Optimizer
     template<typename T>
     typename StiefelManifold<T>::ManifoldVector StiefelManifold<T>::projection(const ManifoldPoint &x, const ManifoldVector &etax) const
     {
-        return etax - x * arma::symmatu(x.t() * etax);
+        ManifoldVector result(etax.n_rows, etax.n_cols, etax.n_slices);
+        for (size_t i = 0; i < x.n_slices; ++i)
+        {
+            result.slice(i) = etax.slice(i) - x.slice(i) * arma::symmatu(x.slice(i).t() * etax.slice(i));
+        }
+        return result;
     }
 
     template<typename T>
     typename StiefelManifold<T>::ManifoldPoint StiefelManifold<T>::retraction(const ManifoldPoint &x, const ManifoldVector &etax) const
     {
-        arma::Mat<T> u, v;
-        arma::Col<typename arma::get_pod_type<T>::result> s;
-        arma::svd(u, s, v, x + etax);
-        return u * v.t();
+        ManifoldPoint result(x.n_rows, x.n_cols, x.n_slices);
+        for (size_t i = 0; i < x.n_slices; ++i)
+        {
+            arma::Mat<T> u, v;
+            arma::Col<typename arma::get_pod_type<T>::result> s;
+            arma::svd(u, s, v, x.slice(i) + etax.slice(i));
+            result.slice(i) = u * v.t();
+        }
+        return result;
     }
 
     template<typename T>
     typename StiefelManifold<T>::ManifoldVector StiefelManifold<T>::inverse_retraction(const ManifoldPoint &x, const ManifoldPoint &y) const
     {
-        return y - x;
+        ManifoldVector result(x.n_rows, x.n_cols, x.n_slices);
+        for (size_t i = 0; i < x.n_slices; ++i)
+        {
+            result.slice(i) = y.slice(i) - x.slice(i);
+        }
+        return result;
     }
 
     template<typename T>
@@ -86,7 +95,7 @@ namespace Module_Optimizer
     template<typename T>
     int StiefelManifold<T>::dimension() const
     {
-        return p * n - (n * (n - 1)) / 2;
+        return p * n * x.n_slices - (n * (n - 1) / 2) * x.n_slices;
     }
 }
 

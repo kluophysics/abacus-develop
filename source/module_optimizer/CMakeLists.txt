@@ -1,9 +1,12 @@
 list(APPEND objects
 # manifolds/matrix.cpp
 manifolds/stiefel.cpp
+# manifolds/stiefel_manifold.cpp
+
 # manifolds/manifold.cpp
 # manifolds/product_manifold.cpp
-optimizer.cpp
+problems/problem.cpp
+# optimizer.cpp
     )
 
 find_package(Armadillo REQUIRED)
