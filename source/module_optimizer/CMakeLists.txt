@@ -1,6 +1,7 @@
 list(APPEND objects
 # manifolds/matrix.cpp
 manifolds/stiefel.cpp
+manifolds/euclidean.cpp
 # manifolds/stiefel_manifold.cpp
 
 # manifolds/manifold.cpp

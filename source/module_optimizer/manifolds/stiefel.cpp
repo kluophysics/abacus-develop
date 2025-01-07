@@ -95,7 +95,7 @@ namespace Module_Optimizer
     template<typename T>
     int StiefelManifold<T>::dimension() const
     {
-        return p * n * x.n_slices - (n * (n - 1) / 2) * x.n_slices;
+        return p * n * k - (n * (n - 1) / 2) * k;
     }
 }
 
