@@ -1,24 +1,47 @@
 #include "stiefel.h"
+#include <cassert>
+#include <armadillo>
+
+#include "module_base/tool_quit.h"
 
 namespace Module_Optimizer
 {
-    template<typename T>
-    StiefelManifold<T>::StiefelManifold(int p, int n) : p(p), n(n) {}
+    // template<typename T>
+    // StiefelManifold<T>::StiefelManifold(int p, int n) : p(p), n(n) {}
 
     template<typename T>
     double StiefelManifold<T>::metric(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldVector &xix) const
     {
-        // if constexpr (std::is_same<T, std::complex<double>>::value)
-        // if (std::is_same<T, std::complex<double>>::value)
-        // {
-        //     return std::real(arma::cdot(arma::vectorise(etax), arma::vectorise(xix)));
-        // }
-        // else
-        // {
-        //     return std::real(arma::dot(arma::vectorise(etax), arma::vectorise(xix)));
-        // }
-        return std::real(arma::dot(arma::vectorise(etax), arma::vectorise(xix)));
+        assert(x.n_rows == etax.n_rows && x.n_cols == etax.n_cols);
+        assert(etax.n_rows == xix.n_rows && etax.n_cols == xix.n_cols);
 
+
+        double result=0.0;
+
+        if(metric_type == CANONICAL)
+        {
+            // if(std::is_same<T, std::complex<double>>::value)
+            // {
+            //         result = std::real(arma::trace(etax.t() * (arma::Mat<T>(n, p, arma::fill::eye) - x * x.t() / 2) * xix));
+
+            // }
+            // else
+            // {
+            //      result =  arma::trace(etax.t() * (arma::Mat<T>(n, p, arma::fill::eye) - x * x.t() / 2) * xix);
+
+            // }
+            result = std::real(arma::trace(etax.t() * (arma::Mat<T>(n, p, arma::fill::eye) - x * x.t() / 2) * xix));
+        }
+        else if (metric_type == EUCLIDEAN)
+        {
+            result =  std::real( arma::trace(etax.t() * xix) );
+        }
+        else
+        {
+            ModuleBase::WARNING_QUIT("Stiefel::metric", "unknown metric type, please specify either EUCLIDEAN or CANONICAL!");
+            result =  0.0;
+        }
+        return result;
     }
 
     template<typename T>
