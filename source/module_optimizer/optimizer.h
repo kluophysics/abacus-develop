@@ -36,10 +36,10 @@ namespace Module_Optimizer
     enum OptimizerType { LS, TR};
 
 
-class DirectMin
+class OptimizerBase
 {
 public: 
-    virtual ~DirectMin() = 0;
+    virtual ~OptimizerBase() = 0;
 
     // initialize( the problem involved
     virtual void initialize(const Input_para & inp, UnitCell & cell);

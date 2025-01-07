@@ -4,10 +4,12 @@
 // #include <armadillo>
 #include <vector>
 // #include "module_base/complexmatrix.h"
-#include "../manifolds/stiefel.h"
+#include "../manifolds/manifold.h"
 namespace Module_Optimizer
 {
 
+    class Manifold;
+    
     // class Problem; when defining the problem, one has to give initial X0 and direction d0
     template <typename T>
     class Problem

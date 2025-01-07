@@ -28,7 +28,11 @@ void DirectMin::initialize(const Input_para & inp, UnitCell & cell)
     
 // }
 
-void DirectMin::update_params(Options * options_in)
+void DirectMin::set_default_params()
+{
+}
+
+void DirectMin::update_params(Options* options_in)
 {
     return ;
 }
