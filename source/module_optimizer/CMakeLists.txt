@@ -4,7 +4,7 @@ manifolds/stiefel.cpp
 manifolds/euclidean.cpp
 # manifolds/stiefel_manifold.cpp
 
-# manifolds/manifold.cpp
+manifolds/manifold.cpp
 # manifolds/product_manifold.cpp
 problems/problem.cpp
 # optimizer.cpp
@@ -24,6 +24,7 @@ target_link_libraries(optimizer
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(
+  manifolds/
 # cwrapper/blas/ 
 # cwrapper/lapack/
 # Others/SparseBLAS/
