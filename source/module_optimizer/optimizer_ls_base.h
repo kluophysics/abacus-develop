@@ -8,6 +8,8 @@
 
 namespace Module_Optimizer
 {
+    // LS is short for line search, used as a parent class for line search algorithms, 
+    // such as steepest descent, conjugate gradient, quasi-Newton, etc.
     class Optimizer_LS_Base : public OptimizerBase
     {
 
@@ -107,7 +109,7 @@ namespace Module_Optimizer
 
     private:
         void zoom(double x1, double fx1, double slope1, double x2, double fx2);
-        
+
     };
 
 }

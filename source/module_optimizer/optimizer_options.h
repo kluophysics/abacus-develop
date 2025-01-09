@@ -16,7 +16,7 @@ namespace Module_Optimizer
     {
         public:
 
-        std::string choice; // DirectMin choice, either trust-region (tr) or line-search (ls) for now, tr is for later though.
+        std::string choice; // Optimizer choice, either trust-region (tr) or line-search (ls) for now, tr is for later though.
         std::string retraction_type; // Retraction for the Stiefel manifold
         std::string vectransport_type; // Vector transport for the Stiefel manifold
 
