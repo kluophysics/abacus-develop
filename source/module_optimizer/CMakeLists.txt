@@ -7,8 +7,11 @@ manifolds/euclidean.cpp
 manifolds/manifold.cpp
 # manifolds/product_manifold.cpp
 problems/problem.cpp
-# optimizer.cpp
-    )
+
+
+optimizer_base.cpp
+optimizer_ls_base.cpp
+  )
 
 find_package(Armadillo REQUIRED)
 

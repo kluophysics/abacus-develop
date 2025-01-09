@@ -1,5 +1,5 @@
-#ifndef DIRECTMIN_H
-#define DIRECTMIN_H
+#ifndef OPTIMIZER_BASE_H
+#define OPTIMIZER_BASE_H
 
 #include <string>
 
@@ -35,6 +35,24 @@ namespace Module_Optimizer
     // */
     enum OptimizerType { LS, TR};
 
+    /*  Objective function type
+    TEST: test problems
+    TEST_EIG: test problems with eigenvalues
+    KS: Kohn-Sham energy functional
+    KS_SIC: self-interaction-corrected Kohn-Sham energy functional
+    KS_HYBRID: hybrid Kohn-Sham energy functional
+    RDMFT: reduced density matrix energy functional
+    */
+    enum ObjectiveType { TEST, TEST_EIG, KS, KS_SIC, KS_HYBRID, RDMFT, ObjectiveTypeLength};
+
+    /*  Condition type for line search
+    ARMIJO: The Armijo-Goldstein condition.[DS83 Algorithm A6.3.1] combined with nonmontone line search
+    WOLFE: The weak Wolfe condition [DS83 Algorithm A6.3.1mod]
+    STRONG_WOLFE: The strong Wolfe condition [NW06 Algorithm 3.5]
+    */
+    enum ConditionType {ARMIJO, WOLFE,  STRONG_WOLFE, ConditionTypeLength};
+                    
+
 
 class OptimizerBase
 {
@@ -42,16 +60,19 @@ public:
     virtual ~OptimizerBase() = 0;
 
     // initialize( the problem involved
-    virtual void initialize(const Input_para & inp, UnitCell & cell);
+    virtual void initialize() =0 ;
+
+    // this is to interface with the electronic structure calculation
+    virtual void initialize(const Input_para & inp, UnitCell & cell) =0 ;
 
     // virtual void initialize(Problem *prob_in, Logger * logger_in, Options * options_in);
 
     // set default parameters
-    virtual void set_default_params();
+    virtual void set_default_params() = 0;
     // update parameters with Options pointer options_in
-    virtual void update_params(Options* options_in);
+    virtual void update_params(Options* options_in)=0;
     // the working function for the optimization
-    virtual void optimize();
+    virtual void optimize() = 0;
 
 protected:
     // std::string name; // name of the optimizer
@@ -63,7 +84,8 @@ protected:
     // OptimizerType opt_type;
 
 
-    Problem * prob;
+    Problem<std::complex<double>> * prob_cplx;
+    Problem<double> * prob;
     Logger * logger;
     Options * options;
 
@@ -76,4 +98,4 @@ protected:
 }
 
 
-#endif 
+#endif  // OPTIMIZER_BASE_H
