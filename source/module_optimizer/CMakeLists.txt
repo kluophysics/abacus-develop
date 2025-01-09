@@ -10,8 +10,12 @@ problems/problem.cpp
 
 
 optimizer_base.cpp
+optimizer_options.cpp
+optimizer_logger.cpp
+
 optimizer_ls_base.cpp
-  )
+
+)
 
 find_package(Armadillo REQUIRED)
 

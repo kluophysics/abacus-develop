@@ -14,6 +14,8 @@
 #include "optimizer_misc.h"
 #include "optimizer_logger.h"
 
+#include "manifolds/manifold.h"
+
 namespace Module_Optimizer
 {
 
@@ -75,13 +77,14 @@ public:
     virtual void optimize() = 0;
 
 protected:
-    // std::string name; // name of the optimizer
-    // unsigned long max_iterations; // max number of iterations
-    // unsigned long min_iterations; // minimum number of iterations
+    std::string name; // name of the optimizer
+    
+    std::size_t max_iterations; // max number of iterations
+    std::size_t min_iterations; // max number of iterations
 
-    // StopCriterion stop_crit;
-    // VerbosityLevel verbosity;
-    // OptimizerType opt_type;
+    StopCriterion stop_criterion; // stopping criterion
+    VerbosityLevel verbosity; // verbosity level
+    OptimizerType optimizer_type;    // optimization type, either LS or TR
 
 
     Problem<std::complex<double>> * prob_cplx;

@@ -5,11 +5,28 @@ namespace Module_Optimizer
 {
     void Optimizer_LS_Base::set_default_params()
     {
+        OptimizerBase::set_default_params();
+		condition_type = STRONG_WOLFE;
+		LS_alpha = 1e-4;
+		LS_beta = 0.999;
+		LS_c1 = 1e-4;
+		LS_c2 = 0.9;
+		initial_step_size = 1.0;
+		max_step_size = 1e10;
+		min_step_size = std::numeric_limits<double>::epsilon();
+		final_step_size = -1.0;
+		gtol = 1e-6;
+		ftol = 1e-8;
+		tolerance = 1e-5;
+		accuracy = 1e-8;
+		step_size  = 1.0;
         return ;
     }
 
     void Optimizer_LS_Base::update_params(Options *opt_in)
     {
+        OptimizerBase::update_params(opt_in);
+
         return ;
     }
 

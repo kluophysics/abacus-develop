@@ -1,12 +1,14 @@
-#ifndef DIRECTMIN_LOGGER_H
-#define DIRECTMIN_LOGGER_H
+#ifndef OPTIMIZER_LOGGER_H
+#define OPTIMIZER_LOGGER_H
 
 namespace Module_Optimizer
 {
     class Logger
     {
-        ;
+        Logger();
+        ~Logger();
+
     };
 }
 
-#endif // DIRECTMIN_LOGGER_H
+#endif // OPTIMIZER_LOGGER_H
