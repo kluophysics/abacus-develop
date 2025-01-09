@@ -57,12 +57,11 @@ namespace Module_Optimizer
     };
 
     
-    template<typename T>
-    class StiefelManifold : public Manifold<T>
+    class StiefelManifold : public Manifold
     {
     public:
-        using typename Manifold<T>::ManifoldPoint;
-        using typename Manifold<T>::ManifoldVector;
+        // using typename Manifold<T>::ManifoldPoint;
+        // using typename Manifold<T>::ManifoldVector;
 
         // StiefelManifold(int p, int n);
         StiefelManifold(int nr, int nc, int num_manifolds) : 

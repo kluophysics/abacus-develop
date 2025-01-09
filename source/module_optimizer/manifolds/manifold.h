@@ -8,12 +8,12 @@
 
 namespace Module_Optimizer
 {
-    template<typename T>
+    class ManifoldPoint;
+    class ManifoldVector;
+
     class Manifold
     {
     public:
-        using ManifoldPoint = arma::Cube<T>;
-        using ManifoldVector = arma::Cube<T>;
 
         virtual ~Manifold() = default;
 
@@ -25,6 +25,7 @@ namespace Module_Optimizer
         virtual ManifoldVector vector_transport(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldPoint &y, const ManifoldVector &xix) const = 0;
         virtual ManifoldVector inverse_vector_transport(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldPoint &y, const ManifoldVector &xiy) const = 0;
         virtual int dimension() const = 0;
+
     };
 
 }

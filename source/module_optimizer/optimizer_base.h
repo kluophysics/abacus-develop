@@ -92,8 +92,8 @@ protected:
     Logger * logger;
     Options * options;
 
-    ManifoldPoint x1, x2;
-    
+    // ManifoldPoint x1, x2;
+
     
 };
 
