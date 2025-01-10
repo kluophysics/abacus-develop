@@ -10,11 +10,11 @@
 namespace Module_Optimizer
 {
   
-    class LineSearchOptions : public Options
+    class LSOptions : public Options
     {
     public:
-        // LineSearchOptions(Input & input);  // constructor
-        ~LineSearchOptions(); // destructor
+        // LSOptions(Input & input);  // constructor
+        ~LSOptions(); // destructor
 
     public:
 

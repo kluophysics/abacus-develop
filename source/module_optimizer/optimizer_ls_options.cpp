@@ -5,11 +5,11 @@
 namespace Module_Optimizer
 {
   
-    LineSearchOptions::~LineSearchOptions()
+    LSOptions::~LSOptions()
     {
     }
 
-    void LineSearchOptions::print_info()
+    void LSOptions::print_info()
     {
         std::cout << "Line search options: " << std::endl;
         std::cout << "Line search method: " << ls_method << std::endl;

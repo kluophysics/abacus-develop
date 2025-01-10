@@ -15,11 +15,13 @@ namespace Module_Optimizer
 
 
     public:
+        // the main function to optimize the problem
+        virtual void optimize();
 
         // set default params for line search
         virtual void set_default_params();
 
-        // update params for line search using LineSearchOptions *opt_in
+        // update params for line search using LSOptions *opt_in
         virtual void update_params(Options *opt_in);
         
         // a pure function to be overidden by derived classes
