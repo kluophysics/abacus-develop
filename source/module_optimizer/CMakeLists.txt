@@ -14,7 +14,8 @@ optimizer_options.cpp
 optimizer_logger.cpp
 
 optimizer_ls_base.cpp
-
+optimizer_ls_rsd.cpp
+optimizer_ls_rcg.cpp
 )
 
 find_package(Armadillo REQUIRED)

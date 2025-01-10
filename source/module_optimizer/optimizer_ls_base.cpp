@@ -13,12 +13,12 @@ namespace Module_Optimizer
     // using ManifoldPoint = Manifold::ManifoldPoint;
     // using ManifoldVector = Manifold::ManifoldVector;
 
-	void Optimizer_LS_Base::optimize()
+	void OptimizerLSBase::optimize()
 	{
 		pre_funs.clear();
 
 		// std::cout << "--------------------------------"
-		// << "inside " << "Optimizer_LS_Base::optimize()" << std::endl;
+		// << "inside " << "OptimizerLSBase::optimize()" << std::endl;
 		ManifoldPoint xTemp;
         ManifoldVector  gfTemp;
 		// x1.brief_print();
@@ -47,7 +47,7 @@ namespace Module_Optimizer
 		{
 			// std::cout << "--------------------------------"
 			// std::cout << "iter/maxiter: " << iter << "/" << max_iterations << std::endl;
-            ModuleBase::timer::tick("Optimizer_LS_Base", "iteration");
+            ModuleBase::timer::tick("OptimizerLSBase", "iteration");
 
 			get_search_direction(); // obtain search direction d1;
 
@@ -160,14 +160,14 @@ namespace Module_Optimizer
 			step_size_old = step_size ; // store the old step size, try next time directly with this one
 			iter ++;
 
-			ModuleBase::timer::tick("Optimizer_LS_Base", "iteration");
+			ModuleBase::timer::tick("OptimizerLSBase", "iteration");
 
 		}
-		Optimizer_LS_Base::print_info(); // summary of nf, ng, nV, nR, nH.
+		OptimizerLSBase::print_info(); // summary of nf, ng, nV, nR, nH.
 		
 	}
 
-	void Optimizer_LS_Base::print_info()
+	void OptimizerLSBase::print_info()
 	{
 		// adapt using ModuleBase later...
 		// printf("%03d/%03d %6.3E %10.4E %10.4E %-10.4E %5.3f %-15.10f\n", iter, max_iterations, step_size,
@@ -179,7 +179,7 @@ namespace Module_Optimizer
 		);
 	}
 
-    void Optimizer_LS_Base::set_default_params()
+    void OptimizerLSBase::set_default_params()
     {
         OptimizerBase::set_default_params();
 		condition_type = STRONG_WOLFE;
@@ -199,7 +199,7 @@ namespace Module_Optimizer
         return ;
     }
 
-    void Optimizer_LS_Base::update_params(LSOptions *opt_in)
+    void OptimizerLSBase::update_params(LSOptions *opt_in)
     {
         OptimizerBase::update_params(opt_in);
 		if(opt_in ->ls_condition == "swolfe" )
@@ -216,7 +216,7 @@ namespace Module_Optimizer
 		}
 		else
 		{
-			ModuleBase::WARNING("Optimizer_LS_Base::update_params", "Unknown line search condition. Use Strong Wolfe condition.");
+			ModuleBase::WARNING("OptimizerLSBase::update_params", "Unknown line search condition. Use Strong Wolfe condition.");
 			condition_type = STRONG_WOLFE;
 		}
 
@@ -237,7 +237,7 @@ namespace Module_Optimizer
         return ;
     }
 
-    void Optimizer_LS_Base::do_line_search()
+    void OptimizerLSBase::do_line_search()
     {
 		if (condition_type == STRONG_WOLFE)
 		{
@@ -253,12 +253,12 @@ namespace Module_Optimizer
 		}
 		else
 		{
-			ModuleBase::WARNING("Optimizer_LS_Base::do_line_search", "Unknown line search condition. Use Strong Wolfe condition.");
+			ModuleBase::WARNING("OptimizerLSBase::do_line_search", "Unknown line search condition. Use Strong Wolfe condition.");
 		}
         return ;
     }
 
-    void Optimizer_LS_Base::init_step_guess()
+    void OptimizerLSBase::init_step_guess()
     {
 		double alpha = 1.0;
 
@@ -284,7 +284,7 @@ namespace Module_Optimizer
 		}
     }
 
-    double Optimizer_LS_Base::phi()
+    double OptimizerLSBase::phi()
     {
 		d2 = step_size * d1;
 		x2 = mani->retraction(x1, d2); nR++;
@@ -292,7 +292,7 @@ namespace Module_Optimizer
 		return prob->objective_function(x2); // return f(x2);
     }
 
-    double Optimizer_LS_Base::dphi()
+    double OptimizerLSBase::dphi()
     {
 		// evaluate in the Stiefel manifold, not in Eucliean space
 		d2 = step_size * d1;
@@ -308,7 +308,7 @@ namespace Module_Optimizer
 
 
 
-	void Optimizer_LS_Base::zoom(
+	void OptimizerLSBase::zoom(
 		    double x1,
         double fx1,
         double slopex1, 
@@ -362,7 +362,7 @@ namespace Module_Optimizer
 		};
 	}
 
-	void Optimizer_LS_Base::StrongWolfe()
+	void OptimizerLSBase::StrongWolfe()
 	{
 		double previous_step_size = 0, 
 		f_previous = f1, 
@@ -373,7 +373,7 @@ namespace Module_Optimizer
 		{
 			// if(verbose)
 			// {
-			// 	std::cout << " Inside Optimizer_LS_Base::StrongWolfe()" << std::endl;
+			// 	std::cout << " Inside OptimizerLSBase::StrongWolfe()" << std::endl;
 			// }
 			f2 = phi();  
 			if (f2 > f1 + LS_alpha * step_size * initial_slope || f2 >= f_previous)
@@ -405,13 +405,13 @@ namespace Module_Optimizer
 		}
 	}
 
-	void Optimizer_LS_Base::Wolfe()
+	void OptimizerLSBase::Wolfe()
 	{
 
 	}
 
 
-	void Optimizer_LS_Base::Armijo()
+	void OptimizerLSBase::Armijo()
 	{
 	}
 }

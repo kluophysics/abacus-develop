@@ -1,5 +1,5 @@
-#ifndef OPTIMIZER_LS_BASE_H
-#define OPTIMIZER_LS_BASE_H
+#ifndef OptimizerLSBase_H
+#define OptimizerLSBase_H
 
 #include <list>
 
@@ -10,7 +10,7 @@ namespace Module_Optimizer
 {
     // LS is short for line search, used as a parent class for line search algorithms, 
     // such as steepest descent, conjugate gradient, quasi-Newton, etc.
-    class Optimizer_LS_Base : public OptimizerBase
+    class OptimizerLSBase : public OptimizerBase
     {
 
         
@@ -140,4 +140,4 @@ namespace Module_Optimizer
 
 }
 
-#endif // OPTIMIZER_LS_BASE_H
+#endif // OptimizerLSBase_H
