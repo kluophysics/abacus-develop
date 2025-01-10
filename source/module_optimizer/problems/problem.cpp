@@ -33,6 +33,6 @@ namespace Module_Optimizer
 //     }
 
 
-    template class Problem<double>;
-    template class Problem<std::complex<double>>;
+    // template class Problem<double>;
+    // template class Problem<std::complex<double>>;
 }

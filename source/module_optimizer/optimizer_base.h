@@ -87,8 +87,9 @@ protected:
     OptimizerType optimizer_type;    // optimization type, either LS or TR
 
 
-    Problem<std::complex<double>> * prob_cplx;
-    Problem<double> * prob;
+    // Problem<std::complex<double>> * prob_cplx;
+    // Problem<double> * prob;
+    Problem * prob;
     Logger * logger;
     Options * options;
 

@@ -11,14 +11,14 @@ namespace Module_Optimizer
     // class Manifold;
 
     // class Problem; when defining the problem, one has to give initial X0 and direction d0
-    template <typename T>
+    // template <typename T>
     class Problem
     {
     public:
         
 
-        using ManifoldPoint = typename Manifold<T>::ManifoldPoint;
-        using ManifoldVector = typename Manifold<T>::ManifoldVector;
+        using ManifoldPoint = typename Manifold::ManifoldPoint;
+        using ManifoldVector = typename Manifold::ManifoldVector;
 
         // Problem();
         virtual ~Problem() =0;
@@ -38,15 +38,15 @@ namespace Module_Optimizer
         virtual ManifoldVector & rie_grad(const ManifoldPoint & x ) const=0 ;
 
         // set the manifold of the objective function
-        virtual void set_manifold(Manifold<T> * mani_in) { mani = mani_in; }
+        virtual void set_manifold(Manifold * mani_in) { mani = mani_in; }
 
         // get the manifold of the objective function
-        inline Manifold<T> * get_manifold() const { return mani; }  
+        inline Manifold * get_manifold() const { return mani; }  
 
 
         
         // variable
-        Manifold<T> * mani; // pointer to hold the manifold of the objective function 
+        Manifold * mani; // pointer to hold the manifold of the objective function 
 
     };
 

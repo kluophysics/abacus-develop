@@ -60,8 +60,10 @@ namespace Module_Optimizer
     class StiefelManifold : public Manifold
     {
     public:
-        // using typename Manifold<T>::ManifoldPoint;
-        // using typename Manifold<T>::ManifoldVector;
+        // using typename Manifold::ManifoldPoint;
+        // using typename Manifold::ManifoldVector;
+        // using  Manifold::ManifoldPoint;
+        // using  Manifold::ManifoldVector;
 
         // StiefelManifold(int p, int n);
         StiefelManifold(int nr, int nc, int num_manifolds) : 

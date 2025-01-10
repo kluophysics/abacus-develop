@@ -6,12 +6,11 @@
 
 namespace Module_Optimizer
 {
-    template<typename T>
-    class Euclidean : public Manifold<T>
+    class Euclidean : public Manifold
     {
     public:
-        using ManifoldPoint = typename Manifold<T>::ManifoldPoint;
-        using ManifoldVector = typename Manifold<T>::ManifoldVector;
+        using ManifoldPoint = typename Manifold::ManifoldPoint;
+        using ManifoldVector = typename Manifold::ManifoldVector;
 
         Euclidean(int nr, int nc, int num_manifolds) : 
             p(nr), n(nc), k(num_manifolds) {};

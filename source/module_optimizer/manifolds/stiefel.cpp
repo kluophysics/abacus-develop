@@ -6,7 +6,8 @@
 
 namespace Module_Optimizer
 {
-    // StiefelManifold::StiefelManifold(int p, int n) : p(p), n(n) {}
+    using ManifoldPoint = Manifold::ManifoldPoint;
+    using ManifoldVector = Manifold::ManifoldVector;
 
     double StiefelManifold::metric(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldVector &xix) const
     {
@@ -21,7 +22,7 @@ namespace Module_Optimizer
 
             if (metric_type == CANONICAL)
             {
-                result += std::real(arma::trace(etaxi.t() * (arma::Mat(n, p, arma::fill::eye) - xi * xi.t() / 2) * xixi));
+                result += std::real(arma::trace(etaxi.t() * (arma::mat(n, p, arma::fill::eye) - xi * xi.t() / 2) * xixi));
             }
             else if (metric_type == EUCLIDEAN)
             {
@@ -46,18 +47,56 @@ namespace Module_Optimizer
         return result;
     }
 
-    ManifoldPoint StiefelManifold::retraction(const ManifoldPoint &x, const ManifoldVector &etax) const
-    {
+    ManifoldPoint StiefelManifold::retraction(const ManifoldPoint &x, const ManifoldVector &etax) const {
         ManifoldPoint result(x.n_rows, x.n_cols, x.n_slices);
-        for (size_t i = 0; i < x.n_slices; ++i)
-        {
-           arma::cx_mat u, v;
-            arma::Col<typename arma::get_pod_type::result> s;
-            arma::svd(u, s, v, x.slice(i) + etax.slice(i));
-            result.slice(i) = u * v.t();
+        switch (retraction_type) {
+            case RT_QF: {
+                for (size_t i = 0; i < x.n_slices; ++i) {
+                    arma::cx_mat u, v;
+                    arma::vec s;
+                    arma::svd(u, s, v, x.slice(i) + etax.slice(i));
+                    result.slice(i) = u * v.t();
+                }
+                break;
+            }
+            case RT_EXP: {
+                for (size_t i = 0; i < x.n_slices; ++i) {
+                    arma::cx_mat xi = x.slice(i);
+                    arma::cx_mat etaxi = etax.slice(i);
+                    arma::cx_mat expm = arma::expmat(xi * etaxi.t() - etaxi * xi.t());
+                    result.slice(i) = expm * xi;
+                }
+                break;
+            }
+            case RT_CAYLEY: {
+                for (size_t i = 0; i < x.n_slices; ++i) {
+                    arma::cx_mat xi = x.slice(i);
+                    arma::cx_mat etaxi = etax.slice(i);
+                    arma::cx_mat I = arma::eye<arma::cx_mat>(p, p);
+                    arma::cx_mat A = xi + etaxi;
+                    arma::cx_mat B = xi - etaxi;
+                    result.slice(i) = arma::solve(I + 0.5 * B, I - 0.5 * A) * xi;
+                }
+                break;
+            }
+            case RT_POLAR: {
+                for (size_t i = 0; i < x.n_slices; ++i) {
+                    arma::cx_mat xi = x.slice(i);
+                    arma::cx_mat etaxi = etax.slice(i);
+                    arma::cx_mat Y = xi + etaxi;
+                    arma::cx_mat Q, R;
+                    arma::qr(Q, R, Y);
+                    result.slice(i) = Q;
+                }
+                break;
+            }
+            default:
+                ModuleBase::WARNING_QUIT("Stiefel::retraction", "unknown retraction type!");
+                break;
         }
         return result;
     }
+
 
     ManifoldVector StiefelManifold::inverse_retraction(const ManifoldPoint &x, const ManifoldPoint &y) const
     {
@@ -78,9 +117,54 @@ namespace Module_Optimizer
 
     ManifoldVector StiefelManifold::vector_transport(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldPoint &y, const ManifoldVector &xix) const
     {
-        return diff_retraction(x, etax, y, xix);
+        ManifoldVector result(xix.n_rows, xix.n_cols, xix.n_slices);
+         switch (vector_transport_type) {
+            case VT_PROJECTION: {
+                result = projection(y, xix);
+                break;
+            }
+            case VT_PARALLELTRANSLATION: {
+                result = xix;
+                break;
+            }
+            case VT_DIFFERENTIATED: {
+                result = diff_retraction(x, etax, y, xix);
+                break;
+            }
+            case VT_CAYLEY: {
+                for (size_t i = 0; i < x.n_slices; ++i) {
+                    arma::cx_mat xi = x.slice(i);
+                    arma::cx_mat etaxi = etax.slice(i);
+                    arma::cx_mat xiy = xix.slice(i);
+                    arma::cx_mat I = arma::eye<arma::cx_mat>(p, p);
+                    arma::cx_mat A = xi + etaxi;
+                    arma::cx_mat B = xi - etaxi;
+                    result.slice(i) = arma::solve(I + 0.5 * B, I - 0.5 * A) * xiy;
+                }
+                break;
+            }
+            case VT_RIGGING: {
+                for (size_t i = 0; i < x.n_slices; ++i) {
+                    arma::cx_mat xi = x.slice(i);
+                    arma::cx_mat etaxi = etax.slice(i);
+                    arma::cx_mat xiy = xix.slice(i);
+                    arma::cx_mat I = arma::eye<arma::cx_mat>(p, p);    
+                    arma::cx_mat A = xi + etaxi;
+                    arma::cx_mat B = xi - etaxi;
+                    result.slice(i) = arma::solve(I + 0.5 * B, I - 0.5 * A) * xiy;
+                }
+                break;
+            }
+            case VT_PARALLELIZATION: {
+                result = xix;
+                break;
+            }
+            default:
+                ModuleBase::WARNING_QUIT("Stiefel::vector_transport", "unknown vector transport type!");
+                break;
+        }
+        return result;
     }
-
     
     ManifoldVector StiefelManifold::inverse_vector_transport(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldPoint &y, const ManifoldVector &xiy) const
     {
@@ -94,6 +178,6 @@ namespace Module_Optimizer
     }
 }
 
-// Explicit template instantiation
-template class Module_Optimizer::StiefelManifold<double>;
-template class Module_Optimizer::StiefelManifold<std::complex<double>>;
+// // Explicit template instantiation
+// template class Module_Optimizer::StiefelManifold<double>;
+// template class Module_Optimizer::StiefelManifold<std::complex<double>>;
