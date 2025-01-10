@@ -2,6 +2,8 @@
 
 namespace Module_Optimizer
 {
+    using ManifoldPoint = typename Manifold::ManifoldPoint;
+    using ManifoldVector = typename Manifold::ManifoldVector;
 
     Problem::~Problem()
     {
