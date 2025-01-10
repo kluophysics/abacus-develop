@@ -10,13 +10,17 @@ namespace Module_Optimizer
 {
     // class ManifoldPoint;
     // class ManifoldVector;
-
+    typedef arma::cx_cube ManifoldPoint ;
+    typedef arma::cx_cube ManifoldVector;
+    
     class Manifold
     {
     public:
 
-        using  ManifoldPoint = arma::cx_cube; // only support complex matrix for now 
-        using  ManifoldVector = arma::cx_cube;
+        // using  ManifoldPoint = arma::cx_cube; // only support complex matrix for now 
+        // using  ManifoldVector = arma::cx_cube;
+
+
 
         virtual ~Manifold() = default;
 

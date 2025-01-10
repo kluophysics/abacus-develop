@@ -6,8 +6,8 @@
 
 namespace Module_Optimizer
 {
-    using ManifoldPoint = Manifold::ManifoldPoint;
-    using ManifoldVector = Manifold::ManifoldVector;
+    // using ManifoldPoint = Manifold::ManifoldPoint;
+    // using ManifoldVector = Manifold::ManifoldVector;
 
     double StiefelManifold::metric(const ManifoldPoint &x, const ManifoldVector &etax, const ManifoldVector &xix) const
     {

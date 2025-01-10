@@ -93,6 +93,8 @@ protected:
     Logger * logger;
     Options * options;
 
+    Manifold * mani;
+
     // ManifoldPoint x1, x2;
 
     

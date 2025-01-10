@@ -1,10 +1,17 @@
 #include "optimizer_ls_base.h"
 
+#include <iomanip>
+#include <list>
+
+
 #include "manifolds/manifold.h"
+#include "module_base/timer.h"
+#include "module_base/constants.h"
+
 namespace Module_Optimizer
 {
-    using ManifoldPoint = Manifold::ManifoldPoint;
-    using ManifoldVector = Manifold::ManifoldVector;
+    // using ManifoldPoint = Manifold::ManifoldPoint;
+    // using ManifoldVector = Manifold::ManifoldVector;
 
 	void Optimizer_LS_Base::optimize()
 	{
@@ -16,16 +23,16 @@ namespace Module_Optimizer
         ManifoldVector  gfTemp;
 		// x1.brief_print();
 		// f1.brief_print();
-		f1 = prob->f(x1); nf ++; // f value at x1
+		f1 = prob->objective_function(x1); nf ++; // f value at x1
 		f2 = f1;
-		gf1 = prob->rgrad(x1); ng ++;// grad value at x1
+		gf1 = prob->rie_grad(x1); ng ++;// grad value at x1
 		// gf1 = prob->grad(x1); ng ++;// grad value at x1
 
 		// std::cout << "norm of x1" << x1.norm() << std::endl;
 
 		// gf1.brief_print("gf1:");
 		// ngf0= sqrt(metric(x1, gf1, gf1)); // norm of the grad 
-		ngf0= sqrt(metric(x1, gf1, gf1)); // norm of the grad 
+		ngf0= sqrt(mani->metric(x1, gf1, gf1)); // norm of the grad 
 
 		ngf1 = ngf0;  ngf2 = ngf1;
 		new_slope = 0.0;
@@ -44,7 +51,7 @@ namespace Module_Optimizer
 
 			get_search_direction(); // obtain search direction d1;
 
-			initial_slope = metric(x1, gf1, d1);
+			initial_slope = mani->metric(x1, gf1, d1);
 
 
 			init_step_guess();
@@ -65,7 +72,7 @@ namespace Module_Optimizer
 			// {
 			// 	step_size = (final_step_size > 0) ? final_step_size : initial_length;
 			// 	f2 = phi();
-			// 	gf2 = prob->rgrad(x2); ng++;
+			// 	gf2 = prob->rie_grad(x2); ng++;
 			// }
 			// else
 			// {
@@ -74,7 +81,7 @@ namespace Module_Optimizer
 
 
 			do_line_search();
-			ngf2 = sqrt(metric(x2, gf2, gf2));
+			ngf2 = sqrt(mani->metric(x2, gf2, gf2));
 
 			// step_size = 0.0001;
 			update_data();
@@ -156,8 +163,20 @@ namespace Module_Optimizer
 			ModuleBase::timer::tick("OptimizerLineSearchBase", "iteration");
 
 		}
-		OptimizerBase::print_info(); // summary of nf, ng, nV, nR, nH.
+		Optimizer_LS_Base::print_info(); // summary of nf, ng, nV, nR, nH.
 		
+	}
+
+	void Optimizer_LS_Base::print_info()
+	{
+		// adapt using ModuleBase later...
+		// printf("%03d/%03d %6.3E %10.4E %10.4E %-10.4E %5.3f %-15.10f\n", iter, max_iterations, step_size,
+		// ngf1, fabs( ngf2/ngf1 - 1), (f2 - f1)* ModuleBase::Ry_to_eV, x1.norm(), f1* ModuleBase::Ry_to_eV
+		// );
+
+		printf("%03d/%03d %6.3E %10.4E %10.4E %-10.4E  %-15.10f\n", iter, max_iterations, step_size,
+		ngf1, fabs( ngf2/ngf1 - 1), (f2 - f1)* ModuleBase::Ry_to_eV, f1* ModuleBase::Ry_to_eV
+		);
 	}
 
     void Optimizer_LS_Base::set_default_params()
@@ -180,50 +199,219 @@ namespace Module_Optimizer
         return ;
     }
 
-    void Optimizer_LS_Base::update_params(Options *opt_in)
+    void Optimizer_LS_Base::update_params(LSOptions *opt_in)
     {
         OptimizerBase::update_params(opt_in);
+		if(opt_in ->ls_condition == "swolfe" )
+		{
+			condition_type = STRONG_WOLFE;
+		}
+		else if(opt_in ->ls_condition == "armijo")
+		{
+			condition_type = ARMIJO;
+		}
+		else if(opt_in ->ls_condition == "wolfe")
+		{
+			condition_type = WOLFE;
+		}
+		else
+		{
+			ModuleBase::WARNING("OptimizerLineSearchBase::update_params", "Unknown line search condition. Use Strong Wolfe condition.");
+			condition_type = STRONG_WOLFE;
+		}
+
+		LS_alpha = opt_in -> ls_alpha;
+		LS_beta  = opt_in -> ls_beta;
+		LS_c1    = opt_in -> ls_c1;
+		LS_c2    = opt_in -> ls_c2;
+
+		initial_step_size =  opt_in -> ls_initstepsize;
+		max_step_size     =  opt_in -> ls_maxstepsize;
+		min_step_size  	  =  opt_in -> ls_minstepsize ;
+		final_step_size   =  opt_in -> ls_finalstepsize;
+
+		gtol = opt_in -> ls_gtol;
+		ftol = opt_in -> ls_ftol;
+
 
         return ;
     }
 
     void Optimizer_LS_Base::do_line_search()
     {
+		if (condition_type == STRONG_WOLFE)
+		{
+			StrongWolfe();
+		}
+		else if (condition_type == WOLFE)
+		{
+			Wolfe();
+		}
+		else if (condition_type == ARMIJO)
+		{
+			Armijo();
+		}
+		else
+		{
+			ModuleBase::WARNING("OptimizerLineSearchBase::do_line_search", "Unknown line search condition. Use Strong Wolfe condition.");
+		}
         return ;
     }
 
     void Optimizer_LS_Base::init_step_guess()
     {
-        return ;
+		double alpha = 1.0;
+
+		if (iter == 0)
+		{
+			step_size = initial_step_size;
+		}
+		else {
+
+	
+		// alpha = 2.0*(f2 - f1)/ slope;
+		alpha = (1.01*2.0) *(f1 - pre_funs.front() ) / initial_slope_pre;
+		// alpha = (alpha > max_step_size) ? max_step_size : alpha;
+
+		// step_size = (1.2*step_size_old < alpha) ? alpha : 1.2*step_size_old;
+		// step_size = (step_size_old < alpha) ? alpha : step_size_old;
+		// step_size = (step_size > max_step_size) ? step_size : max_step_size;
+		// step_size = (alpha > 1.0 ) ? 1.0 : alpha;
+		// step_size = (alpha > 1.0 ) ? 1.0 : alpha;
+
+		step_size = alpha;
+		// step_size = step_size;
+		}
     }
 
     double Optimizer_LS_Base::phi()
     {
-        return 0.0;
+		d2 = step_size * d1;
+		x2 = mani->retraction(x1, d2); nR++;
+		nf ++;
+		return prob->objective_function(x2); // return f(x2);
     }
 
     double Optimizer_LS_Base::dphi()
     {
-        return 0.0;
+		// evaluate in the Stiefel manifold, not in Eucliean space
+		d2 = step_size * d1;
+		// x2 = retraction(x1, d2);
+		gf2 = prob->rie_grad(x2); 	ng++;
+		// gf2 = prob->rie_grad(x2); ng ++;
+		// ManifoldPoint diff_d2 = diff_retraction(x2, d2); nV++;
+
+		ManifoldVector diff_d2 = mani->diff_retraction(x2, gf2, x2, gf2) ; nV++;
+		return mani->metric(x2, gf2, diff_d2);
     }
 
-    void Optimizer_LS_Base::StrongWolfe()
-    {
-        return ;
-    }
 
-    void Optimizer_LS_Base::Armijo()
-    {
-        return ;
-    }
 
-    void Optimizer_LS_Base::Wolfe()
-    {
-        return ;
-    }
 
-    void Optimizer_LS_Base::print_info()
+	void Optimizer_LS_Base::zoom(
+		    double x1,
+        double fx1,
+        double slopex1, 
+        double x2, 
+        double fx2)
     {
-        return ;
-    }
+		double xdiff, xincr, xlo = x1, xhi = x2, fxlo = fx1, fxhi = fx2, xlo_slope = slopex1;
+		int times = 0;
+		while (1)
+		{
+			// can use cubic interpolation to shorten the evaluation!!!
+			xdiff = (xhi - xlo);
+			xincr = -xlo_slope * xdiff * xdiff / 2 / (fxhi - (fxlo + xlo_slope * xdiff));
+            xincr = (xincr < xdiff * LS_c1) ? xdiff * LS_c1 : xincr;
+            xincr = (xincr < xdiff * LS_c2) ? xincr : xdiff * LS_c2;
+			step_size = xlo + xincr;
+			times++;
+			if (times >= 10)
+			{
+				// LSstatus = LSSM_LSERROR;
+				return;
+			}
+			f2 = phi();
+			if (f2 > f1 + LS_alpha * step_size * initial_slope || f2 >= fxlo)
+			{
+				xhi = step_size;
+				fxhi = f2;
+			}
+			else
+			{
+				new_slope = dphi();
+				if (fabs(new_slope) <= -LS_beta * initial_slope)
+				{
+					return;
+				}
+				if (new_slope * (xhi - xlo) >= 0)
+				{
+					xhi = xlo;
+					fxhi = fxlo;
+				}
+				xlo = step_size;
+				fxlo = f2;
+				xlo_slope = new_slope;
+			}
+			if (step_size <= min_step_size)
+			{
+				// step_size = min_step_size;
+				// LSstatus = LSSM_MINSTEPSIZE;
+				return;
+			}
+		};
+	}
+
+	void Optimizer_LS_Base::StrongWolfe()
+	{
+		double previous_step_size = 0, 
+		f_previous = f1, 
+		newslope_previous = initial_slope;
+        double tstep_size = 0;
+		// LSstatus = LSSM_SUCCESS;
+		while (1)
+		{
+			// if(verbose)
+			// {
+			// 	std::cout << " Inside OptimizerLineSearchBase::StrongWolfe()" << std::endl;
+			// }
+			f2 = phi();  
+			if (f2 > f1 + LS_alpha * step_size * initial_slope || f2 >= f_previous)
+			{
+				zoom(previous_step_size, f_previous, newslope_previous, step_size, f2);
+				return;
+			}
+			new_slope = dphi(); 
+			if (fabs(new_slope) <= -LS_beta * initial_slope)
+			{
+				return;
+			}
+			if (new_slope >= 0)
+			{
+				zoom(step_size, f2, new_slope, previous_step_size, f_previous);
+				return;
+			}
+			previous_step_size = step_size;
+			f_previous = f2;
+			newslope_previous = new_slope;
+			if (step_size >= max_step_size)
+			{
+				// LSstatus = LSSM_MAXSTEPSIZE;
+				return;
+			}
+            tstep_size = - initial_slope * step_size * step_size / 2 / (f2 - f1 - initial_slope * step_size);
+            step_size = (1.1 * step_size < tstep_size) ? tstep_size : 1.1 * step_size;
+			step_size = (step_size < max_step_size) ? step_size : max_step_size;
+		}
+	}
+
+	void Optimizer_LS_Base::Wolfe()
+	{
+
+	}
+
+
+	void Optimizer_LS_Base::Armijo()
+	{
+	}
 }

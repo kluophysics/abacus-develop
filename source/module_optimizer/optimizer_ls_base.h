@@ -4,7 +4,7 @@
 #include <list>
 
 #include "optimizer_base.h"
-
+#include "optimizer_ls_options.h"
 
 namespace Module_Optimizer
 {
@@ -13,7 +13,7 @@ namespace Module_Optimizer
     class Optimizer_LS_Base : public OptimizerBase
     {
 
-
+        
     public:
         // the main function to optimize the problem
         virtual void optimize();
@@ -22,7 +22,7 @@ namespace Module_Optimizer
         virtual void set_default_params();
 
         // update params for line search using LSOptions *opt_in
-        virtual void update_params(Options *opt_in);
+        virtual void update_params(LSOptions *opt_in);
         
         // a pure function to be overidden by derived classes
         virtual void get_search_direction()=0;
@@ -79,13 +79,37 @@ namespace Module_Optimizer
 		std::list<double> pre_funs; // Store a few computed function values for nonmonotonic line search*/
 
 
-		/* algorithm-related variables: */
-		// ProdStiefelVariable Pgf1, Pgf2;	/*Pgf1: preconditioned gradient at x1, Pgf2: preconditioned gradient at x2, used in RCG and LRBFGS, LRTRSR1*/
+
+        // algorithm-related variables:
+        // x1: current iterate, x2: next iterate
+        ManifoldPoint x1, x2;
+        //gf1: gradient at x1,  gf2: gradient at x2
+        ManifoldVector gf1, gf2; 
+        // d1 is the search direction. d2 is stepsize * d1.
+        ManifoldVector d1, d2;
+        // f1: function value at x1, f2: function value at x2
+        double f1, f2;
+
+		// ManifoldPoint Pgf1, Pgf2;	/*Pgf1: preconditioned gradient at x1, Pgf2: preconditioned gradient at x2, used in RCG and LRBFGS, LRTRSR1*/
 
         // ngf0: the norm of gradient at the initial iterate
         // ngf1: the norm of the gradient at x1, 
         // ngf2: the norm of the gradient at x2
         double ngf0, ngf1, ngf2; 
+
+        // for debug
+		int iter; /*iteration number*/
+
+        int nf; // number of function evaluations
+        int ng; // number of gradient evaluations
+        int nR; // number of retraction evaluations
+        int nV; // number of vector transport
+        int nH; // number of action of Hessian
+
+        std::vector<double> time_series; // computational time series
+        std::vector<double> fun_series;  // function series
+        std::vector<double> grad_series; // gradient series
+        std::vector<double> step_series; // stepsize series
 
 
     public:

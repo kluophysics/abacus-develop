@@ -18,10 +18,10 @@ namespace Module_Optimizer
 
     public:
 
-        std::string ls_method; // DirectMin line search method
-        std::string ls_condition; // DirectMin line search condition
-        std::string ls_cg_algo; // DirectMin line search method cg algorithm
-        std::string ls_initstep_type; // initial step type for DirectMin line search method, such as 
+        std::string ls_method; // Optimizer line search method
+        std::string ls_condition; // Optimizer line search condition
+        std::string ls_cg_algo; // Optimizer line search method cg algorithm
+        std::string ls_initstep_type; // initial step type for Optimizer line search method, such as 
         double ls_alpha; // the coefficient of the Wolfe first condition
         double ls_beta;  // the coefficient of the Wolfe second condition
         double ls_c1; // the coefficient of the Armijo-Goldstein condition

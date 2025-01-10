@@ -2,20 +2,20 @@
 
 namespace Module_Optimizer
 {
-    using ManifoldPoint = typename Manifold::ManifoldPoint;
-    using ManifoldVector = typename Manifold::ManifoldVector;
+    // using ManifoldPoint = typename Manifold::ManifoldPoint;
+    // using ManifoldVector = typename Manifold::ManifoldVector;
 
     Problem::~Problem()
     {
     }
 
-    double Problem::obj(const ManifoldPoint &x) const
+    double Problem::objective_function(const ManifoldPoint &x) const
     {
         // Provide a default implementation or leave it pure virtual
         return 0.0;
     }
 
-    ManifoldVector Problem::grad(const ManifoldPoint &x) const
+    ManifoldVector Problem::gradient(const ManifoldPoint &x) const
     {
         // Provide a default implementation or leave it pure virtual
         return ManifoldVector();

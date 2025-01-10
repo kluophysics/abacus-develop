@@ -9,8 +9,8 @@ namespace Module_Optimizer
     class Euclidean : public Manifold
     {
     public:
-        using ManifoldPoint = typename Manifold::ManifoldPoint;
-        using ManifoldVector = typename Manifold::ManifoldVector;
+        // using ManifoldPoint = typename Manifold::ManifoldPoint;
+        // using ManifoldVector = typename Manifold::ManifoldVector;
 
         Euclidean(int nr, int nc, int num_manifolds) : 
             p(nr), n(nc), k(num_manifolds) {};

@@ -17,8 +17,8 @@ namespace Module_Optimizer
     public:
         
 
-        using ManifoldPoint = typename Manifold::ManifoldPoint;
-        using ManifoldVector = typename Manifold::ManifoldVector;
+        // using ManifoldPoint = typename Manifold::ManifoldPoint;
+        // using ManifoldVector = typename Manifold::ManifoldVector;
 
 
         
@@ -27,11 +27,11 @@ namespace Module_Optimizer
 
         // function value evaluated on x, which has to be defined for each problem
         // virtual double objective(const ManifoldPoint & x) = 0;
-        virtual double obj(const ManifoldPoint & x)  const=0;
+        virtual double objective_function(const ManifoldPoint & x)  const=0;
 
         // Euclidean gradient of f, which has to be defined for each problem
-        // virtual ManifoldPoint grad(const ManifoldPoint& x) =0;
-        virtual ManifoldVector  grad(const ManifoldPoint & x) const=0;
+        // virtual ManifoldPoint gradient(const ManifoldPoint& x) =0;
+        virtual ManifoldVector  gradient(const ManifoldPoint & x) const=0;
 
         // evaluate objective function and gradient at the same time.
         virtual void evaluate_obj_and_grad(const ManifoldPoint & x) const=0 ;
