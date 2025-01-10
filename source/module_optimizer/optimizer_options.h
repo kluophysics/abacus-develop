@@ -6,8 +6,8 @@
 
 // default using armadillo for linear algebra operations
 // in future implement our own or other library
-// #ifndef DIRECTMIN_USE_ARMA
-// #define DIRECTMIN_USE_ARMA
+// #ifndef OPTIMIZER_USE_ARMA
+// #define OPTIMIZER_USE_ARMA
 // #endif
 
 namespace Module_Optimizer

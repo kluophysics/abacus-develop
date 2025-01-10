@@ -18,7 +18,7 @@ namespace Module_Optimizer
 		pre_funs.clear();
 
 		// std::cout << "--------------------------------"
-		// << "inside " << "OptimizerLineSearchBase::optimize()" << std::endl;
+		// << "inside " << "Optimizer_LS_Base::optimize()" << std::endl;
 		ManifoldPoint xTemp;
         ManifoldVector  gfTemp;
 		// x1.brief_print();
@@ -47,7 +47,7 @@ namespace Module_Optimizer
 		{
 			// std::cout << "--------------------------------"
 			// std::cout << "iter/maxiter: " << iter << "/" << max_iterations << std::endl;
-            ModuleBase::timer::tick("OptimizerLineSearchBase", "iteration");
+            ModuleBase::timer::tick("Optimizer_LS_Base", "iteration");
 
 			get_search_direction(); // obtain search direction d1;
 
@@ -160,7 +160,7 @@ namespace Module_Optimizer
 			step_size_old = step_size ; // store the old step size, try next time directly with this one
 			iter ++;
 
-			ModuleBase::timer::tick("OptimizerLineSearchBase", "iteration");
+			ModuleBase::timer::tick("Optimizer_LS_Base", "iteration");
 
 		}
 		Optimizer_LS_Base::print_info(); // summary of nf, ng, nV, nR, nH.
@@ -216,7 +216,7 @@ namespace Module_Optimizer
 		}
 		else
 		{
-			ModuleBase::WARNING("OptimizerLineSearchBase::update_params", "Unknown line search condition. Use Strong Wolfe condition.");
+			ModuleBase::WARNING("Optimizer_LS_Base::update_params", "Unknown line search condition. Use Strong Wolfe condition.");
 			condition_type = STRONG_WOLFE;
 		}
 
@@ -253,7 +253,7 @@ namespace Module_Optimizer
 		}
 		else
 		{
-			ModuleBase::WARNING("OptimizerLineSearchBase::do_line_search", "Unknown line search condition. Use Strong Wolfe condition.");
+			ModuleBase::WARNING("Optimizer_LS_Base::do_line_search", "Unknown line search condition. Use Strong Wolfe condition.");
 		}
         return ;
     }
@@ -373,7 +373,7 @@ namespace Module_Optimizer
 		{
 			// if(verbose)
 			// {
-			// 	std::cout << " Inside OptimizerLineSearchBase::StrongWolfe()" << std::endl;
+			// 	std::cout << " Inside Optimizer_LS_Base::StrongWolfe()" << std::endl;
 			// }
 			f2 = phi();  
 			if (f2 > f1 + LS_alpha * step_size * initial_slope || f2 >= f_previous)
