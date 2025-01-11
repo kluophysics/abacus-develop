@@ -4,6 +4,11 @@ namespace Module_Optimizer
 {
     OptimizerBase::~OptimizerBase() = default;
 
+    void OptimizerBase::initialize()
+    {
+        ;
+    }
+
     void OptimizerBase::set_default_params()
     {
         name = "OptimizerBase";
