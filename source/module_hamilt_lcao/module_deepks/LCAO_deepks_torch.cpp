@@ -82,3 +82,4 @@ void LCAO_Deepks::load_model(const std::string& deepks_model)
 }
 
 #endif
+
