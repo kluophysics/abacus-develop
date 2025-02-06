@@ -46,13 +46,17 @@ void toWannier90_LCAO_IN_PW::calculate(
     ModulePW::PW_Basis_K* wfcpw_ptr = const_cast<ModulePW::PW_Basis_K*>(wfcpw);
     delete this->psi_initer_;
     this->psi_initer_ = new psi_initializer_nao<std::complex<double>>();
-    this->psi_initer_->initialize(sf_ptr, wfcpw_ptr, &ucell, &kv.para_k, 1, nullptr, GlobalV::MY_RANK);
+    this->psi_initer_->initialize(sf_ptr, wfcpw_ptr, &ucell, &kv, 1, nullptr, GlobalV::MY_RANK);
     this->psi_initer_->tabulate();
     delete this->psi;
     const int nks_psi = (PARAM.inp.calculation == "nscf" && PARAM.inp.mem_saver == 1)? 1 : wfcpw->nks;
     const int nks_psig = (PARAM.inp.basis_type == "pw")? 1 : nks_psi;
     const int nbands_actual = this->psi_initer_->nbands_start();
-    this->psi = new psi::Psi<std::complex<double>, base_device::DEVICE_CPU>(nks_psig, nbands_actual, wfcpw->npwk_max*PARAM.globalv.npol, wfcpw->npwk);
+    this->psi = new psi::Psi<std::complex<double>, base_device::DEVICE_CPU>(nks_psig, 
+                                                                            nbands_actual, 
+                                                                            wfcpw->npwk_max*PARAM.globalv.npol, 
+                                                                            kv.ngk,
+                                                                            true);
     read_nnkp(ucell,kv);
 
     if (PARAM.inp.nspin == 2)
@@ -117,7 +121,11 @@ psi::Psi<std::complex<double>>* toWannier90_LCAO_IN_PW::get_unk_from_lcao(
 {
     // init
     int npwx = wfcpw->npwk_max;
-    psi::Psi<std::complex<double>> *unk_inLcao = new psi::Psi<std::complex<double>>(num_kpts, num_bands, npwx*PARAM.globalv.npol, kv.ngk.data());
+    psi::Psi<std::complex<double>> *unk_inLcao = new psi::Psi<std::complex<double>>(num_kpts, 
+                                                                                    num_bands, 
+                                                                                    npwx*PARAM.globalv.npol, 
+                                                                                    kv.ngk,
+                                                                                    true);
     unk_inLcao->zero_out();
 
     // Orbital projection to plane wave

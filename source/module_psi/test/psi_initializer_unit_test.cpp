@@ -90,18 +90,13 @@ std::complex<double>* Structure_Factor::get_sk(int ik, int it, int ia, ModulePW:
     return sk;
 }
 
-int K_Vectors::get_ik_global(const int& ik, const int& nkstot)
-{
-    return ik;
-}
-
 class PsiIntializerUnitTest : public ::testing::Test {
     public:
         Structure_Factor* p_sf = nullptr;
         ModulePW::PW_Basis_K* p_pw_wfc = nullptr;
         UnitCell* p_ucell = nullptr;
         pseudopot_cell_vnl* p_pspot_vnl = nullptr;
-        Parallel_Kpoints* p_parakpts = nullptr;
+        K_Vectors* p_kv = nullptr;
         int random_seed = 1;
 
         psi_initializer<std::complex<double>>* psi_init;
@@ -115,7 +110,7 @@ class PsiIntializerUnitTest : public ::testing::Test {
             this->p_pw_wfc = new ModulePW::PW_Basis_K();
             this->p_ucell = new UnitCell();
             this->p_pspot_vnl = new pseudopot_cell_vnl();
-            this->p_parakpts = new Parallel_Kpoints();
+            this->p_kv = new K_Vectors();
             // mock
             PARAM.input.nbands = 1;
             PARAM.input.nspin = 1;
@@ -261,8 +256,8 @@ class PsiIntializerUnitTest : public ::testing::Test {
 
             this->p_pspot_vnl->lmaxkb = 1;
 
-            this->p_parakpts->startk_pool.resize(1);
-            this->p_parakpts->startk_pool[0] = 0;
+            this->p_kv->ik2iktot.resize(1);
+            this->p_kv->ik2iktot[0] = 0;
 
         }
         void TearDown() override
@@ -272,7 +267,7 @@ class PsiIntializerUnitTest : public ::testing::Test {
             delete this->p_pw_wfc;
             delete this->p_ucell;
             delete this->p_pspot_vnl;
-            delete this->p_parakpts;
+            delete this->p_kv;
          }
 };
 
@@ -319,14 +314,14 @@ TEST_F(PsiIntializerUnitTest, CalPsigRandom) {
     this->psi_init->initialize(this->p_sf, 
                                this->p_pw_wfc, 
                                this->p_ucell, 
-                               this->p_parakpts, 
+                               this->p_kv, 
                                this->random_seed,
                                this->p_pspot_vnl,
                                GlobalV::MY_RANK);
     this->psi_init->tabulate(); // always: new, initialize, tabulate, allocate, proj_ao_onkG
     const int nbands_start = this->psi_init->nbands_start();
     const int nbasis = this->p_pw_wfc->npwk_max * PARAM.globalv.npol;
-    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nullptr);
+    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nbasis, true);
     this->psi_init->init_psig(psi->get_pointer(), 0);
     EXPECT_NEAR(-0.66187696761064307, psi->operator()(0,0,0).real(), 1e-4);
     delete psi;
@@ -338,14 +333,14 @@ TEST_F(PsiIntializerUnitTest, CalPsigAtomic) {
     this->psi_init->initialize(this->p_sf, 
                                this->p_pw_wfc, 
                                this->p_ucell, 
-                               this->p_parakpts, 
+                               this->p_kv, 
                                this->random_seed,
                                this->p_pspot_vnl,
                                GlobalV::MY_RANK);
     this->psi_init->tabulate(); // always: new, initialize, tabulate, allocate, proj_ao_onkG
     const int nbands_start = this->psi_init->nbands_start();
     const int nbasis = this->p_pw_wfc->npwk_max * PARAM.globalv.npol;
-    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nullptr);
+    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nbasis, true);
     this->psi_init->init_psig(psi->get_pointer(), 0);
     EXPECT_NEAR(0, psi->operator()(0,0,0).real(), 1e-12);
     delete psi;
@@ -361,14 +356,14 @@ TEST_F(PsiIntializerUnitTest, CalPsigAtomicSoc) {
     this->psi_init->initialize(this->p_sf, 
                                this->p_pw_wfc, 
                                this->p_ucell, 
-                               this->p_parakpts, 
+                               this->p_kv, 
                                this->random_seed,
                                this->p_pspot_vnl,
                                GlobalV::MY_RANK);
     this->psi_init->tabulate(); // always: new, initialize, tabulate, allocate, proj_ao_onkG
     const int nbands_start = this->psi_init->nbands_start();
     const int nbasis = this->p_pw_wfc->npwk_max * PARAM.globalv.npol;
-    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nullptr);
+    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nbasis, true);
     this->psi_init->init_psig(psi->get_pointer(), 0);
     EXPECT_NEAR(0, psi->operator()(0,0,0).real(), 1e-12);
     PARAM.input.nspin = 1;
@@ -388,14 +383,14 @@ TEST_F(PsiIntializerUnitTest, CalPsigAtomicSocHasSo) {
     this->psi_init->initialize(this->p_sf, 
                                this->p_pw_wfc, 
                                this->p_ucell, 
-                               this->p_parakpts, 
+                               this->p_kv, 
                                this->random_seed,
                                this->p_pspot_vnl,
                                GlobalV::MY_RANK);
     this->psi_init->tabulate(); // always: new, initialize, tabulate, allocate, proj_ao_onkG
     const int nbands_start = this->psi_init->nbands_start();
     const int nbasis = this->p_pw_wfc->npwk_max * PARAM.globalv.npol;
-    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nullptr);
+    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nbasis, true);
     this->psi_init->init_psig(psi->get_pointer(), 0);
     EXPECT_NEAR(0, psi->operator()(0,0,0).real(), 1e-12);
     PARAM.input.nspin = 1;
@@ -411,14 +406,14 @@ TEST_F(PsiIntializerUnitTest, CalPsigAtomicRandom) {
     this->psi_init->initialize(this->p_sf, 
                                this->p_pw_wfc, 
                                this->p_ucell, 
-                               this->p_parakpts, 
+                               this->p_kv, 
                                this->random_seed,
                                this->p_pspot_vnl,
                                GlobalV::MY_RANK);
     this->psi_init->tabulate(); // always: new, initialize, tabulate, allocate, proj_ao_onkG
     const int nbands_start = this->psi_init->nbands_start();
     const int nbasis = this->p_pw_wfc->npwk_max * PARAM.globalv.npol;
-    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nullptr);
+    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nbasis, true);
     this->psi_init->init_psig(psi->get_pointer(), 0);
     EXPECT_NEAR(0, psi->operator()(0,0,0).real(), 1e-12);
     delete psi;
@@ -430,14 +425,14 @@ TEST_F(PsiIntializerUnitTest, CalPsigNao) {
     this->psi_init->initialize(this->p_sf, 
                                this->p_pw_wfc, 
                                this->p_ucell, 
-                               this->p_parakpts, 
+                               this->p_kv, 
                                this->random_seed,
                                this->p_pspot_vnl,
                                GlobalV::MY_RANK);
     this->psi_init->tabulate(); // always: new, initialize, tabulate, allocate, proj_ao_onkG
     const int nbands_start = this->psi_init->nbands_start();
     const int nbasis = this->p_pw_wfc->npwk_max * PARAM.globalv.npol;
-    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nullptr);
+    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nbasis, true);
     this->psi_init->init_psig(psi->get_pointer(), 0);
     EXPECT_NEAR(0, psi->operator()(0,0,0).real(), 1e-12);
     delete psi;
@@ -449,14 +444,14 @@ TEST_F(PsiIntializerUnitTest, CalPsigNaoRandom) {
     this->psi_init->initialize(this->p_sf, 
                                this->p_pw_wfc, 
                                this->p_ucell, 
-                               this->p_parakpts, 
+                               this->p_kv, 
                                this->random_seed,
                                this->p_pspot_vnl,
                                GlobalV::MY_RANK);
     this->psi_init->tabulate(); // always: new, initialize, tabulate, allocate, proj_ao_onkG
     const int nbands_start = this->psi_init->nbands_start();
     const int nbasis = this->p_pw_wfc->npwk_max * PARAM.globalv.npol;
-    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nullptr);
+    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nbasis, true);
     this->psi_init->init_psig(psi->get_pointer(), 0);
     EXPECT_NEAR(0, psi->operator()(0,0,0).real(), 1e-12);
     delete psi;
@@ -473,14 +468,14 @@ TEST_F(PsiIntializerUnitTest, CalPsigNaoSoc) {
     this->psi_init->initialize(this->p_sf, 
                                this->p_pw_wfc, 
                                this->p_ucell, 
-                               this->p_parakpts, 
+                               this->p_kv, 
                                this->random_seed,
                                this->p_pspot_vnl,
                                GlobalV::MY_RANK);
     this->psi_init->tabulate(); // always: new, initialize, tabulate, allocate, proj_ao_onkG
     const int nbands_start = this->psi_init->nbands_start();
     const int nbasis = this->p_pw_wfc->npwk_max * PARAM.globalv.npol;
-    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nullptr);
+    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nbasis, true);
     this->psi_init->init_psig(psi->get_pointer(), 0);
     EXPECT_NEAR(0, psi->operator()(0,0,0).real(), 1e-12);
     delete psi;
@@ -497,14 +492,14 @@ TEST_F(PsiIntializerUnitTest, CalPsigNaoSocHasSo) {
     this->psi_init->initialize(this->p_sf, 
                                this->p_pw_wfc, 
                                this->p_ucell, 
-                               this->p_parakpts, 
+                               this->p_kv, 
                                this->random_seed,
                                this->p_pspot_vnl,
                                GlobalV::MY_RANK);
     this->psi_init->tabulate(); // always: new, initialize, tabulate, allocate, proj_ao_onkG
     const int nbands_start = this->psi_init->nbands_start();
     const int nbasis = this->p_pw_wfc->npwk_max * PARAM.globalv.npol;
-    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nullptr);
+    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nbasis, true);
     this->psi_init->init_psig(psi->get_pointer(), 0);
     EXPECT_NEAR(0, psi->operator()(0,0,0).real(), 1e-12);
     delete psi;
@@ -521,14 +516,14 @@ TEST_F(PsiIntializerUnitTest, CalPsigNaoSocHasSoDOMAG) {
     this->psi_init->initialize(this->p_sf, 
                                this->p_pw_wfc, 
                                this->p_ucell, 
-                               this->p_parakpts, 
+                               this->p_kv, 
                                this->random_seed,
                                this->p_pspot_vnl,
                                GlobalV::MY_RANK);
     this->psi_init->tabulate(); // always: new, initialize, tabulate, allocate, proj_ao_onkG
     const int nbands_start = this->psi_init->nbands_start();
     const int nbasis = this->p_pw_wfc->npwk_max * PARAM.globalv.npol;
-    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nullptr);
+    psi::Psi<std::complex<double>>* psi = new psi::Psi<std::complex<double>>(1, nbands_start, nbasis, nbasis, true);
     this->psi_init->init_psig(psi->get_pointer(), 0);
     EXPECT_NEAR(0, psi->operator()(0,0,0).real(), 1e-12);
     delete psi;

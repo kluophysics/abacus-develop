@@ -26,7 +26,7 @@
 #include "module_hsolver/diago_iter_assist.h"
 #include "module_hsolver/hsolver_pw.h"
 #include "module_hsolver/kernels/dngvd_op.h"
-#include "module_hsolver/kernels/math_kernel_op.h"
+#include "module_base/kernels/math_kernel_op.h"
 #include "module_io/berryphase.h"
 #include "module_io/cube_io.h"
 #include "module_io/get_pchg_pw.h"
@@ -73,7 +73,7 @@ ESolver_KS_PW<T, Device>::ESolver_KS_PW()
 #if ((defined __CUDA) || (defined __ROCM))
     if (this->device == base_device::GpuDevice)
     {
-        hsolver::createGpuBlasHandle();
+        ModuleBase::createGpuBlasHandle();
         hsolver::createGpuSolverHandle();
         container::kernels::createGpuBlasHandle();
         container::kernels::createGpuSolverHandle();
@@ -101,7 +101,7 @@ ESolver_KS_PW<T, Device>::~ESolver_KS_PW()
     if (this->device == base_device::GpuDevice)
     {
 #if defined(__CUDA) || defined(__ROCM)
-        hsolver::destoryBLAShandle();
+        ModuleBase::destoryBLAShandle();
         hsolver::destroyGpuSolverHandle();
         container::kernels::destroyGpuBlasHandle();
         container::kernels::destroyGpuSolverHandle();
@@ -209,10 +209,10 @@ void ESolver_KS_PW<T, Device>::before_all_runners(UnitCell& ucell, const Input_p
                                                    GlobalV::MY_RANK,
                                                    ucell,
                                                    this->sf,
-                                                   this->kv.para_k,
+                                                   this->kv,
                                                    this->ppcell,
                                                    *this->pw_wfc);
-    allocate_psi(this->psi, this->kv.get_nks(), this->kv.ngk.data(), PARAM.inp.nbands, this->pw_wfc->npwk_max);
+    allocate_psi(this->psi, this->kv.get_nks(), this->kv.ngk, PARAM.globalv.nbands_l, this->pw_wfc->npwk_max);
     this->p_psi_init->prepare_init(PARAM.inp.pw_seed);
 
     this->kspw_psi = PARAM.inp.device == "gpu" || PARAM.inp.precision == "single"
@@ -228,7 +228,7 @@ void ESolver_KS_PW<T, Device>::before_all_runners(UnitCell& ucell, const Input_p
     //! 9) setup occupations
     if (PARAM.inp.ocp)
     {
-        this->pelec->fixed_weights(PARAM.inp.ocp_kb, PARAM.inp.nbands, PARAM.inp.nelec);
+        this->pelec->fixed_weights(PARAM.inp.ocp_kb, PARAM.globalv.nbands_l, PARAM.inp.nelec);
     }
 }
 
@@ -563,7 +563,7 @@ void ESolver_KS_PW<T, Device>::update_pot(UnitCell& ucell, const int istep, cons
         this->pelec->pot->update_from_charge(this->pelec->charge, &ucell);
         this->pelec->f_en.descf = this->pelec->cal_delta_escf();
 #ifdef __MPI
-        MPI_Bcast(&(this->pelec->f_en.descf), 1, MPI_DOUBLE, 0, PARAPW_WORLD);
+        MPI_Bcast(&(this->pelec->f_en.descf), 1, MPI_DOUBLE, 0, BP_WORLD);
 #endif
     }
     else
@@ -646,9 +646,7 @@ void ESolver_KS_PW<T, Device>::after_scf(UnitCell& ucell, const int istep)
     // 4) Transfer data from GPU to CPU
     if (this->device == base_device::GpuDevice)
     {
-        castmem_2d_d2h_op()(this->psi[0].get_device(),
-                            this->kspw_psi[0].get_device(),
-                            this->psi[0].get_pointer() - this->psi[0].get_psi_bias(),
+        castmem_2d_d2h_op()(this->psi[0].get_pointer() - this->psi[0].get_psi_bias(),
                             this->kspw_psi[0].get_pointer() - this->kspw_psi[0].get_psi_bias(),
                             this->psi[0].size());
     }

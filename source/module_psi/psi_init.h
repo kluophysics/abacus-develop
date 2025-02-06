@@ -17,7 +17,7 @@ class PSIInit
             const int& rank,
             const UnitCell& ucell,
             const Structure_Factor& sf,
-            const Parallel_Kpoints& parakpts,
+            const K_Vectors& kv_in,
             const pseudopot_cell_vnl& nlpp,
             const ModulePW::PW_Basis_K& pw_wfc);
     ~PSIInit(){};
@@ -65,7 +65,7 @@ class PSIInit
     const ModulePW::PW_Basis_K& pw_wfc;
 
     // parallel kpoints
-    const Parallel_Kpoints& parakpts;
+    const K_Vectors& kv;
 
     // unit cell
     const UnitCell& ucell;
@@ -86,7 +86,7 @@ class PSIInit
 };
 
 ///@brief allocate the wavefunction
-void allocate_psi(Psi<std::complex<double>>*& psi, const int& nks, const int* ngk, const int& nbands, const int& npwx);
+void allocate_psi(Psi<std::complex<double>>*& psi, const int& nks, const std::vector<int>& ngk, const int& nbands, const int& npwx);
 
 } // namespace psi
 #endif

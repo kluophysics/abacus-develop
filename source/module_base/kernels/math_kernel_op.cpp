@@ -1,9 +1,9 @@
-#include "module_hsolver/kernels/math_kernel_op.h"
+#include "module_base/kernels/math_kernel_op.h"
 
 #include <iomanip>
 #include <iostream>
 
-namespace hsolver
+namespace ModuleBase
 {
 
 template <typename T>
@@ -24,6 +24,7 @@ struct line_minimize_with_block_op<T, base_device::DEVICE_CPU>
             Real theta = 0.0, cos_theta = 0.0, sin_theta = 0.0;
             auto A = reinterpret_cast<const Real*>(grad_out + band_idx * n_basis_max);
             Real norm = BlasConnector::dot(2 * n_basis, A, 1, A, 1);
+            Parallel_Reduce::reduce_pool(norm);
             norm = 1.0 / sqrt(norm);
             for (int basis_idx = 0; basis_idx < n_basis; basis_idx++)
             {
@@ -34,6 +35,9 @@ struct line_minimize_with_block_op<T, base_device::DEVICE_CPU>
                 epsilo_1 += std::real(grad_out[item] * std::conj(hpsi_out[item]));
                 epsilo_2 += std::real(grad_out[item] * std::conj(hgrad_out[item]));
             }
+            Parallel_Reduce::reduce_pool(epsilo_0);
+            Parallel_Reduce::reduce_pool(epsilo_1);
+            Parallel_Reduce::reduce_pool(epsilo_2);
             theta = 0.5 * std::abs(std::atan(2 * epsilo_1 / (epsilo_0 - epsilo_2)));
             cos_theta = std::cos(theta);
             sin_theta = std::sin(theta);
@@ -71,6 +75,7 @@ struct calc_grad_with_block_op<T, base_device::DEVICE_CPU>
             T grad_1 = {0.0, 0.0};
             auto A = reinterpret_cast<const Real*>(psi_out + band_idx * n_basis_max);
             Real norm = BlasConnector::dot(2 * n_basis, A, 1, A, 1);
+            Parallel_Reduce::reduce_pool(norm);
             norm = 1.0 / sqrt(norm);
             for (int basis_idx = 0; basis_idx < n_basis; basis_idx++)
             {
@@ -79,6 +84,7 @@ struct calc_grad_with_block_op<T, base_device::DEVICE_CPU>
                 hpsi_out[item] *= norm;
                 epsilo += std::real(hpsi_out[item] * std::conj(psi_out[item]));
             }
+            Parallel_Reduce::reduce_pool(epsilo);
             for (int basis_idx = 0; basis_idx < n_basis; basis_idx++)
             {
                 auto item = band_idx * n_basis_max + basis_idx;
@@ -87,6 +93,8 @@ struct calc_grad_with_block_op<T, base_device::DEVICE_CPU>
                 err += grad_2;
                 beta += grad_2 / prec_in[basis_idx]; /// Mark here as we should div the prec?
             }
+            Parallel_Reduce::reduce_pool(err);
+            Parallel_Reduce::reduce_pool(beta);
             for (int basis_idx = 0; basis_idx < n_basis; basis_idx++)
             {
                 auto item = band_idx * n_basis_max + basis_idx;
@@ -315,7 +323,7 @@ struct matrixTranspose_op<T, base_device::DEVICE_CPU>
                     T* output_matrix)
     {
         T* temp = nullptr;
-        base_device::memory::resize_memory_op<T, base_device::DEVICE_CPU>()(d, temp, row * col, "MTransOp");
+        base_device::memory::resize_memory_op<T, base_device::DEVICE_CPU>()(temp, row * col, "MTransOp");
 #ifdef _OPENMP
 #pragma omp parallel for collapse(2) schedule(static, 8192 / sizeof(T))
 #endif
@@ -333,7 +341,7 @@ struct matrixTranspose_op<T, base_device::DEVICE_CPU>
         {
             output_matrix[i] = temp[i];
         }
-        base_device::memory::delete_memory_op<T, base_device::DEVICE_CPU>()(d, temp);
+        base_device::memory::delete_memory_op<T, base_device::DEVICE_CPU>()(temp);
     }
 };
 
@@ -374,11 +382,13 @@ template struct line_minimize_with_block_op<std::complex<float>, base_device::DE
 
 template struct scal_op<double, base_device::DEVICE_CPU>;
 template struct axpy_op<std::complex<double>, base_device::DEVICE_CPU>;
+template struct axpy_op<double, base_device::DEVICE_CPU>;
 template struct gemv_op<std::complex<double>, base_device::DEVICE_CPU>;
 template struct gemv_op<double, base_device::DEVICE_CPU>;
 template struct gemm_op<std::complex<double>, base_device::DEVICE_CPU>;
 template struct gemm_op<double, base_device::DEVICE_CPU>;
 template struct dot_real_op<std::complex<double>, base_device::DEVICE_CPU>;
+template struct dot_real_op<double, base_device::DEVICE_CPU>;
 template struct vector_div_constant_op<std::complex<double>, base_device::DEVICE_CPU>;
 template struct vector_mul_vector_op<std::complex<double>, base_device::DEVICE_CPU>;
 template struct vector_div_vector_op<std::complex<double>, base_device::DEVICE_CPU>;
@@ -389,8 +399,6 @@ template struct calc_grad_with_block_op<std::complex<double>, base_device::DEVIC
 template struct line_minimize_with_block_op<std::complex<double>, base_device::DEVICE_CPU>;
 
 #ifdef __LCAO
-template struct axpy_op<double, base_device::DEVICE_CPU>;
-template struct dot_real_op<double, base_device::DEVICE_CPU>;
 template struct vector_mul_vector_op<double, base_device::DEVICE_CPU>;
 template struct vector_div_constant_op<double, base_device::DEVICE_CPU>;
 template struct vector_div_vector_op<double, base_device::DEVICE_CPU>;
